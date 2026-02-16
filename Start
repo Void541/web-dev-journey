@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meine erste Website</title>
+</head>
+<body>
+    <h1>Hallo, ich bin Void</h1>
+    <p>Ich lerne gerade Webentwicklung.</p>
+</body>
+</html>
+<h2>Meine Ziele</h2>
+<ul>
+    <li>Abitur bestehen</li>
+    <li>Web Developer werden</li>
+    <li>Finanzielle Stabilität erreichen</li>
+</ul>
+
+<h2>Kontakt</h2>
+<p>Schreib mir eine Mail!</p>
+
+<a href="https://google.com">Zu Google</a>
+<img src="https://via.placeholder.com/200" alt="Beispielbild">
