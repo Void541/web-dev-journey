@@ -1,22 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <title>Meine erste Website</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Void – Web Dev Journey</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>Hallo, ich bin Void</h1>
-    <p>Ich lerne gerade Webentwicklung.</p>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#">Void</a>
+
+      <nav class="nav">
+        <a href="#about">Über mich</a>
+        <a href="#projects">Projekte</a>
+        <a href="#contact">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Web Dev Journey</h1>
+        <p class="subtitle">
+          Ich baue gerade mein Fundament in HTML, CSS & JavaScript – Schritt für Schritt, jeden Tag.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="#projects">Projekte ansehen</a>
+          <a class="btn" href="#about">Mehr über mich</a>
+        </div>
+
+        <ul class="quick-facts">
+          <li><strong>Fokus:</strong> Webentwicklung</li>
+          <li><strong>Rhythmus:</strong> 30 Min/Tag</li>
+          <li><strong>Ziel:</strong> Junior / Werkstudent</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="container">
+        <h2>Über mich</h2>
+        <p>
+          Ich heiße Void und arbeite daran, Webentwicklung professionell zu lernen.
+          Mein Plan ist: sauberer Code, kleine tägliche Fortschritte und echte Projekte.
+        </p>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Skills (aktuell)</h3>
+            <ul>
+              <li>HTML Basics</li>
+              <li>CSS Basics</li>
+              <li>Git & GitHub (Routine aufbauen)</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <h3>Roadmap</h3>
+            <ol>
+              <li>HTML Struktur (Woche 1)</li>
+              <li>CSS Layout + Flexbox (Woche 2)</li>
+              <li>JavaScript DOM + Mini-Apps</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <div class="container">
+        <h2>Projekte</h2>
+
+        <div class="grid">
+          <article class="card">
+            <h3>Projekt 1: Mini Portfolio</h3>
+            <p>Diese Seite. Fokus: Struktur, Layout, GitHub Pages.</p>
+            <div class="tags">
+              <span class="tag">HTML</span>
+              <span class="tag">CSS</span>
+              <span class="tag">GitHub Pages</span>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Projekt 2: To-Do App (kommt)</h3>
+            <p>Demnächst: Interaktiv mit JavaScript (DOM + Events).</p>
+            <div class="tags">
+              <span class="tag">JavaScript</span>
+              <span class="tag">DOM</span>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>Projekt 3: Quiz (kommt)</h3>
+            <p>Ein kleines Quiz mit Fragen, Score und Reset.</p>
+            <div class="tags">
+              <span class="tag">JavaScript</span>
+              <span class="tag">UI</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="container">
+        <h2>Kontakt</h2>
+        <p>
+          Wenn du Feedback hast oder du sehen willst, wie ich mich entwickle:
+          Schau auf GitHub vorbei.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a class="btn" href="#top">Nach oben</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>© <span id="year"></span> Void – Web Dev Journey</p>
+      <p class="muted">Built with HTML & CSS • Hosted on GitHub Pages</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mini-JS nur für das Jahr (optional, aber nice)
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-<h2>Meine Ziele</h2>
-<ul>
-    <li>Abitur bestehen</li>
-    <li>Web Developer werden</li>
-    <li>Finanzielle Stabilität erreichen</li>
-</ul>
-
-<h2>Kontakt</h2>
-<p>Schreib mir eine Mail!</p>
-
-<a href="https://google.com">Zu Google</a>
-<img src="https://via.placeholder.com/200" alt="Beispielbild">
