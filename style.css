@@ -1,5 +1,6 @@
 /* Reset */
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 html, body { margin: 0; padding: 0; }
 
 body {
@@ -160,4 +161,23 @@ body {
 
 .muted {
   color: #8b949e;
+}
+.to-top {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  border: 1px solid #2d333b;
+  background: #161b22;
+  color: #e6e6e6;
+  font-weight: 900;
+}
+.to-top:hover {
+  border-color: #58a6ff;
+  transform: translateY(-2px);
 }
