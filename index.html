@@ -8,20 +8,25 @@
 </head>
 <body>
   <header id="top" class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="#">Void</a>
+  <div class="container header-inner">
+    <a class="brand" href="#top">Void</a>
 
-      <nav class="nav">
-        <a href="#about">Über mich</a>
-        <a href="#projects">Projekte</a>
-        <a href="#contact">Kontakt</a>
-      </nav>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Themen wechseln">
-        🌙
-      </button>
-       
-    </div>
-  </header>
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
+      ☰
+    </button>
+
+    <nav class="nav" id="siteNav">
+      <a href="#about">Über mich</a>
+      <a href="#projects">Projekte</a>
+      <a href="#contact">Kontakt</a>
+    </nav>
+
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
+      🌙
+    </button>
+  </div>
+</header>
+
 
   <main>
     <section class="hero">
@@ -162,6 +167,23 @@
     btn.addEventListener("click", () => {
       const current = root.getAttribute("data-theme") || "dark";
       setTheme(current === "dark" ? "light" : "dark");
+    }); const nav = document.getElementById("siteNav");
+  const navBtn = document.getElementById("navToggle");
+
+  if (nav && navBtn) {
+    navBtn.addEventListener("click", () => {
+      const open = nav.classList.toggle("is-open");
+      navBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      navBtn.textContent = open ? "✕" : "☰";
+    });
+
+    // Menü schließen, wenn man einen Link klickt
+    nav.querySelectorAll("a").forEach(a => {
+      a.addEventListener("click", () => {
+        nav.classList.remove("is-open");
+        navBtn.setAttribute("aria-expanded", "false");
+        navBtn.textContent = "☰";
+      });
     });
   }
 </script>
