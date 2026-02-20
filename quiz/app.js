@@ -203,7 +203,8 @@ function selectAnswer(choiceIndex) {
   const correctIndex = q.correct;
 
   const answerButtons = [...answersEl.querySelectorAll(".answer")];
-  answerButtons.forEach(b => b.classList.add("locked"));
+answerButtons[choiceIndex].classList.add("selected"); // <-- neu
+answerButtons.forEach(b => b.classList.add("locked"));
 
   // mark correct + wrong
   answerButtons[correctIndex].classList.add("correct");
@@ -323,3 +324,14 @@ function shuffle(arr) {
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
 }
+
+document.addEventListener("keydown", (e) => {
+  if (screenQuiz.classList.contains("hidden")) return;
+  if (quiz.locked) return;
+
+  const n = Number(e.key);
+  if (!Number.isFinite(n)) return;
+
+  // 1-4
+  if (n >= 1 && n <= 4) selectAnswer(n - 1);
+});

@@ -149,6 +149,10 @@ select{
   color:var(--text);
   letter-spacing: 0.2px;
 }
+.answer.selected{
+  border-color: var(--strong);
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.18);
+}
 
 .answer:hover{
   border-color:var(--strong);
