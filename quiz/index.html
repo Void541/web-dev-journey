@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz App – Void</title>
+  <meta name="description" content="Quiz App mit Score, Progress, Shuffle und localStorage Highscore (HTML/CSS/JS)." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html">← Zurück</a>
+      <h1 class="title">Quiz App</h1>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Start Screen -->
+    <section class="panel" id="screenStart">
+      <h2>Bereit?</h2>
+      <p class="muted">
+        Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.
+      </p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Einstellungen</h3>
+
+          <label class="row">
+            <span>Fragen</span>
+            <select id="selectCount">
+              <option value="5">5</option>
+              <option value="8" selected>8</option>
+              <option value="10">10</option>
+            </select>
+          </label>
+
+          <label class="row">
+            <span>Shuffle</span>
+            <input id="toggleShuffle" type="checkbox" checked />
+          </label>
+
+          <label class="row">
+            <span>Timer (sek)</span>
+            <select id="selectTimer">
+              <option value="0" selected>Aus</option>
+              <option value="10">10</option>
+              <option value="15">15</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="card">
+          <h3>Highscore</h3>
+          <p class="big" id="highscoreText">0 / 0</p>
+          <button class="btn danger" id="resetHighscore" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="startBtn" type="button">Start</button>
+      </div>
+    </section>
+
+    <!-- Quiz Screen -->
+    <section class="panel hidden" id="screenQuiz" aria-live="polite">
+      <div class="topbar">
+        <div class="progress">
+          <span id="progressText">Frage 1/8</span>
+          <div class="bar">
+            <div class="bar-fill" id="barFill" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="scorebox">
+          <span class="muted">Score</span>
+          <span class="score" id="scoreText">0</span>
+          <span class="timer hidden" id="timerText">⏱ 15</span>
+        </div>
+      </div>
+
+      <h2 class="question" id="questionText">Frage…</h2>
+
+      <div class="answers" id="answers"></div>
+
+      <div class="actions space-between">
+        <button class="btn" id="quitBtn" type="button">Abbrechen</button>
+        <button class="btn primary" id="nextBtn" type="button" disabled>Nächste</button>
+      </div>
+    </section>
+
+    <!-- Result Screen -->
+    <section class="panel hidden" id="screenResult">
+      <h2>Ergebnis</h2>
+      <p class="big" id="resultText">0 / 0</p>
+      <p class="muted" id="resultHint">—</p>
+
+      <div class="actions">
+        <button class="btn" id="backBtn" type="button">Zurück</button>
+        <button class="btn primary" id="restartBtn" type="button">Nochmal</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
