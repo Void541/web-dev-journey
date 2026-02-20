@@ -31,6 +31,42 @@ Ein kleines Portfolio mit Lernprojekten in **HTML / CSS / JavaScript** – live 
 
 <img src="screenshots/todo.png" width="850" alt="To-Do Screenshot">
 
+3) Quiz App (Projekt 3)
+
+Features:
+
+Multiple Choice Quiz
+
+Kategorie-Filter (Web / JS / Games / Allgemein)
+
+Optionaler Timer
+
+Highscore (localStorage)
+
+Dark/Light Theme
+
+Tastatur-Steuerung (1–4)
+
+Question Editor im Browser (Custom Fragen)
+
+Fragen aus externer JSON-Datei geladen
+
+<img src="screenshots/quiz.png" width="850" alt="Quiz Screenshot">
+<img src="screenshots/quiz_fragen.png" width="850" alt="Quiz Screenshot">
+📦 Erweiterungen
+
+Fragen werden aus questions.json geladen
+
+Custom Fragen werden im localStorage gespeichert
+
+JSON + Custom werden beim Start gemerged
+
+🎮 Ziel
+
+Langfristiges Ziel:
+Aufbau eines modularen Top-Down PvE RPG Browsergames
+(Combat-System, Progression, Loot, Map-System)
+
 ## Tech Stack
 - **HTML5**
 - **CSS3** (Flex/Grid, responsive, theme variables)
