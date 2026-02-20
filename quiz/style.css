@@ -170,3 +170,27 @@ select{
   background:rgba(239,68,68,0.15);
 }
 .answer.locked{pointer-events:none; opacity:.95}
+
+@media (prefers-reduced-motion: no-preference) {
+  .answer {
+    transition: transform .12s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .answer:active {
+    transform: scale(0.99);
+  }
+
+  .answer.selected {
+    transform: translateY(-1px);
+  }
+
+  .answer.correct,
+  .answer.wrong {
+    animation: pop .18s ease-out;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.995); }
+    to   { transform: scale(1); }
+  }
+}

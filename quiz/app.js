@@ -1,4 +1,29 @@
 "use strict";
+let audioCtx = null;
+
+function beep(type = "good") {
+  // Audio muss durch User-Interaktion gestartet werden → deshalb lazy init
+  audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+
+  const t0 = audioCtx.currentTime;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = type === "good" ? 660 : 220;
+
+  // Lautstärke sehr niedrig (nicht nervig)
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(0.05, t0 + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(t0);
+  osc.stop(t0 + 0.2);
+}
 
 const THEME_KEY = "theme";
 const HS_KEY = "void_quiz_highscore_v1";
@@ -208,9 +233,13 @@ answerButtons.forEach(b => b.classList.add("locked"));
 
   // mark correct + wrong
   answerButtons[correctIndex].classList.add("correct");
-  if (choiceIndex !== correctIndex) answerButtons[choiceIndex].classList.add("wrong");
-  else quiz.score += 1;
-
+  if (choiceIndex !== correctIndex) {
+  answerButtons[choiceIndex].classList.add("wrong");
+  beep("bad");
+} else {
+  quiz.score += 1;
+  beep("good");
+}
   scoreText.textContent = String(quiz.score);
   nextBtn.disabled = false;
 
@@ -265,6 +294,7 @@ function startTimer(seconds) {
 }
 
 function autoFail() {
+    beep("bad");
   if (quiz.locked) return;
   quiz.locked = true;
   nextBtn.disabled = false;
