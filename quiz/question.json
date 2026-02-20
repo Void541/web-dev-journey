@@ -1,0 +1,32 @@
+[
+  {
+    "category": "web",
+    "q": "Was bedeutet DOM?",
+    "a": ["Document Object Model", "Data Output Method", "Dynamic Order Map", "Design Object Mode"],
+    "correct": 0
+  },
+  {
+    "category": "web",
+    "q": "Welche Methode speichert Daten im Browser dauerhaft (ohne Login)?",
+    "a": ["sessionStorage", "localStorage", "cookieJar()", "cacheStorage()"],
+    "correct": 1
+  },
+  {
+    "category": "js",
+    "q": "Welche Funktion wandelt JSON-Text in ein Objekt um?",
+    "a": ["JSON.parse()", "JSON.stringify()", "parseInt()", "toString()"],
+    "correct": 0
+  },
+  {
+    "category": "games",
+    "q": "Womit startest du typischerweise einen Game Loop im Browser?",
+    "a": ["setTimeout()", "requestAnimationFrame()", "while(true)", "onloadLoop()"],
+    "correct": 1
+  },
+  {
+    "category": "general",
+    "q": "Was ist 'state' in einer App?",
+    "a": ["Der aktuelle Zustand der Daten/GUI", "Eine CSS-Datei", "Ein Git-Branch", "Eine Browser-Erweiterung"],
+    "correct": 0
+  }
+]

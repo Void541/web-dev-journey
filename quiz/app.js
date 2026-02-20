@@ -1,5 +1,6 @@
 "use strict";
 let audioCtx = null;
+let QUESTION_BANK = [];
 
 function beep(type = "good") {
   // Audio muss durch User-Interaktion gestartet werden → deshalb lazy init
@@ -28,64 +29,12 @@ function beep(type = "good") {
 const THEME_KEY = "theme";
 const HS_KEY = "void_quiz_highscore_v1";
 
-// ---- Questions (du kannst später eigene hinzufügen) ----
-const QUESTION_BANK = [
-  {
-    q: "Was bedeutet DOM?",
-    a: ["Document Object Model", "Data Output Method", "Dynamic Order Map", "Design Object Mode"],
-    correct: 0,
-  },
-  {
-    q: "Welche Methode speichert Daten im Browser dauerhaft (ohne Login)?",
-    a: ["sessionStorage", "localStorage", "cookieJar()", "cacheStorage()"],
-    correct: 1,
-  },
-  {
-    q: "Welche Schleife ist ideal, wenn du genau weißt wie oft du iterierst?",
-    a: ["for", "while", "do...while", "switch"],
-    correct: 0,
-  },
-  {
-    q: "Welche Aussage stimmt?",
-    a: ["CSS ist eine Programmiersprache", "HTML strukturiert Inhalte", "JS ist nur für Server", "Git ist ein Browser"],
-    correct: 1,
-  },
-  {
-    q: "Wie heißt das Keyword für eine Konstante in JS?",
-    a: ["var", "const", "static", "fixed"],
-    correct: 1,
-  },
-  {
-    q: "Was macht addEventListener?",
-    a: ["Ändert CSS", "Lädt Bilder", "Registriert ein Event", "Speichert Daten"],
-    correct: 2,
-  },
-  {
-    q: "Welche Funktion wandelt JSON-Text in ein Objekt um?",
-    a: ["JSON.parse()", "JSON.stringify()", "parseInt()", "toString()"],
-    correct: 0,
-  },
-  {
-    q: "Womit startest du typischerweise einen Game Loop im Browser?",
-    a: ["setTimeout()", "requestAnimationFrame()", "while(true)", "onloadLoop()"],
-    correct: 1,
-  },
-  {
-    q: "Welche Aussage über Arrays ist richtig?",
-    a: ["Arrays haben keine Länge", "Arrays können gemischte Typen enthalten", "Arrays sind immer sortiert", "Arrays können keine Objekte enthalten"],
-    correct: 1,
-  },
-  {
-    q: "Was ist 'state' in einer App?",
-    a: ["Der aktuelle Zustand der Daten/GUI", "Eine CSS-Datei", "Ein Git-Branch", "Eine Browser-Erweiterung"],
-    correct: 0,
-  },
-];
 
 // ---- DOM ----
 const root = document.documentElement;
 const themeToggle = document.getElementById("themeToggle");
 
+const selectCategory = document.getElementById("selectCategory");
 const screenStart = document.getElementById("screenStart");
 const screenQuiz = document.getElementById("screenQuiz");
 const screenResult = document.getElementById("screenResult");
@@ -128,7 +77,10 @@ initTheme();
 renderHighscore();
 
 // ---- Events ----
-startBtn.addEventListener("click", () => startQuiz());
+startBtn.addEventListener("click", async () => {
+  if (QUESTION_BANK.length === 0) await loadQuestionBank();
+  startQuiz();
+});
 
 restartBtn.addEventListener("click", () => startQuiz());
 backBtn.addEventListener("click", () => showScreen("start"));
@@ -166,13 +118,48 @@ function setTheme(theme) {
   themeToggle.textContent = theme === "light" ? "☀️" : "🌙";
 }
 
+async function loadQuestionBank() {
+  // 1) Versuch: questions.json laden (funktioniert auf GitHub Pages / Live Server)
+  try {
+    const res = await fetch("questions.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("questions.json not ok");
+    const data = await res.json();
+
+    if (!Array.isArray(data)) throw new Error("questions.json ist kein Array");
+    // basic validation
+    const cleaned = data.filter(q =>
+      q && typeof q.q === "string" &&
+      Array.isArray(q.a) && q.a.length === 4 &&
+      Number.isInteger(q.correct) && q.correct >= 0 && q.correct < q.a.length
+    );
+
+    if (cleaned.length === 0) throw new Error("Keine gültigen Fragen gefunden");
+    QUESTION_BANK = cleaned;
+    return;
+  } catch (e) {
+    // 2) Fallback: Minimales Set (damit nichts kaputt geht)
+    QUESTION_BANK = [
+      { category: "web", q: "Was bedeutet DOM?", a: ["Document Object Model", "Data Output Method", "Dynamic Order Map", "Design Object Mode"], correct: 0 },
+      { category: "js", q: "Welche Funktion wandelt JSON-Text in ein Objekt um?", a: ["JSON.parse()", "JSON.stringify()", "parseInt()", "toString()"], correct: 0 },
+      { category: "games", q: "Womit startest du typischerweise einen Game Loop im Browser?", a: ["setTimeout()", "requestAnimationFrame()", "while(true)", "onloadLoop()"], correct: 1 }
+    ];
+  }
+}
+
+function getBankForCategory() {
+  const cat = selectCategory?.value || "all";
+  if (cat === "all") return [...QUESTION_BANK];
+  return QUESTION_BANK.filter(q => (q.category || "general") === cat);
+}
+
 // ---- Quiz flow ----
 function startQuiz() {
-  const count = clamp(Number(selectCount.value), 1, QUESTION_BANK.length);
+  const available = getBankForCategory();
+  const count = clamp(Number(selectCount.value), 1, available.length);
   const doShuffle = !!toggleShuffle.checked;
   const timerSec = Number(selectTimer.value) || 0;
 
-  const bank = doShuffle ? shuffle([...QUESTION_BANK]) : [...QUESTION_BANK];
+  const bank = doShuffle ? shuffle([...available]) : [...available];
   const picked = bank.slice(0, count);
 
   quiz.questions = picked;
