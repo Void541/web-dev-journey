@@ -1,3 +1,8 @@
+![HTML](https://img.shields.io/badge/HTML-5-orange)
+![CSS](https://img.shields.io/badge/CSS-3-blue)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow)
+![Live](https://img.shields.io/badge/Live-GitHub%20Pages-green)
+
 # Web Dev Journey (Void)
 
 Mein Lern- und Projekt-Portfolio für Webentwicklung (HTML, CSS, JavaScript).  
