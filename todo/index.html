@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do App – Void</title>
+  <meta name="description" content="Eine To-Do App mit Filtern und LocalStorage (HTML, CSS, JavaScript)." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="../index.html">← Zurück</a>
+
+      <h1 class="title">To-Do App</h1>
+
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <form id="todoForm" class="todo-form" autocomplete="off">
+        <label class="sr-only" for="todoInput">Neue Aufgabe</label>
+        <input id="todoInput" type="text" placeholder="Neue Aufgabe eingeben…" maxlength="80" />
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+
+      <div class="toolbar">
+        <div class="filters" role="tablist" aria-label="Filter">
+          <button class="chip is-active" type="button" data-filter="all">Alle</button>
+          <button class="chip" type="button" data-filter="active">Aktiv</button>
+          <button class="chip" type="button" data-filter="done">Erledigt</button>
+        </div>
+
+        <button class="btn danger" id="clearDone" type="button">Done löschen</button>
+      </div>
+
+      <ul id="todoList" class="todo-list" aria-label="To-Do Liste"></ul>
+
+      <footer class="stats">
+        <span id="countLeft">0 offen</span>
+        <span class="muted">•</span>
+        <span id="countTotal">0 gesamt</span>
+      </footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
