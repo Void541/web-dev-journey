@@ -138,21 +138,31 @@ select{
 }
 .answer{
   text-align:left;
-  padding:12px;
+  padding:14px 16px;
   border-radius:14px;
   border:1px solid var(--border);
   background:var(--surface2);
   cursor:pointer;
   transition:.15s ease;
   font-weight:800;
+  font-size:1rem;
+  color:var(--text); /* <-- wichtig */
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25); /* leichter Schatten */
 }
-.answer:hover{border-color:var(--strong)}
+
+.answer:hover{
+  border-color:var(--strong);
+  background:rgba(88,166,255,0.08); /* leichtes blau */
+  transform:translateY(-2px);
+}
+
 .answer.correct{
   border-color:var(--good);
-  box-shadow:0 0 0 3px rgba(22,163,74,.18);
+  background:rgba(22,163,74,0.15);
 }
+
 .answer.wrong{
   border-color:var(--bad);
-  box-shadow:0 0 0 3px rgba(239,68,68,.18);
+  background:rgba(239,68,68,0.15);
 }
 .answer.locked{pointer-events:none; opacity:.95}
