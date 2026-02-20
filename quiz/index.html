@@ -26,6 +26,68 @@
       </p>
 
       <div class="grid-2">
+        <div class="card" style="margin-top:14px;">
+        <h3>Fragen Editor (Custom)</h3>
+        <p class="muted">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
+
+        <form id="editorForm" class="editor" autocomplete="off">
+            <div class="editor-grid">
+            <label>
+                <span>Kategorie</span>
+                <select id="edCategory">
+                <option value="web">Web</option>
+                <option value="js">JavaScript</option>
+                <option value="games">Games</option>
+                <option value="general" selected>Allgemein</option>
+                </select>
+            </label>
+
+            <label class="span-2">
+                <span>Frage</span>
+                <input id="edQuestion" type="text" placeholder="Deine Frage…" maxlength="140" />
+            </label>
+
+            <label>
+                <span>Antwort A</span>
+                <input id="edA0" type="text" placeholder="Antwort A" maxlength="80" />
+            </label>
+            <label>
+                <span>Antwort B</span>
+                <input id="edA1" type="text" placeholder="Antwort B" maxlength="80" />
+            </label>
+            <label>
+                <span>Antwort C</span>
+                <input id="edA2" type="text" placeholder="Antwort C" maxlength="80" />
+            </label>
+            <label>
+                <span>Antwort D</span>
+                <input id="edA3" type="text" placeholder="Antwort D" maxlength="80" />
+            </label>
+
+            <label>
+                <span>Richtig</span>
+                <select id="edCorrect">
+                <option value="0">A</option>
+                <option value="1">B</option>
+                <option value="2">C</option>
+                <option value="3">D</option>
+                </select>
+            </label>
+
+            <div class="editor-actions span-2">
+                <button class="btn primary" type="submit">Frage speichern</button>
+                <button class="btn danger" id="clearCustom" type="button">Custom löschen</button>
+                <span class="muted" id="editorMsg"></span>
+            </div>
+            </div>
+        </form>
+
+        <details style="margin-top:12px;">
+            <summary class="muted" style="cursor:pointer;">Custom Fragen anzeigen</summary>
+            <ul id="customList" class="custom-list"></ul>
+        </details>
+        </div>
+        
         <div class="card">
           <h3>Einstellungen</h3>
 

@@ -193,4 +193,68 @@ select{
     from { transform: scale(0.995); }
     to   { transform: scale(1); }
   }
+  
+}.editor-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+  margin-top:10px;
+}
+
+.editor-grid label span{
+  display:block;
+  font-weight:800;
+  font-size:0.85rem;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.editor-grid input, .editor-grid select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+}
+
+.editor-grid input:focus, .editor-grid select:focus{
+  border-color:var(--strong);
+}
+
+.span-2{ grid-column: span 2; }
+
+.editor-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.custom-list{
+  list-style:none;
+  padding:0;
+  margin:10px 0 0;
+  display:grid;
+  gap:8px;
+}
+
+.custom-item{
+  border:1px solid var(--border);
+  background:var(--surface2);
+  border-radius:12px;
+  padding:10px 12px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.custom-item button{
+  white-space:nowrap;
+}
+
+@media (max-width: 720px){
+  .editor-grid{ grid-template-columns:1fr; }
+  .span-2{ grid-column: auto; }
 }

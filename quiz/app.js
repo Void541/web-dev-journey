@@ -28,11 +28,24 @@ function beep(type = "good") {
 
 const THEME_KEY = "theme";
 const HS_KEY = "void_quiz_highscore_v1";
+const CUSTOM_KEY = "void_quiz_custom_questions_v1";
 
 
 // ---- DOM ----
 const root = document.documentElement;
 const themeToggle = document.getElementById("themeToggle");
+
+const editorForm = document.getElementById("editorForm");
+const edCategory = document.getElementById("edCategory");
+const edQuestion = document.getElementById("edQuestion");
+const edA0 = document.getElementById("edA0");
+const edA1 = document.getElementById("edA1");
+const edA2 = document.getElementById("edA2");
+const edA3 = document.getElementById("edA3");
+const edCorrect = document.getElementById("edCorrect");
+const editorMsg = document.getElementById("editorMsg");
+const clearCustomBtn = document.getElementById("clearCustom");
+const customList = document.getElementById("customList");
 
 const selectCategory = document.getElementById("selectCategory");
 const screenStart = document.getElementById("screenStart");
@@ -98,6 +111,108 @@ resetHighscoreBtn.addEventListener("click", () => {
   renderHighscore();
 });
 
+if (editorForm) {
+  renderCustomList();
+
+  editorForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const qText = (edQuestion.value || "").trim();
+    const answers = [
+      (edA0.value || "").trim(),
+      (edA1.value || "").trim(),
+      (edA2.value || "").trim(),
+      (edA3.value || "").trim(),
+    ];
+    const correct = Number(edCorrect.value);
+    const category = edCategory.value || "general";
+
+    // Validation
+    if (!qText || answers.some(a => !a) || !(correct >= 0 && correct <= 3)) {
+      setEditorMsg("Bitte alles ausfüllen (Frage + 4 Antworten).", true);
+      return;
+    }
+
+    const newQ = { category, q: qText, a: answers, correct };
+
+    const custom = loadCustomQuestions();
+    custom.unshift(newQ);
+    saveCustomQuestions(custom);
+
+    // Reset inputs
+    edQuestion.value = "";
+    edA0.value = ""; edA1.value = ""; edA2.value = ""; edA3.value = "";
+    edCorrect.value = "0";
+    edCategory.value = category;
+
+    setEditorMsg("Gespeichert ✅", false);
+    renderCustomList();
+    renderHighscore(); // optional
+  });
+
+  clearCustomBtn.addEventListener("click", () => {
+    localStorage.removeItem(CUSTOM_KEY);
+    setEditorMsg("Custom Fragen gelöscht.", false);
+    renderCustomList();
+  });
+}
+
+function setEditorMsg(text, isError) {
+  if (!editorMsg) return;
+  editorMsg.textContent = text;
+  editorMsg.style.color = isError ? "var(--bad)" : "var(--muted)";
+  setTimeout(() => {
+    if (editorMsg.textContent === text) editorMsg.textContent = "";
+  }, 2500);
+}
+
+function renderCustomList() {
+  if (!customList) return;
+  const custom = loadCustomQuestions();
+
+  customList.innerHTML = "";
+  if (custom.length === 0) {
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "Noch keine Custom Fragen gespeichert.";
+    customList.appendChild(li);
+    return;
+  }
+
+  custom.forEach((item, idx) => {
+    const li = document.createElement("li");
+    li.className = "custom-item";
+
+    const left = document.createElement("div");
+    left.innerHTML = `<strong>[${item.category || "general"}]</strong> ${escapeHtml(item.q)}`;
+
+    const del = document.createElement("button");
+    del.className = "btn danger";
+    del.type = "button";
+    del.textContent = "Löschen";
+    del.addEventListener("click", () => {
+      const list = loadCustomQuestions();
+      list.splice(idx, 1);
+      saveCustomQuestions(list);
+      renderCustomList();
+      setEditorMsg("Gelöscht.", false);
+    });
+
+    li.appendChild(left);
+    li.appendChild(del);
+    customList.appendChild(li);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 // ---- Theme ----
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -146,11 +261,33 @@ async function loadQuestionBank() {
   }
 }
 
+function loadCustomQuestions() {
+  try {
+    const raw = localStorage.getItem(CUSTOM_KEY);
+    const data = raw ? JSON.parse(raw) : [];
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomQuestions(list) {
+  localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+}
+
+function getMergedBank() {
+  const custom = loadCustomQuestions();
+  // custom zuerst, damit deine eigenen Fragen Priorität haben
+  return [...custom, ...QUESTION_BANK];
+}
+
 function getBankForCategory() {
   const cat = selectCategory?.value || "all";
-  if (cat === "all") return [...QUESTION_BANK];
-  return QUESTION_BANK.filter(q => (q.category || "general") === cat);
+  const merged = getMergedBank();
+  if (cat === "all") return [...merged];
+  return merged.filter(q => (q.category || "general") === cat);
 }
+
 
 // ---- Quiz flow ----
 function startQuiz() {
