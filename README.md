@@ -19,7 +19,7 @@ Ein kleines Portfolio mit Lernprojekten in **HTML / CSS / JavaScript** – live 
 - Dark/Light Theme Toggle (localStorage)
 - Navigation + Smooth Scrolling
 
-<img src="assets/images/portfolio.png" width="850" alt="Portfolio Screenshot">
+<img src="assets/images/screenshots/portfolio.png" width="850" alt="Portfolio Screenshot">
 
 ### 2) To-Do App (Projekt 2)
 **Features**
@@ -29,7 +29,7 @@ Ein kleines Portfolio mit Lernprojekten in **HTML / CSS / JavaScript** – live 
 - Speicherung via localStorage
 - Dark/Light Theme Toggle
 
-<img src="screenshots/todo.png" width="850" alt="To-Do Screenshot">
+<img src="assets/images/screenshots//todo.png" width="850" alt="To-Do Screenshot">
 
 3) Quiz App (Projekt 3)
 
@@ -51,8 +51,8 @@ Question Editor im Browser (Custom Fragen)
 
 Fragen aus externer JSON-Datei geladen
 
-<img src="screenshots/quiz.png" width="850" alt="Quiz Screenshot">
-<img src="screenshots/quiz_fragen.png" width="850" alt="Quiz Screenshot">
+<img src="assets/images/screenshots//quiz.png" width="850" alt="Quiz Screenshot">
+<img src="assets/images/screenshots//quiz_fragen.png" width="850" alt="Quiz Screenshot">
 
 📦 Erweiterungen
 
