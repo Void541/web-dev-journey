@@ -19,7 +19,7 @@ Ein kleines Portfolio mit Lernprojekten in **HTML / CSS / JavaScript** – live 
 - Dark/Light Theme Toggle (localStorage)
 - Navigation + Smooth Scrolling
 
-<img src="screenshots/portfolio.png" width="850" alt="Portfolio Screenshot">
+<img src="assets/images/portfolio.png" width="850" alt="Portfolio Screenshot">
 
 ### 2) To-Do App (Projekt 2)
 **Features**
@@ -53,6 +53,7 @@ Fragen aus externer JSON-Datei geladen
 
 <img src="screenshots/quiz.png" width="850" alt="Quiz Screenshot">
 <img src="screenshots/quiz_fragen.png" width="850" alt="Quiz Screenshot">
+
 📦 Erweiterungen
 
 Fragen werden aus questions.json geladen
