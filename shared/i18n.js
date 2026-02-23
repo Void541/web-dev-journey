@@ -39,6 +39,7 @@ const translations = {
     meta_rhythm: "Daily practice: 30 minutes",
     meta_goal: "Career goal: Junior Developer / Working Student",
     btn_projects: "View Projects",
+    about_title: "About Me",
     projects_title: "Projects",
     contact_title: "Contact",
 
