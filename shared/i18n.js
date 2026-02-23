@@ -3,8 +3,15 @@ const LANG_KEY = "lang";
 
 const translations = {
   de: {
+
     hero_title: "Web Dev Journey",
     hero_subtitle: "Ich baue gerade mein Fundament in HTML, CSS & JavaScript – Schritt für Schritt, jeden Tag.",
+    btn_projects: "Projekte ansehen",
+    btn_about: "Mehr über mich",
+
+    meta_focus: "Fokus: Webentwicklung",
+    meta_rhythm: "Rhythmus: 30 Min/Tag",
+    meta_goal: "Ziel: Junior / Werkstudent",
     about_title: "Über mich",
     projects_title: "Projekte",
     contact_title: "Kontakt",
@@ -18,13 +25,20 @@ const translations = {
 
     btn_code: "Code",
     btn_live: "Live",
+    contact_text: "Wenn du Feedback hast oder sehen möchtest, wie ich mich entwickle, schau auf GitHub vorbei.",
     btn_github: "GitHub",
     btn_top: "Nach oben",
   },
   en: {
     hero_title: "Web Dev Journey",
     hero_subtitle: "I’m building my foundation in HTML, CSS & JavaScript — step by step, every day.",
-    about_title: "About",
+    btn_projects: "View Projects",
+    btn_about: "Learn More",
+
+    meta_focus: "Focus: Web Development",
+    meta_rhythm: "Daily practice: 30 minutes",
+    meta_goal: "Career goal: Junior Developer / Working Student",
+    btn_projects: "View Projects",
     projects_title: "Projects",
     contact_title: "Contact",
 
@@ -37,6 +51,7 @@ const translations = {
 
     btn_code: "Code",
     btn_live: "Live",
+    contact_text: "If you have feedback or want to see how I'm progressing, check out my GitHub.",
     btn_github: "GitHub",
     btn_top: "Back to top",
   },

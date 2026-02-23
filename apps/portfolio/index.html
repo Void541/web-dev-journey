@@ -18,9 +18,9 @@
     </button>
 
     <nav class="nav" id="siteNav">
-      <a href="#projects">Projekte</a>
-      <a href="#contact">Kontakt</a>
-      <a href="#about">Über mich</a>
+      <a data-i18n="projects_title" href="#projects">Projekte</a>
+      <a data-i18n="contact_title" href="#contact">Kontakt</a>
+      <a data-i18n="about_title" href="#about">Über mich</a>
     </nav>
 
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
@@ -41,22 +41,25 @@
           Ich baue gerade mein Fundament in HTML, CSS & JavaScript – Schritt für Schritt, jeden Tag.
         </p>
 
-        <div class="hero-actions">
-          <a class="btn primary" href="#projects">Projekte ansehen</a>
-          <a class="btn" href="#about">Mehr über mich</a>
-        </div>
+        <button class="btn primary" data-i18n="btn_projects">
+          Projekte ansehen
+        </button>
 
-        <ul class="quick-facts">
-          <li><strong>Fokus:</strong> Webentwicklung</li>
-          <li><strong>Rhythmus:</strong> 30 Min/Tag</li>
-          <li><strong>Ziel:</strong> Junior / Werkstudent</li>
+        <a href="#about" class="btn" data-i18n="btn_about">
+           Mehr über mich
+        </a>
+
+        <ul class="hero-meta">
+          <li data-i18n="meta_focus">Fokus: Webentwicklung</li>
+          <li data-i18n="meta_rhythm">Rhythmus: 30 Min/Tag</li>
+          <li data-i18n="meta_goal">Ziel: Junior / Werkstudent</li>
         </ul>
       </div>
     </section>
 
     <section id="about" class="section">
       <div class="container">
-        <h2 data-i18n="section-title">Über mich</h2>
+        <h2 data-i18n="about_title">Über mich</h2>
         <p data-i18n="hero_subtitle">
           Ich heiße Void und arbeite daran, Webentwicklung professionell zu lernen.
           Mein Plan ist: sauberer Code, kleine tägliche Fortschritte und echte Projekte.
@@ -143,7 +146,7 @@
 
         <div class="hero-actions">
           <a class="btn primary" href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a class="btn" href="#top">Nach oben</a>
+          <a data-i18n="btn_top" href="#top">Nach oben</a>
         </div>
       </div>
     </section>
