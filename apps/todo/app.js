@@ -1,5 +1,7 @@
 "use strict";
 
+import { getJSON, setJSON } from "../../shared/storage.js";
+
 const STORAGE_KEY = "void_todos_v1";
 const THEME_KEY = "theme";
 
@@ -44,20 +46,13 @@ function setTheme(theme) {
 
 /* ---------- Todos: state ---------- */
 function loadTodos() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    return parsed;
-  } catch {
-    return [];
-  }
+  const parsed = getJSON(STORAGE_KEY, []);
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 function saveTodos() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+  setJSON(STORAGE_KEY, todos);
 }
-
 function addTodo(text) {
   const trimmed = text.trim();
   if (!trimmed) return;
