@@ -1,4 +1,6 @@
 "use strict";
+import { getJSON, setJSON, remove } from "../../shared/storage.js";
+
 let audioCtx = null;
 let QUESTION_BANK = [];
 
@@ -107,7 +109,7 @@ nextBtn.addEventListener("click", () => {
 });
 
 resetHighscoreBtn.addEventListener("click", () => {
-  localStorage.removeItem(HS_KEY);
+  remove(HS_KEY);
   renderHighscore();
 });
 
@@ -151,7 +153,7 @@ if (editorForm) {
   });
 
   clearCustomBtn.addEventListener("click", () => {
-    localStorage.removeItem(CUSTOM_KEY);
+    remove(CUSTOM_KEY);
     setEditorMsg("Custom Fragen gelöscht.", false);
     renderCustomList();
   });
@@ -215,7 +217,7 @@ function escapeHtml(str) {
 
 // ---- Theme ----
 function initTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
+  const saved = getJSON("THEME_KEY");
   const prefersLight = window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: light)").matches;
 
@@ -229,7 +231,7 @@ function initTheme() {
 
 function setTheme(theme) {
   root.setAttribute("data-theme", theme);
-  localStorage.setItem(THEME_KEY, theme);
+  setJSON("THEME_KEY", theme);
   themeToggle.textContent = theme === "light" ? "☀️" : "🌙";
 }
 
@@ -262,17 +264,11 @@ async function loadQuestionBank() {
 }
 
 function loadCustomQuestions() {
-  try {
-    const raw = localStorage.getItem(CUSTOM_KEY);
-    const data = raw ? JSON.parse(raw) : [];
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
+  return getJSON(CUSTOM_KEY, []);
 }
 
 function saveCustomQuestions(list) {
-  localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+  setJSON(CUSTOM_KEY, list);
 }
 
 function getMergedBank() {
@@ -284,6 +280,7 @@ function getMergedBank() {
 function getBankForCategory() {
   const cat = selectCategory?.value || "all";
   const merged = getMergedBank();
+
   if (cat === "all") return [...merged];
   return merged.filter(q => (q.category || "general") === cat);
 }
@@ -451,18 +448,13 @@ function renderHighscore() {
 }
 
 function getHighscore() {
-  try {
-    const raw = localStorage.getItem(HS_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  return getJSON(HS_KEY, null);
 }
 
 function updateHighscore(score, total) {
   const hs = getHighscore();
   if (!hs || hs.total !== total || score > hs.bestScore) {
-    localStorage.setItem(HS_KEY, JSON.stringify({ bestScore: score, total }));
+    setJSON(HS_KEY, { bestScore: score, total });
   }
 }
 
