@@ -18,9 +18,9 @@
     </button>
 
     <nav class="nav" id="siteNav">
-      <a data-i18n="projects_title" href="#projects">Projekte</a>
-      <a data-i18n="contact_title" href="#contact">Kontakt</a>
-      <a data-i18n="about_title" href="#about">Über mich</a>
+      <a href="#projects" data-i18n="nav_projects">Projekte</a>
+      <a href="#contact" data-i18n="nav_contact">Kontakt</a>
+      <a href="#about" data-i18n="nav_about">Über mich</a>
     </nav>
 
     <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
@@ -59,7 +59,7 @@
 
     <section id="about" class="section">
       <div class="container">
-        <h2 data-i18n="about_title">Über mich</h2>
+        <h2 class="section-title" data-i18n="about_title">Über mich</h2>
         <p data-i18n="hero_subtitle">
           Ich heiße Void und arbeite daran, Webentwicklung professionell zu lernen.
           Mein Plan ist: sauberer Code, kleine tägliche Fortschritte und echte Projekte.
@@ -89,11 +89,11 @@
 
     <section id="projects" class="section">
       <div class="container">
-        <h2 class="section-title">Projects</h2>
+        <h2 class="section-title" data-i18n="projects_title">Projects</h2>
 
         <div class="grid">
           <article class="card">
-            <h3>Projekt 1: Mini Portfolio</h3>
+            <h3 data-i18n="project1_title">Projekt 1: Mini Portfolio</h3>
             <p data-i18n="project1_desc">Diese Seite. Fokus: Struktur, Layout, GitHub Pages.</p>
             <div class="tags">
               <span class="tag">HTML</span>
@@ -101,34 +101,34 @@
               <span class="tag">GitHub Pages</span>
             </div>
             <div class="card-actions">
-              <a class="btn small" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">Code</a>
+              <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">Code</a>
               <a class="btn small" href="#" target="_blank" rel="noopener noreferrer">Live</a>
           </div>
 
           </article>
 
           <article class="card">
-            <h3>Projekt 2: To-Do App</h3>
+            <h3 data-i18n="project2_title">Projekt 2: To-Do App</h3>
             <p data-i18n="project2_desc">Demnächst: Interaktiv mit JavaScript (DOM + Events).</p>
             <div class="tags">
               <span class="tag">JavaScript</span>
               <span class="tag">DOM</span>
             </div>
             <div class="card-actions">
-              <a class="btn small disabled" href="https://github.com/Void541/web-dev-journey/todo" target="_blank" rel="noopener noreferrer">Code</a>
-              <a class="btn small" href="../todo/">Live</a>
+              <a class="btn small disabled" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/todo" target="_blank" rel="noopener noreferrer">Code</a>
+              <a class="btn small" data-i18n="btn_live" href="../todo/">Live</a>
               </div>
           </article>
 
           <article class="card">
-            <h3>Projekt 3: Quiz</h3>
+            <h3 data-i18n="project3_title">Projekt 3: Quiz</h3>
             <p data-i18n="project3_desc">Ein kleines Quiz mit Fragen, Score und Reset.</p>
             <div class="tags">
               <span class="tag">JavaScript</span>
               <span class="tag">UI</span>              
             </div>
                <div class="card-actions">
-              <a class="btn small" href="https://github.com/Void541/web-dev-journey/quiz" target="_blank" rel="noopener noreferrer">Code</a>
+              <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/quiz" target="_blank" rel="noopener noreferrer">Code</a>
               <a class="btn small" href="../quiz/">Live</a>
           </div>
           </article>
@@ -138,7 +138,7 @@
 
     <section id="contact" class="section">
       <div class="container">
-        <h2 data-i18n="contact_title">Kontakt</h2>
+        <h2 class="section-title" data-i18n="contact_title">Kontakt</h2>
         <p data-i18n="contact_text">
           Wenn du Feedback hast oder du sehen willst, wie ich mich entwickle:
           Schau auf GitHub vorbei.
@@ -154,8 +154,8 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p>© <span id="year"></span> Void – Web Dev Journey</p>
-      <p class="muted">Built with HTML & CSS • Hosted on GitHub Pages</p>
+      <p data-i18n="footer_left">© 2026 Void — Web Dev Journey</p>
+      <p data-i18n="footer_right">Built with HTML & CSS • Hosted on GitHub Pages</p>
     </div>
   </footer>
 

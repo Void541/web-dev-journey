@@ -12,6 +12,10 @@ const translations = {
     meta_focus: "Fokus: Webentwicklung",
     meta_rhythm: "Rhythmus: 30 Min/Tag",
     meta_goal: "Ziel: Junior / Werkstudent",
+    nav_projects: "Projekte",
+    nav_contact: "Kontakt",
+    nav_about: "Über mich",
+
     about_title: "Über mich",
     projects_title: "Projekte",
     contact_title: "Kontakt",
@@ -28,6 +32,8 @@ const translations = {
     contact_text: "Wenn du Feedback hast oder sehen möchtest, wie ich mich entwickle, schau auf GitHub vorbei.",
     btn_github: "GitHub",
     btn_top: "Nach oben",
+    footer_left: "© 2026 Void — Web Dev Journey",
+    footer_right: "Gebaut mit HTML & CSS • Gehostet auf GitHub Pages",
   },
   en: {
     hero_title: "Web Dev Journey",
@@ -39,7 +45,11 @@ const translations = {
     meta_rhythm: "Daily practice: 30 minutes",
     meta_goal: "Career goal: Junior Developer / Working Student",
     btn_projects: "View Projects",
-    about_title: "About Me",
+    nav_projects: "Projects",
+    nav_contact: "Contact",
+    nav_about: "About",
+
+    about_title: "About",
     projects_title: "Projects",
     contact_title: "Contact",
 
@@ -55,6 +65,8 @@ const translations = {
     contact_text: "If you have feedback or want to see how I'm progressing, check out my GitHub.",
     btn_github: "GitHub",
     btn_top: "Back to top",
+    footer_left: "© 2026 Void — Web Dev Journey",
+    footer_right: "Built with HTML & CSS • Hosted on GitHub Pages",
   },
 };
 
