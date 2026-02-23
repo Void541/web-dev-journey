@@ -1,5 +1,6 @@
 "use strict";
 import { getJSON, setJSON, remove } from "../../shared/storage.js";
+import { clamp, shuffle, escapeHtml } from "../../shared/utils.js";
 
 let audioCtx = null;
 let QUESTION_BANK = [];
@@ -206,14 +207,6 @@ function renderCustomList() {
   });
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 // ---- Theme ----
 function initTheme() {
@@ -459,17 +452,6 @@ function updateHighscore(score, total) {
 }
 
 // ---- Utils ----
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function clamp(n, min, max) {
-  return Math.max(min, Math.min(max, n));
-}
 
 document.addEventListener("keydown", (e) => {
   if (screenQuiz.classList.contains("hidden")) return;
