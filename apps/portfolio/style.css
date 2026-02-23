@@ -1,5 +1,11 @@
 /* Reset */
 :root {
+
+  /* existing vars ... */
+  --hud-line: rgba(88,166,255,0.18);
+  --hud-glow: rgba(88,166,255,0.22);
+  --hud-grid: rgba(255,255,255,0.04);
+
   --bg: #0f1117;
   --text: #e6e6e6;
   --muted: #aab4bf;
@@ -56,10 +62,37 @@ body {
   color: var(--text);
 }
 
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(to right, var(--hud-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--hud-grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.6;
+  z-index:0;
+  opacity: 0.45;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background: radial-gradient(circle at 30% 10%, var(--hud-glow), transparent 55%);
+  opacity: 0.35;
+  z-index:0;
+}
+
+.site-header, main, footer { position: relative; z-index: 1; }
+
 /* Container */
 .container {
-  width: min(1000px, 92%);
+  max-width: 1100px;
   margin: 0 auto;
+  padding: 0 24px;
 }
 
 /* Header */
@@ -190,11 +223,22 @@ body {
 .hero {
   padding: 70px 0 40px;
   border-bottom: 1px solid #1f2933;
+  position: relative;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background: radial-gradient(circle at 20% 20%, var(--hud-glow), transparent 55%);
+  opacity: 0.35;
 }
 
 .hero h1 {
   margin: 0 0 12px;
   font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: 0.3px;
 }
 
 .subtitle {
@@ -216,15 +260,25 @@ body {
   display: inline-block;
   padding: 10px 16px;
   border-radius: 10px;
-  border: 1px solid var(--bg);
+  border: 1px solid transparent;
   text-decoration: none;
   color: var(--text);
   font-weight: 700;
-  transition: 0.2s ease;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.btn.icon{
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--hud-line);
+  background: rgba(255,255,255,0.03);
 }
 
 .btn:hover {
   background: var(--btn-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+  border-color: var(--hud-line);
 }
 
 .btn.primary {
@@ -238,15 +292,44 @@ body {
 
 /* Sections */
 .section {
-  padding: 60px 0;
+  margin-top: 60px;
+  padding: 60px 16px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .section h2 {
   margin-top: 0;
 }
 
+.section-title{
+  position: relative;
+  padding-left: 12px;
+}
+
+.section-title::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 14px;
+  background: var(--hud-line);
+  border-radius: 2px;
+}
+
+.section-title::after{
+  content:"";
+  height: 1px;
+  opacity: 0.9;
+  background: linear-gradient(90deg, var(--hud-line), transparent 70%);
+  flex:1;
+}
+
 /* Grid */
 .grid {
+  width:100%;
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -254,14 +337,54 @@ body {
 }
 
 /* Cards */
-.card {
-  background: var(--surface); 
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px;
-  transition: 0.2s ease;
-  display: flex;
-  flex-direction: column;
+.card{
+  position:relative;
+  overflow:hidden;
+  padding: 16px;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.card h3{
+  position: relative;
+  padding-left: 6px;
+  transition: color 160ms ease;
+}
+
+.card:hover h3{
+  color: var(--accent, #58a6ff);
+}
+
+.card h3::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform: translateY(-50%);
+  width:6px;
+  height:14px;
+  background: var(--hud-line);
+  border-radius:2px;
+  opacity:0.9;
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:1px solid var(--hud-line);
+  border-radius: inherit;
+  pointer-events:none;
+  opacity:0.55;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  top:-40px; right:-40px;
+  width:120px; height:120px;
+  background: radial-gradient(circle, var(--hud-glow), transparent 60%);
+  opacity:0.35;
+  pointer-events:none;
 }
 .card-actions {
   margin-top: auto;
@@ -272,7 +395,15 @@ body {
 .card:hover {
   transform: translateY(-4px);
   border-color: var(--border-strong);
-  box-shadow: 0 10px 28px rgba(0, 0, 0,0.35);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.card:hover::before{
+  opacity: 0.9;
+}
+
+.card:hover::after{
+  opacity: 0.55;
 }
 
 .badge {
