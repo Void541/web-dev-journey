@@ -154,53 +154,13 @@
   </footer>
 
   
-  <script>
-  // Jahr (falls du das schon hast)
+<script type="module">
+  import { initTheme } from "../../shared/theme.js";
+  initTheme();
+
+  // optional: Jahr im Footer
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-  const root = document.documentElement;
-  const btn = document.getElementById("themeToggle");
-
-  function setTheme(theme) {
-    root.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-    if (btn) btn.textContent = theme === "light" ? "☀️" : "🌙";
-  }
-
-  // 1) gespeichertes Theme?
-  const saved = localStorage.getItem("theme");
-
-  // 2) sonst System-Theme nehmen
-  const prefersLight = window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: light)").matches;
-
-  setTheme(saved || (prefersLight ? "light" : "dark"));
-
-  // Toggle
-  if (btn) {
-    btn.addEventListener("click", () => {
-      const current = root.getAttribute("data-theme") || "dark";
-      setTheme(current === "dark" ? "light" : "dark");
-    }); const nav = document.getElementById("siteNav");
-  const navBtn = document.getElementById("navToggle");
-
-  if (nav && navBtn) {
-    navBtn.addEventListener("click", () => {
-      const open = nav.classList.toggle("is-open");
-      navBtn.setAttribute("aria-expanded", open ? "true" : "false");
-      navBtn.textContent = open ? "✕" : "☰";
-    });
-
-    // Menü schließen, wenn man einen Link klickt
-    nav.querySelectorAll("a").forEach(a => {
-      a.addEventListener("click", () => {
-        nav.classList.remove("is-open");
-        navBtn.setAttribute("aria-expanded", "false");
-        navBtn.textContent = "☰";
-      });
-    });
-  }}
 </script>
 
   <a href="#top" class="back-to-top" aria-label="Nach oben">↑</a>
