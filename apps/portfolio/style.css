@@ -29,7 +29,16 @@
 }
 
 [data-theme="light"] {
+
   --bg: #f7f7f8;
+  --bg-main: #f3f5f8;
+  --bg-panel: #ffffff;
+  --text-primary: #1c1f26;
+  --text-secondary: #4b5563;
+
+  --hud-line: rgba(30, 41, 59, 0.12);
+  --hud-glow: rgba(30, 41, 59, 0.06);
+  --hud-grid: rgba(30, 41, 59, 0.045);
   --text: #111;
   --muted: #444;
 
@@ -49,7 +58,12 @@
 
   --primary: #16a34a;
   --primary-hover: #15803d;
-}
+
+  .card{
+  background: var(--bg-panel);
+  border: 1px solid rgba(30,41,59,0.08);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+}}
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }

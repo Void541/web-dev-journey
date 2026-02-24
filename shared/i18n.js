@@ -16,7 +16,23 @@ const translations = {
     nav_contact: "Kontakt",
     nav_about: "Über mich",
 
-    about_title: "Über mich",
+    about_text:"Ich entwickle strukturiert mein Fundament in moderner Webentwicklung mit dem langfristigen Ziel, eigene Software- und Spieleprojekte umzusetzen. Mein Fokus liegt auf sauberer Architektur, modularen Systemen und nachhaltigem Code – nicht nur auf funktionierenden Oberflächen. Aktuell arbeite ich an kleinen, eigenständigen Projekten, um Systemdenken, State-Management und saubere Code-Strukturen zu vertiefen. Langfristig möchte ich komplexere Anwendungen und spielähnliche Systeme mit Backend-Anbindung entwickeln.",
+
+    skills_title: "Skills (aktuell)",
+    skill_1: "HTML5 & semantische Struktur",
+    skill_2: "CSS (Layout, Flexbox, Grid, Responsive Design)",
+    skill_3: "JavaScript (DOM, State, Events, localStorage)",
+    skill_4: "Modulare Architektur & Code-Organisation",
+    skill_5: "Git & GitHub Workflow",
+    skill_6: "Grundlagen API-Integration",
+
+    roadmap_title: "Roadmap",
+    roadmap_1: "Frontend-Architektur & UI-Systeme",
+    roadmap_2: "API-Integration & Backend-Grundlagen",
+    roadmap_3: "Datenpersistenz & Serverkommunikation",
+    roadmap_4: "Spielähnliche Systemlogiken (Score, State, Game Loops)",
+    roadmap_5: "Fullstack-Projekte mit eigener Serverlogik",
+
     projects_title: "Projekte",
     contact_title: "Kontakt",
 
@@ -49,7 +65,23 @@ const translations = {
     nav_contact: "Contact",
     nav_about: "About",
 
-    about_title: "About",
+    about_text:"I’m systematically building my foundation in modern web development with the long-term goal of creating my own software and game projects. My focus is on clean architecture, modular systems, and maintainable code — not just functional interfaces. I’m currently developing small standalone projects to strengthen my understanding of system design, state management, and structured code. Long-term, I aim to build more complex applications and game-like systems with backend integration.",
+
+    skills_title: "Skills (current)",
+    skill_1: "HTML5 & semantic structure",
+    skill_2: "CSS (layout, Flexbox, Grid, responsive design)",
+    skill_3: "JavaScript (DOM, state, events, localStorage)",
+    skill_4: "Modular architecture & code organization",
+    skill_5: "Git & GitHub workflow",
+    skill_6: "API integration fundamentals",
+
+    roadmap_title: "Roadmap",
+    roadmap_1: "Frontend architecture & UI systems",
+    roadmap_2: "API integration & backend fundamentals",
+    roadmap_3: "Data persistence & server communication",
+    roadmap_4: "Game-like system logic (score, state, game loops)",
+    roadmap_5: "Fullstack projects with custom server logic",
+    
     projects_title: "Projects",
     contact_title: "Contact",
 
