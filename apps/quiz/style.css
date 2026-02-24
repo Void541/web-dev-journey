@@ -6,6 +6,14 @@
   --primary:#238636; --primaryH:#2ea043;
   --danger:#b91c1c; --dangerH:#dc2626;
   --good:#16a34a; --bad:#ef4444;
+  --ctrl-bg: rgba(255,255,255,0.04);
+  --ctrl-text: var(--text-primary);
+  --ctrl-border: var(--hud-line);
+  --ctrl-focus: rgba(255,255,255,0.35);
+  --ctrl-ring: rgba(255,255,255,0.08);
+  --ctrl-option-bg: #111827;
+  --ctrl-option-text: #e5e7eb;
+  --ctrl-arrow: rgba(255,255,255,0.65);
 }
 
 [data-theme="light"]{
@@ -16,6 +24,14 @@
   --primary:#16a34a; --primaryH:#15803d;
   --danger:#b91c1c; --dangerH:#dc2626;
   --good:#16a34a; --bad:#dc2626;
+  --ctrl-bg: rgba(0,0,0,0.03);
+  --ctrl-text: #0f172a;
+  --ctrl-border: rgba(15, 23, 42, 0.18);
+  --ctrl-focus: rgba(15, 23, 42, 0.35);
+  --ctrl-ring: rgba(15, 23, 42, 0.10);
+  --ctrl-option-bg: #ffffff;
+  --ctrl-option-text: #0f172a;
+  --ctrl-arrow: rgba(15, 23, 42, 0.65);
 }
 
 html[data-theme="light"] input,
@@ -306,4 +322,110 @@ button{
 @media (max-width: 720px){
   .editor-grid{ grid-template-columns:1fr; }
   .span-2{ grid-column: auto; }
+}
+
+/* ===== Answer buttons ===== */
+.answers{
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.answer{
+  width: 100%;
+  text-align: left;
+  padding: 14px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--hud-line);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.answer:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.20);
+}
+
+.answer:disabled{
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* chosen */
+.answer.is-selected{
+  border-color: rgba(255,255,255,0.35);
+  transform: scale(0.98);
+}
+
+/* correct / wrong */
+.answer.is-correct{
+  border-color: rgba(46, 204, 113, 0.65);
+  box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.18);
+  border-radius: #2ecc71;
+}
+
+.answer.is-wrong{
+  border-color: #e74c3e;
+  box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.18);
+}
+
+@keyframes pop {
+  0%{ transform: scale(0.98); }
+  100%{ transform: scale(1); }
+}
+.answer.is-correct,
+.answer.is-wrong{
+  animation: pop 120ms ease;
+}
+/* ===== Form controls (select / input) ===== */
+select,
+input[type="text"],
+input[type="number"]{
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ctrl-border);
+  background: var(--ctrl-bg);
+  color: var(--ctrl-text);
+  outline: none;
+}
+
+/* Select arrow (theme-aware) */
+select{
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 38px;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ctrl-arrow) 50%),
+    linear-gradient(135deg, var(--ctrl-arrow) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 12px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+
+select:focus,
+input:focus{
+  border-color: var(--ctrl-focus);
+  box-shadow: 0 0 0 3px var(--ctrl-ring);
+}
+
+/* Dropdown options (best effort) */
+option{
+  background: var(--ctrl-option-bg);
+  color: var(--ctrl-option-text);
+}
+
+/* Checkbox */
+input[type="checkbox"]{
+  width: 16px;
+  height: 16px;
+  accent-color: #22c55e;
+}
 }

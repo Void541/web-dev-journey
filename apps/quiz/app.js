@@ -1,6 +1,7 @@
 "use strict";
 import { getJSON, setJSON, remove } from "../../shared/storage.js";
 import { clamp, shuffle, escapeHtml } from "../../shared/utils.js";
+import { initI18n } from "../../shared/i18n.js";
 
 let audioCtx = null;
 let QUESTION_BANK = [];
@@ -333,13 +334,39 @@ function renderQuestion() {
 
 function selectAnswer(choiceIndex) {
   if (quiz.locked) return;
+
   quiz.selected = choiceIndex;
   quiz.locked = true;
 
   clearTimer();
 
+  const correctIndex = quiz.questions[quiz.currentIndex].correct;
+  const buttons = document.querySelectorAll(".answer");
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+
+    if (i === correctIndex) {
+      btn.classList.add("is-correct");
+    }
+
+    if (i === choiceIndex && choiceIndex !== correctIndex) {
+      btn.classList.add("is-wrong");
+    }
+
+    if (i === choiceIndex) {
+      btn.classList.add("is-selected");
+    }
+  });
+
+  if (choiceIndex === correctIndex) {
+    quiz.score++;
+    updateScore();
+  }
+
+  document.getElementById("nextBtn").disabled = false;
+
   const q = quiz.questions[quiz.index];
-  const correctIndex = q.correct;
 
   const answerButtons = [...answersEl.querySelectorAll(".answer")];
 answerButtons[choiceIndex].classList.add("selected"); // <-- neu
@@ -450,6 +477,28 @@ function updateHighscore(score, total) {
     setJSON(HS_KEY, { bestScore: score, total });
   }
 }
+
+// ---- i18n ----
+
+initI18n();
+
+function initLanguageToggle() {
+  const btn = document.getElementById("langToggle");
+  if (!btn) return;
+
+  // Initial UI
+  applyI18n(getLang());
+  btn.textContent = getLang() === "de" ? "EN" : "DE";
+
+  btn.addEventListener("click", () => {
+    const next = getLang() === "de" ? "en" : "de";
+    setLang(next);
+    applyI18n(next);
+    btn.textContent = next === "de" ? "EN" : "DE";
+  });
+}
+
+
 
 // ---- Utils ----
 

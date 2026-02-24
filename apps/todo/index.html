@@ -12,11 +12,13 @@
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="../portfolio/index.html">← Zurück</a>
+      <a class="brand" href="../portfolio/index.html" data-i18n="back_main">← Zurück</a>
 
       <h1 class="title">To-Do App</h1>
-
+      <div class="header-actions">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
+      <button id="langToggle" class="lang-toggle" type="button">DE</button>
+      </div>
     </div>
   </header>
 
@@ -24,24 +26,24 @@
     <section class="panel">
       <form id="todoForm" class="todo-form" autocomplete="off">
         <label class="sr-only" for="todoInput">Neue Aufgabe</label>
-        <input id="todoInput" type="text" placeholder="Neue Aufgabe eingeben…" maxlength="80" />
-        <button class="btn primary" type="submit">Add</button>
+        <input id="todoInput" data-i18n-placeholder="todo_platzholder" type="text" placeholder="Neue Aufgabe eingeben…" maxlength="80" />
+        <button class="btn primary" type="submit" data-i18n="todo_add">Add</button>
       </form>
 
       <div class="toolbar">
         <div class="filters" role="tablist" aria-label="Filter">
-          <button class="chip is-active" type="button" data-filter="all">Alle</button>
-          <button class="chip" type="button" data-filter="active">Aktiv</button>
-          <button class="chip" type="button" data-filter="done">Erledigt</button>
+          <button class="chip is-active" type="button" data-filter="all" data-i18n="todo_filter_all">Alle</button>
+          <button class="chip" type="button" data-filter="active" data-i18n="todo_filter_active">Aktiv</button>
+          <button class="chip" type="button" data-filter="done" data-i18n="todo_filter_done">Erledigt</button>
         </div>
 
-        <button class="btn danger" id="clearDone" type="button">Done löschen</button>
+        <button class="btn danger" id="clearDone" type="button" data-i18n="todo_clear_done">Done löschen</button>
       </div>
 
       <ul id="todoList" class="todo-list" aria-label="To-Do Liste"></ul>
 
       <footer class="stats">
-        <span id="countLeft">0 offen</span>
+        <span id="countLeft" >0 offen</span>
         <span class="muted">•</span>
         <span id="countTotal">0 gesamt</span>
       </footer>

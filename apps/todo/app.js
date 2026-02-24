@@ -1,6 +1,8 @@
 "use strict";
 
 import { getJSON, setJSON } from "../../shared/storage.js";
+import { initI18n } from "../../shared/i18n.js";
+import {t} from "../../shared/i18n.js";
 
 const STORAGE_KEY = "void_todos_v1";
 const THEME_KEY = "theme";
@@ -149,19 +151,29 @@ function render() {
     todoList.appendChild(li);
   }
 
-  updateStats();
-}
+ initI18n();
+ 
 
 function updateStats() {
-  const left = todos.filter(t => !t.done).length;
+  const open = todos.filter(t => !t.done).length;
   const total = todos.length;
 
-  countLeft.textContent = `${left} offen`;
-  countTotal.textContent = `${total} gesamt`;
+  if (countLeft) {
+    countLeft.textContent = t("todo_left")
+      .replace("{open}", open);
+  }
+
+  if (countTotal) {
+    countTotal.textContent = t("todo_total")
+      .replace("{total}", total);
+  }
+}
 
   // Button deaktivieren, wenn nichts zu löschen
   const anyDone = todos.some(t => t.done);
   clearDoneBtn.disabled = !anyDone;
   clearDoneBtn.style.opacity = anyDone ? "1" : "0.5";
   clearDoneBtn.style.pointerEvents = anyDone ? "auto" : "none";
+
+  updateStats();
 }

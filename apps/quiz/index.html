@@ -17,13 +17,13 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="../portfolio/index.html">← Zurück</a>
+      <a class="brand" href="../portfolio/index.html" data-i18n="back_main">← Zurück</a>
 
-      <h1 class="title">Quiz App</h1>
+      <h1 class="title" data-i18n="quiz_title">Quiz App</h1>
 
       <div class="header-controls" style="justify-self:end; display:flex; gap:10px; align-items:center;">
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
-        <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">DE</button>
+        <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln" data-i18n="quiz_language">DE</button>
       </div>
     </div>
   </header>
@@ -33,20 +33,20 @@
 
       <!-- START -->
       <section class="panel" id="screenStart">
-        <h2>Bereit?</h2>
-        <p class="muted">Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.</p>
+        <h2 data-i18n="quiz_ready_title">Bereit?</h2>
+        <p class="muted" data-i18n="quiz_ready_sub">Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.</p>
 
         <div class="grid-2">
 
           <!-- Editor -->
           <div class="panel">
-            <h3>Fragen Editor (Custom)</h3>
-            <p class="muted">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
+            <h3 data-i18n="quiz_editor_title">Fragen Editor (Custom)</h3>
+            <p class="muted" data-i18n="quiz_editor_sub">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
 
             <form id="editorForm" autocomplete="off">
               <div class="grid-2">
                 <label>
-                  <span>Kategorie</span>
+                  <span data-i18n="quiz_category">Kategorie</span>
                   <select id="edCategory">
                     <option value="web">Web</option>
                     <option value="js">JavaScript</option>
@@ -56,7 +56,7 @@
                 </label>
 
                 <label>
-                  <span>Richtig</span>
+                  <span data-i18n="quiz_label_correct">Richtig</span>
                   <select id="edCorrect">
                     <option value="0">A</option>
                     <option value="1">B</option>
@@ -67,49 +67,49 @@
               </div>
 
               <label>
-                <span>Frage</span>
-                <input id="edQuestion" type="text" placeholder="Deine Frage…" maxlength="140" />
+                <span data-i18n="quiz_label_question">Frage</span>
+                <input id="edQuestion" type="text" data-i18n-placeholder="quiz_ph_question" placeholder="Deine Frage…" maxlength="140" />
               </label>
 
               <div class="grid-2">
                 <label>
-                  <span>Antwort A</span>
-                  <input id="edA0" type="text" placeholder="Antwort A" maxlength="80" />
+                  <span data-i18n="quiz_label_a">Antwort A</span>
+                  <input id="edA0" data-i18n-placeholder="quiz_ph_a" type="text" placeholder="Antwort A" maxlength="80" />
                 </label>
                 <label>
-                  <span>Antwort B</span>
-                  <input id="edA1" type="text" placeholder="Antwort B" maxlength="80" />
+                  <span data-i18n="quiz_label_b">Antwort B</span>
+                  <input id="edA1" data-i18n-placeholder="quiz_ph_b" type="text" placeholder="Antwort B" maxlength="80" />
                 </label>
                 <label>
-                  <span>Antwort C</span>
-                  <input id="edA2" type="text" placeholder="Antwort C" maxlength="80" />
+                  <span data-i18n="quiz_label_c">Antwort C</span>
+                  <input id="edA2" data-i18n-placeholder="quiz_ph_c" type="text" placeholder="Antwort C" maxlength="80" />
                 </label>
                 <label>
-                  <span>Antwort D</span>
-                  <input id="edA3" type="text" placeholder="Antwort D" maxlength="80" />
+                  <span data-i18n="quiz_label_d" >Antwort D</span>
+                  <input id="edA3" data-i18n-placeholder="quiz_ph_d" type="text" placeholder="Antwort D" maxlength="80" />
                 </label>
               </div>
 
               <p class="muted" id="editorMsg" style="min-height: 1.2em;"></p>
 
               <div class="actions">
-                <button class="btn primary" type="submit">Frage speichern</button>
-                <button class="btn danger" id="clearCustom" type="button">Custom löschen</button>
+                <button class="btn primary" type="submit" data-i18n="quiz_save_question">Frage speichern</button>
+                <button class="btn danger" id="clearCustom" type="button" data-i18n="quiz_delete_question">Custom löschen</button>
               </div>
             </form>
 
             <details style="margin-top:12px;">
-              <summary class="muted">Custom Fragen anzeigen</summary>
+              <summary class="muted" data-i18n="quiz_custom_questions">Custom Fragen anzeigen</summary>
               <ul id="customList" style="margin-top:10px;"></ul>
             </details>
           </div>
 
           <!-- Settings + Highscore -->
           <div class="panel">
-            <h3>Einstellungen</h3>
+            <h3 data-i18n="quiz_settings_title">Einstellungen</h3>
 
             <div class="row">
-              <span class="muted">Kategorie</span>
+              <span class="muted" data-i18n="quiz_label_category">Kategorie</span>
               <select id="selectCategory">
                 <option value="all" selected>Alle</option>
                 <option value="web">Web</option>
@@ -120,7 +120,7 @@
             </div>
 
             <div class="row">
-              <span class="muted">Fragen</span>
+              <span class="muted" data-i18n="quiz_label_questions">Fragen</span>
               <select id="selectCount">
                 <option value="5">5</option>
                 <option value="8">8</option>
@@ -131,12 +131,12 @@
             <div class="row">
               <label style="display:flex; gap:10px; align-items:center;">
                 <input type="checkbox" id="toggleShuffle" />
-                <span class="muted">Shuffle</span>
+                <span class="muted" data-i18n="quiz_label_shuffle">Shuffle</span>
               </label>
             </div>
 
             <div class="row">
-              <span class="muted">Timer (sek)</span>
+              <span class="muted" data-i18n="quiz_label_timer ">Timer (sek)</span>
               <select id="selectTimer">
                 <option value="0">Aus</option>
                 <option value="10">10</option>
@@ -147,7 +147,7 @@
 
             <hr style="border:0; border-top:1px solid var(--hud-line); margin:16px 0;" />
 
-            <h3>Highscore</h3>
+            <h3 data-i18n="quiz_highscore_title">Highscore</h3>
             <div class="big" id="highscoreText">0 / 0</div>
             <button class="btn" id="resetHighscore" type="button">Reset</button>
           </div>
@@ -155,7 +155,7 @@
         </div>
 
         <div class="actions" style="margin-top:16px;">
-          <button class="btn primary" id="startBtn" type="button">Start</button>
+          <button class="btn primary" id="startBtn" type="button" data-i18n="quiz_start">Start</button>
         </div>
       </section>
 
@@ -163,7 +163,7 @@
       <section class="panel hidden" id="screenQuiz" aria-live="polite">
         <div class="topbar">
           <div class="progress">
-            <div class="muted" id="progressText">Frage 1/5</div>
+            <div class="muted" id="progressText" data-i18n="quiz_progress">Frage 1/5</div>
             <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
           </div>
 
@@ -174,12 +174,12 @@
           </div>
         </div>
 
-        <h2 class="question" id="questionText">Frage…</h2>
+        <h2 class="question" id="questionText" data-i18n="quiz_question">Frage…</h2>
         <div class="answers" id="answers"></div>
 
         <div class="actions space-between">
-          <button class="btn" id="quitBtn" type="button">Abbrechen</button>
-          <button class="btn primary" id="nextBtn" type="button" disabled>Nächste</button>
+          <button class="btn" id="quitBtn" type="button" data-i18n="quiz_cancel">Abbrechen</button>
+          <button class="btn primary" id="nextBtn" type="button" disabled data-i18n="quiz_next">Nächste</button>
         </div>
       </section>
 
@@ -190,8 +190,8 @@
         <p class="muted" id="resultHint">—</p>
 
         <div class="actions">
-          <button class="btn" id="backBtn" type="button">Zurück</button>
-          <button class="btn primary" id="restartBtn" type="button">Nochmal</button>
+          <button class="btn" id="backBtn" type="button" data-i18n="quiz_back">Zurück</button>
+          <button class="btn primary" id="restartBtn" type="button" data-i18n="quiz_restart">Nochmal</button>
         </div>
       </section>
 
