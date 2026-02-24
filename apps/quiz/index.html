@@ -5,181 +5,200 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quiz App – Void</title>
   <meta name="description" content="Quiz App mit Score, Progress, Shuffle und localStorage Highscore (HTML/CSS/JS)." />
-  <link rel="stylesheet" href="style.css" />
+
+  <!-- Portfolio Styles (für Header/Button-Look) -->
+  <link rel="stylesheet" href="../portfolio/style.css" />
+  <!-- Quiz Styles -->
+  <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
+
+  <!-- Header -->
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="../portfolio/index.html">← Zurück</a>
+
       <h1 class="title">Quiz App</h1>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
+
+      <div class="header-controls" style="justify-self:end; display:flex; gap:10px; align-items:center;">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
+        <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">DE</button>
+      </div>
     </div>
   </header>
 
   <main class="container">
-    <!-- Start Screen -->
-    <section class="panel" id="screenStart">
-      <h2>Bereit?</h2>
-      <p class="muted">
-        Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.
-      </p>
+    <div class="app-container">
 
-      <div class="grid-2">
-        <div class="card" style="margin-top:14px;">
-        <h3>Fragen Editor (Custom)</h3>
-        <p class="muted">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
+      <!-- START -->
+      <section class="panel" id="screenStart">
+        <h2>Bereit?</h2>
+        <p class="muted">Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.</p>
 
-        <form id="editorForm" class="editor" autocomplete="off">
-            <div class="editor-grid">
-            <label>
-                <span>Kategorie</span>
-                <select id="edCategory">
-                <option value="web">Web</option>
-                <option value="js">JavaScript</option>
-                <option value="games">Games</option>
-                <option value="general" selected>Allgemein</option>
-                </select>
-            </label>
+        <div class="grid-2">
 
-            <label class="span-2">
+          <!-- Editor -->
+          <div class="panel">
+            <h3>Fragen Editor (Custom)</h3>
+            <p class="muted">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
+
+            <form id="editorForm" autocomplete="off">
+              <div class="grid-2">
+                <label>
+                  <span>Kategorie</span>
+                  <select id="edCategory">
+                    <option value="web">Web</option>
+                    <option value="js">JavaScript</option>
+                    <option value="games">Games</option>
+                    <option value="general" selected>Allgemein</option>
+                  </select>
+                </label>
+
+                <label>
+                  <span>Richtig</span>
+                  <select id="edCorrect">
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                    <option value="2">C</option>
+                    <option value="3">D</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
                 <span>Frage</span>
                 <input id="edQuestion" type="text" placeholder="Deine Frage…" maxlength="140" />
-            </label>
+              </label>
 
-            <label>
-                <span>Antwort A</span>
-                <input id="edA0" type="text" placeholder="Antwort A" maxlength="80" />
-            </label>
-            <label>
-                <span>Antwort B</span>
-                <input id="edA1" type="text" placeholder="Antwort B" maxlength="80" />
-            </label>
-            <label>
-                <span>Antwort C</span>
-                <input id="edA2" type="text" placeholder="Antwort C" maxlength="80" />
-            </label>
-            <label>
-                <span>Antwort D</span>
-                <input id="edA3" type="text" placeholder="Antwort D" maxlength="80" />
-            </label>
+              <div class="grid-2">
+                <label>
+                  <span>Antwort A</span>
+                  <input id="edA0" type="text" placeholder="Antwort A" maxlength="80" />
+                </label>
+                <label>
+                  <span>Antwort B</span>
+                  <input id="edA1" type="text" placeholder="Antwort B" maxlength="80" />
+                </label>
+                <label>
+                  <span>Antwort C</span>
+                  <input id="edA2" type="text" placeholder="Antwort C" maxlength="80" />
+                </label>
+                <label>
+                  <span>Antwort D</span>
+                  <input id="edA3" type="text" placeholder="Antwort D" maxlength="80" />
+                </label>
+              </div>
 
-            <label>
-                <span>Richtig</span>
-                <select id="edCorrect">
-                <option value="0">A</option>
-                <option value="1">B</option>
-                <option value="2">C</option>
-                <option value="3">D</option>
-                </select>
-            </label>
+              <p class="muted" id="editorMsg" style="min-height: 1.2em;"></p>
 
-            <div class="editor-actions span-2">
+              <div class="actions">
                 <button class="btn primary" type="submit">Frage speichern</button>
                 <button class="btn danger" id="clearCustom" type="button">Custom löschen</button>
-                <span class="muted" id="editorMsg"></span>
-            </div>
-            </div>
-        </form>
+              </div>
+            </form>
 
-        <details style="margin-top:12px;">
-            <summary class="muted" style="cursor:pointer;">Custom Fragen anzeigen</summary>
-            <ul id="customList" class="custom-list"></ul>
-        </details>
-        </div>
-        
-        <div class="card">
-          <h3>Einstellungen</h3>
+            <details style="margin-top:12px;">
+              <summary class="muted">Custom Fragen anzeigen</summary>
+              <ul id="customList" style="margin-top:10px;"></ul>
+            </details>
+          </div>
 
-          <label class="row">
-            <span>Kategorie</span>
-            <select id="selectCategory">
+          <!-- Settings + Highscore -->
+          <div class="panel">
+            <h3>Einstellungen</h3>
+
+            <div class="row">
+              <span class="muted">Kategorie</span>
+              <select id="selectCategory">
                 <option value="all" selected>Alle</option>
                 <option value="web">Web</option>
                 <option value="js">JavaScript</option>
                 <option value="games">Games</option>
                 <option value="general">Allgemein</option>
-            </select>
-        </label>
+              </select>
+            </div>
 
-          <label class="row">
-            <span>Fragen</span>
-            <select id="selectCount">
-              <option value="5">5</option>
-              <option value="8" selected>8</option>
-              <option value="10">10</option>
-            </select>
-          </label>
+            <div class="row">
+              <span class="muted">Fragen</span>
+              <select id="selectCount">
+                <option value="5">5</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+              </select>
+            </div>
 
-          <label class="row">
-            <span>Shuffle</span>
-            <input id="toggleShuffle" type="checkbox" checked />
-          </label>
+            <div class="row">
+              <label style="display:flex; gap:10px; align-items:center;">
+                <input type="checkbox" id="toggleShuffle" />
+                <span class="muted">Shuffle</span>
+              </label>
+            </div>
 
-          <label class="row">
-            <span>Timer (sek)</span>
-            <select id="selectTimer">
-              <option value="0" selected>Aus</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-              <option value="20">20</option>
-            </select>
-          </label>
+            <div class="row">
+              <span class="muted">Timer (sek)</span>
+              <select id="selectTimer">
+                <option value="0">Aus</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--hud-line); margin:16px 0;" />
+
+            <h3>Highscore</h3>
+            <div class="big" id="highscoreText">0 / 0</div>
+            <button class="btn" id="resetHighscore" type="button">Reset</button>
+          </div>
+
         </div>
 
-        <div class="card">
-          <h3>Highscore</h3>
-          <p class="big" id="highscoreText">0 / 0</p>
-          <button class="btn danger" id="resetHighscore" type="button">Reset</button>
+        <div class="actions" style="margin-top:16px;">
+          <button class="btn primary" id="startBtn" type="button">Start</button>
         </div>
-      </div>
+      </section>
 
-      <div class="actions">
-        <button class="btn primary" id="startBtn" type="button">Start</button>
-      </div>
-    </section>
+      <!-- QUIZ -->
+      <section class="panel hidden" id="screenQuiz" aria-live="polite">
+        <div class="topbar">
+          <div class="progress">
+            <div class="muted" id="progressText">Frage 1/5</div>
+            <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+          </div>
 
-    <!-- Quiz Screen -->
-    <section class="panel hidden" id="screenQuiz" aria-live="polite">
-      <div class="topbar">
-        <div class="progress">
-          <span id="progressText">Frage 1/8</span>
-          <div class="bar">
-            <div class="bar-fill" id="barFill" style="width: 0%"></div>
+          <div class="scorebox">
+            <span class="muted">Score</span>
+            <span class="score" id="scoreText">0</span>
+            <span class="timer hidden" id="timerText">⏱ 15</span>
           </div>
         </div>
 
-        <div class="scorebox">
-          <span class="muted">Score</span>
-          <span class="score" id="scoreText">0</span>
-          <span class="timer hidden" id="timerText">⏱ 15</span>
+        <h2 class="question" id="questionText">Frage…</h2>
+        <div class="answers" id="answers"></div>
+
+        <div class="actions space-between">
+          <button class="btn" id="quitBtn" type="button">Abbrechen</button>
+          <button class="btn primary" id="nextBtn" type="button" disabled>Nächste</button>
         </div>
-      </div>
+      </section>
 
-      <h2 class="question" id="questionText">Frage…</h2>
+      <!-- RESULT -->
+      <section class="panel hidden" id="screenResult">
+        <h2>Ergebnis</h2>
+        <p class="big" id="resultText">0 / 0</p>
+        <p class="muted" id="resultHint">—</p>
 
-      <div class="answers" id="answers"></div>
+        <div class="actions">
+          <button class="btn" id="backBtn" type="button">Zurück</button>
+          <button class="btn primary" id="restartBtn" type="button">Nochmal</button>
+        </div>
+      </section>
 
-      <div class="actions space-between">
-        <button class="btn" id="quitBtn" type="button">Abbrechen</button>
-        <button class="btn primary" id="nextBtn" type="button" disabled>Nächste</button>
-      </div>
-    </section>
-
-    <!-- Result Screen -->
-    <section class="panel hidden" id="screenResult">
-      <h2>Ergebnis</h2>
-      <p class="big" id="resultText">0 / 0</p>
-      <p class="muted" id="resultHint">—</p>
-
-      <div class="actions">
-        <button class="btn" id="backBtn" type="button">Zurück</button>
-        <button class="btn primary" id="restartBtn" type="button">Nochmal</button>
-      </div>
-    </section>
+    </div>
   </main>
 
-  <script type="module" src="app.js"></script>
-
+  <!-- Scripts -->
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

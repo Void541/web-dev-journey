@@ -45,6 +45,11 @@
   --danger-hover: #dc2626;
 }
 
+html[data-theme="light"] input,
+html[data-theme="light"] textarea{
+  background: rgba(20,26,36,0.03);
+}
+
 /* Base */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -101,9 +106,9 @@ a:hover { opacity: 0.9; }
 .panel {
   margin: 28px 0 60px;
   padding: 18px;
-  border-radius: 16px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border-radius: var(--r-2);
+  border:1px solid var(--hud-line);
+  background:var(--bg-panel);
 }
 
 /* Form */
@@ -114,10 +119,10 @@ a:hover { opacity: 0.9; }
 .todo-form input {
   flex: 1;
   padding: 12px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  border: 1px solid var(--hud-line);
+  border-radius: var(--r-1);
   outline: none;
 }
 .todo-form input:focus { border-color: var(--border-strong); }

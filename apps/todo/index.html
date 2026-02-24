@@ -3,53 +3,202 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do App – Void</title>
-  <meta name="description" content="Eine To-Do App mit Filtern und LocalStorage (HTML, CSS, JavaScript)." />
-  <link rel="stylesheet" href="style.css" />
+  <title>Quiz App</title>
+
+  <!-- Portfolio CSS (dein HUD/Theme) -->
+  <link rel="stylesheet" href="../portfolio/style.css" />
+  <!-- Quiz CSS -->
+  <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
+  <!-- HEADER -->
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="../portfolio/index.html">← Zurück</a>
+      <a class="brand" href="../../index.html">← Zurück</a>
 
-      <h1 class="title">To-Do App</h1>
+      <h1 class="title">Quiz App</h1>
 
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">🌙</button>
     </div>
   </header>
 
   <main class="container">
-    <section class="panel">
-      <form id="todoForm" class="todo-form" autocomplete="off">
-        <label class="sr-only" for="todoInput">Neue Aufgabe</label>
-        <input id="todoInput" type="text" placeholder="Neue Aufgabe eingeben…" maxlength="80" />
-        <button class="btn primary" type="submit">Add</button>
-      </form>
+    <div class="app-container">
 
-      <div class="toolbar">
-        <div class="filters" role="tablist" aria-label="Filter">
-          <button class="chip is-active" type="button" data-filter="all">Alle</button>
-          <button class="chip" type="button" data-filter="active">Aktiv</button>
-          <button class="chip" type="button" data-filter="done">Erledigt</button>
+      <!-- ================= START ================= -->
+      <section class="panel" id="screenStart">
+        <div class="quiz-header">
+          <h2>Bereit?</h2>
+          <p class="muted">Kurzes Quiz (Single Choice). Dein Highscore wird gespeichert.</p>
         </div>
 
-        <button class="btn danger" id="clearDone" type="button">Done löschen</button>
-      </div>
+        <div class="quiz-grid">
 
-      <ul id="todoList" class="todo-list" aria-label="To-Do Liste"></ul>
+          <!-- Editor -->
+          <div class="panel">
+            <h3>Fragen Editor (Custom)</h3>
+            <p class="muted">Speichert lokal im Browser (localStorage). Perfekt um dein Quiz zu erweitern.</p>
 
-      <footer class="stats">
-        <span id="countLeft">0 offen</span>
-        <span class="muted">•</span>
-        <span id="countTotal">0 gesamt</span>
-      </footer>
-    </section>
+            <form id="editorForm">
+              <div class="editor-grid">
+                <label class="span-2">
+                  <span>Kategorie</span>
+                  <select id="edCategory">
+                    <option value="general">Allgemein</option>
+                    <option value="web">Web</option>
+                    <option value="js">JavaScript</option>
+                    <option value="games">Games</option>
+                  </select>
+                </label>
+
+                <label class="span-2">
+                  <span>Frage</span>
+                  <input id="edQuestion" type="text" placeholder="Deine Frage..." />
+                </label>
+
+                <label>
+                  <span>Antwort A</span>
+                  <input id="edA0" type="text" placeholder="Antwort A" />
+                </label>
+                <label>
+                  <span>Antwort B</span>
+                  <input id="edA1" type="text" placeholder="Antwort B" />
+                </label>
+                <label>
+                  <span>Antwort C</span>
+                  <input id="edA2" type="text" placeholder="Antwort C" />
+                </label>
+                <label>
+                  <span>Antwort D</span>
+                  <input id="edA3" type="text" placeholder="Antwort D" />
+                </label>
+
+                <label class="span-2">
+                  <span>Richtig</span>
+                  <select id="edCorrect">
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                    <option value="2">C</option>
+                    <option value="3">D</option>
+                  </select>
+                </label>
+
+                <div class="span-2 editor-actions">
+                  <button class="btn primary" type="submit">Frage speichern</button>
+                  <button class="btn danger" id="clearCustom" type="button">Custom löschen</button>
+                  <span class="muted" id="editorMsg"></span>
+                </div>
+              </div>
+            </form>
+
+            <details style="margin-top: 10px;">
+              <summary class="muted">Custom Fragen anzeigen</summary>
+              <ul class="custom-list" id="customList"></ul>
+            </details>
+          </div>
+
+          <!-- Einstellungen -->
+          <div class="panel">
+            <h3>Einstellungen</h3>
+
+            <div class="row">
+              <span class="muted">Kategorie</span>
+              <select id="selectCategory">
+                <option value="all">Alle</option>
+                <option value="general">Allgemein</option>
+                <option value="web">Web</option>
+                <option value="js">JavaScript</option>
+                <option value="games">Games</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <span class="muted">Fragen</span>
+              <select id="selectCount">
+                <option value="5">5</option>
+                <option value="8">8</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label class="muted" style="display:flex;align-items:center;gap:10px;">
+                <input id="toggleShuffle" type="checkbox" />
+                Shuffle
+              </label>
+            </div>
+
+            <div class="row">
+              <span class="muted">Timer (sek)</span>
+              <select id="selectTimer">
+                <option value="0">Aus</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Highscore -->
+          <div class="panel">
+            <h3>Highscore</h3>
+            <div class="highscore-value" id="highscoreText">0 / 0</div>
+            <div class="actions">
+              <button class="btn" id="resetHighscore" type="button">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions" style="margin-top: 18px;">
+          <button class="btn primary" id="startBtn" type="button">Start</button>
+        </div>
+      </section>
+
+      <!-- ================= QUIZ ================= -->
+      <section class="panel hidden" id="screenQuiz" aria-live="polite">
+        <div class="topbar">
+          <div class="progress">
+            <div class="row space-between">
+              <div id="progressText" class="muted">Frage 1/5</div>
+              <div id="timerText" class="timer hidden">⏱ 0</div>
+            </div>
+            <div class="bar">
+              <div class="bar-fill" id="barFill"></div>
+            </div>
+          </div>
+
+          <div class="scorebox">
+            <span class="muted">Score</span>
+            <span class="score" id="scoreText">0</span>
+          </div>
+        </div>
+
+        <h2 class="question" id="questionText">Frage erscheint hier</h2>
+
+        <div class="answers" id="answers"></div>
+
+        <div class="actions space-between">
+          <button class="btn" id="quitBtn" type="button">Abbrechen</button>
+          <button class="btn primary" id="nextBtn" type="button" disabled>Nächste</button>
+        </div>
+      </section>
+
+      <!-- ================= RESULT ================= -->
+      <section class="panel hidden" id="screenResult">
+        <h2>Ergebnis</h2>
+        <p class="big" id="resultText">0 / 0</p>
+        <p class="muted" id="resultHint"></p>
+
+        <div class="actions">
+          <button class="btn" id="backBtn" type="button">Zurück</button>
+          <button class="btn primary" id="restartBtn" type="button">Neustart</button>
+        </div>
+      </section>
+
+    </div>
   </main>
 
-  <script type="module" src="app.js">
-  import { initTheme } from "../../shared/theme.js";
-  initTheme();
-</script>
+  <!-- Wichtig: nur src, KEIN inline code in diesem Tag -->
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

@@ -210,7 +210,7 @@ function renderCustomList() {
 
 // ---- Theme ----
 function initTheme() {
-  const saved = getJSON("THEME_KEY");
+  const saved = getJSON(THEME_KEY, null);
   const prefersLight = window.matchMedia &&
     window.matchMedia("(prefers-color-scheme: light)").matches;
 
@@ -224,7 +224,7 @@ function initTheme() {
 
 function setTheme(theme) {
   root.setAttribute("data-theme", theme);
-  setJSON("THEME_KEY", theme);
+  setJSON(THEME_KEY, theme);
   themeToggle.textContent = theme === "light" ? "☀️" : "🌙";
 }
 
