@@ -107,6 +107,7 @@ const trail = []; // {x,y,t}
 
 let paused = false;
 let spawnTimer = 0;
+let time = 0;
 let fpsSmoothing = 0;
 
 let enemyIdCounter = 1;
@@ -204,10 +205,11 @@ ctx.stroke();
     vy: dir.y,
     turnT: rand(0.4, 1.2),
     hitT: 0,
-    fireT: rand(0.2, 0.8),
+    fireT: ENEMY_FIRE_COOLDOWN,
     aggro: false,
-    aggroTime: 0,
+    aggroT: 0,
     stunned: false, 
+
   });
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
@@ -260,6 +262,7 @@ function fireAtTarget(target) {
 
 // ---------- Update ----------
 function update(dt) {
+  time += dt;
   if (paused) {
     input.endFrame();
     return;
@@ -303,75 +306,69 @@ function update(dt) {
     spawnTimer = ENEMY_SPAWN_EVERY;
   }
 
-  // ---- Enemies update (wander + bounce + optional shooting)
-  for (let i = 0; i < enemies.length; i++) {
-    const e = enemies[i];
-    if (!e) continue;
+ // ---- Enemies update (wander + bounce + optional shooting)
+for (let i = 0; i < enemies.length; i++) {
+  const e = enemies[i];
+  if (!e) continue;
 
-    e.hitT = Math.max(0, e.hitT - dt);
+  // Hit flash decay
+  e.hitT = Math.max(0, e.hitT - dt);
 
-    // Aggro Timer optional
-  if (e.aggro) {
-    e.aggroT = Math.max(0, e.aggroT - dt);
-    if (e.aggroT <= 0) {
-      e.aggro = false;
+  // ---- Aggro Timer
+  e.aggroT = Math.max(0, (e.aggroT ?? 0) - dt);
+  const isAggro = e.aggroT > 0;
 
-      // OPTIONAL: wieder losfahren wenn Aggro weg ist
-      e.stunned = false;
-      // kleine neue Richtung geben
-      e.vx = rand(-1, 1);
-      e.vy = rand(-1, 1);
-      const n = norm(e.vx, e.vy);
-      e.vx = n.x; e.vy = n.y;
-    }
-  }
+  // ---- Shooting (auch wenn stunned)
+  if (ENEMY_FIRE_ENABLED && isAggro) {
+    e.fireT = (e.fireT ?? ENEMY_FIRE_COOLDOWN) - dt;
 
-  // Wenn stunned -> NICHT bewegen (stehen bleiben)
-  if (e.stunned) continue;
+    if (e.fireT <= 0) {
+      e.fireT = ENEMY_FIRE_COOLDOWN;
 
-  // sonst normal bewegen:
+      const dx = player.x - e.x;
+      const dy = player.y - e.y;
+      const d = Math.hypot(dx, dy);
 
-    e.turnT -= dt;
-    if (e.turnT <= 0) {
-      e.turnT = rand(0.4, 1.2);
-      e.vx += rand(-0.6, 0.6);
-      e.vy += rand(-0.6, 0.6);
-      const n = norm(e.vx, e.vy);
-      e.vx = n.x;
-      e.vy = n.y;
-    }
+      if (d < 520) {
+        const u = norm(dx, dy);
 
-    e.x += e.vx * ENEMY_SPEED * dt;
-    e.y += e.vy * ENEMY_SPEED * dt;
-
-    if (e.x < e.r || e.x > canvas.width - e.r) e.vx *= -1;
-    if (e.y < e.r || e.y > canvas.height - e.r) e.vy *= -1;
-
-    if (ENEMY_FIRE_ENABLED && e.aggro) {
-      e.fireT -= dt;
-      if (e.fireT <= 0) {
-        const dx = player.x - e.x;
-        const dy = player.y - e.y;
-        const d = Math.hypot(dx, dy);
-
-        if (d < 520) {
-          const u = norm(dx, dy);
-          spawnProjectile({
-            x: e.x,
-            y: e.y,
-            vx: u.x * ENEMY_BULLET_SPEED,
-            vy: u.y * ENEMY_BULLET_SPEED,
-            fromEnemy: true,
-            dmg: 1,
-            ttl: ENEMY_BULLET_TTL,
-            r: 4,
-          });
-        }
-
-        e.fireT = ENEMY_FIRE_COOLDOWN;
+        spawnProjectile({
+          x: e.x,
+          y: e.y,
+          vx: u.x * ENEMY_BULLET_SPEED,
+          vy: u.y * ENEMY_BULLET_SPEED,
+          fromEnemy: true,
+          dmg: 1,
+          ttl: ENEMY_BULLET_TTL,
+          r: 4,
+        });
       }
     }
   }
+
+  // ---- Movement (nur wenn NICHT stunned)
+  if (e.stunned) continue;
+
+  e.turnT -= dt;
+  if (e.turnT <= 0) {
+    e.turnT = rand(0.4, 1.2);
+
+    e.vx += rand(-0.6, 0.6);
+    e.vy += rand(-0.6, 0.6);
+
+    const n = norm(e.vx, e.vy);
+    e.vx = n.x;
+    e.vy = n.y;
+  }
+
+  e.x += e.vx * ENEMY_SPEED * dt;
+  e.y += e.vy * ENEMY_SPEED * dt;
+
+  if (e.x < e.r || e.x > canvas.width - e.r) e.vx *= -1;
+  if (e.y < e.r || e.y > canvas.height - e.r) e.vy *= -1;
+}
+
+
 
   // ---- Validate target
   const target = getTargetEnemy();
@@ -430,36 +427,26 @@ function update(dt) {
         if (dist2(p.x, p.y, e.x, e.y) <= rr * rr) {
           e.hp -= p.dmg;
           e.hitT = 0.12;
-          
-          if (!p.fromEnemy && combat.targetId === e.id) {
-            e.aggro = true;
-            e.aggroTime = ENEMY_AGGRO_DECAY; // optional für UI/Decay
+          const ENEMY_AGGRO_TIME = 6.0;
 
-            //stehen bleiben
-            e.vx = 0;
-            e.vy = 0;
-            e.stunned = true; 
+          // Aggro + stehen bleiben (nur setzen, kein Timer-Update hier!)
+          e.aggroT = ENEMY_AGGRO_TIME;  // z.B. 6.0 Sekunden
+          e.stunned = true;
 
-            if (e.aggro){
-           
-              const d = Math.hypot(player.x - e.x, player.y - e.y);
-              if (d < 520) e.aggroT = ENEMY_AGGRO_DECAY; // refresh in range
-            else {
-               e.aggroT = Math.max(0, e.aggroT - dt);
-               if (e.aggroT <= 0) e.aggro = false;
-  }
-}
-          }
-        
+          // optional: wirklich einfrieren
+          e.vx = 0;
+          e.vy = 0;
 
+          // Projectile entfernen
           projectiles.splice(i, 1);
 
-          if (e.hp <= 0) {          
+          // Enemy tot?
+          if (e.hp <= 0) {
             if (combat.targetId === e.id) combat.targetId = null;
             enemies.splice(ei, 1);
           }
           break;
-        }
+        } 
       }
     }
   }

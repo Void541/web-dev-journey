@@ -6,8 +6,8 @@
 
 
 .game-stage {
-  width: min(1400px, calc(100vw - 120px));   /* links/rechts Leerraum */
-  height: calc(100vh - 220px);              /* oben/unten Leerraum (Header/Footer) */
+  width: min(1400px, calc(100vw - 60px));   /* links/rechts Leerraum */
+  height: min(900px, calc(100vh - 120px));  /* oben/unten Leerraum (Header/Footer) */
   margin: 0 auto;
   display: flex;
   align-items: center;
