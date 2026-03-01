@@ -6,7 +6,6 @@ export function drawHud(ctx, canvas, player, target, combat, drawHpBar, renderRe
   const CW = canvas.clientWidth;
 
   const HUD_PAD = 18;
-  const RIGHT_OFFSET = 28; // <- schiebt die rechte Bar nach links
 
   drawHpBar(HUD_PAD, HUD_PAD, barW, 12, player.hp, player.maxHp, "HP", "left");
 
