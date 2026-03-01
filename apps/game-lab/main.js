@@ -1,14 +1,22 @@
 import { startLoop } from "./engine/loop.js";
 import { createInput } from "./engine/input.js";
 import { clamp } from "./engine/math.js";
+import { updateEnemies } from "./src/updateEnemies.js";
+import { updateProjectiles } from "./src/updateProjectiles.js";
+import { drawHud } from "./src/hud.js";
+import { createDamageSystem } from "./src/damageNumbers.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const fpsEl = document.getElementById("fps");
 const input = createInput();
+const damage = createDamageSystem();
+const CW = () => canvas.width;
+const CH = () => canvas.height;
 
 // ---------- Canvas fit ----------
 function fitCanvas() {
+ 
   const wrapper = canvas.parentElement;
   const maxW = wrapper.clientWidth;
   const maxH = wrapper.clientHeight;
@@ -55,8 +63,8 @@ function norm(dx, dy) {
 function getMousePos(evt) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: (evt.clientX - rect.left) * (canvas.width / rect.width),
-    y: (evt.clientY - rect.top) * (canvas.height / rect.height),
+    x: evt.clientX - rect.left,
+    y: evt.clientY - rect.top,
   };
 }
 
@@ -72,7 +80,7 @@ const ENEMY_SPEED = 90;
 const ENEMY_R = 16;
 const ENEMY_MAX_HP = 5;
 const ENEMY_CAP = 30;
-
+const ENEMY_AGGRO_TIME = 6; // Zeit, die ein Enemy nach einem Treffer aggressiv bleibt (d.h. weiter schießt)
 const ENEMY_FIRE_ENABLED = true;
 const ENEMY_FIRE_COOLDOWN = 1.2;
 const ENEMY_BULLET_SPEED = 320;
@@ -152,12 +160,9 @@ canvas.addEventListener("click", (ev) => {
 
 // ---------- Spawning ----------
 function spawnEnemy() {
-  const w = canvas.clientWidth;
-  const h = canvas.clientHeight;
-
-  ctx.clearRect(0, 0, w, h);
-
- const step = 48;
+const step = 48;
+const w = CW();
+const h = CH();
 
 ctx.beginPath();
 for (let x = 0; x <= w; x += step) {
@@ -286,8 +291,8 @@ function update(dt) {
   player.x += ax * PLAYER_SPEED * dt;
   player.y += ay * PLAYER_SPEED * dt;
 
-  player.x = clamp(player.x, player.r, canvas.width - player.r);
-  player.y = clamp(player.y, player.r, canvas.height - player.r);
+  player.x = clamp(player.x, player.r, CW() - player.r);
+  player.y = clamp(player.y, player.r, CH() - player.r);
 
   const moving = Math.abs(ax) + Math.abs(ay) > 0;
   if (moving) {
@@ -307,70 +312,19 @@ function update(dt) {
   }
 
  // ---- Enemies update (wander + bounce + optional shooting)
-for (let i = 0; i < enemies.length; i++) {
-  const e = enemies[i];
-  if (!e) continue;
+updateEnemies(dt, {
+  enemies, player, canvas,
+  ENEMY_SPEED,
+  ENEMY_FIRE_ENABLED,
+  ENEMY_FIRE_COOLDOWN,
+  ENEMY_BULLET_SPEED,
+  ENEMY_BULLET_TTL,
+  ENEMY_AGGRO_TIME,
+  norm, rand,
+  spawnProjectile,
+});
 
-  // Hit flash decay
-  e.hitT = Math.max(0, e.hitT - dt);
-
-  // ---- Aggro Timer
-  e.aggroT = Math.max(0, (e.aggroT ?? 0) - dt);
-  const isAggro = e.aggroT > 0;
-
-  // ---- Shooting (auch wenn stunned)
-  if (ENEMY_FIRE_ENABLED && isAggro) {
-    e.fireT = (e.fireT ?? ENEMY_FIRE_COOLDOWN) - dt;
-
-    if (e.fireT <= 0) {
-      e.fireT = ENEMY_FIRE_COOLDOWN;
-
-      const dx = player.x - e.x;
-      const dy = player.y - e.y;
-      const d = Math.hypot(dx, dy);
-
-      if (d < 520) {
-        const u = norm(dx, dy);
-
-        spawnProjectile({
-          x: e.x,
-          y: e.y,
-          vx: u.x * ENEMY_BULLET_SPEED,
-          vy: u.y * ENEMY_BULLET_SPEED,
-          fromEnemy: true,
-          dmg: 1,
-          ttl: ENEMY_BULLET_TTL,
-          r: 4,
-        });
-      }
-    }
-  }
-
-  // ---- Movement (nur wenn NICHT stunned)
-  if (e.stunned) continue;
-
-  e.turnT -= dt;
-  if (e.turnT <= 0) {
-    e.turnT = rand(0.4, 1.2);
-
-    e.vx += rand(-0.6, 0.6);
-    e.vy += rand(-0.6, 0.6);
-
-    const n = norm(e.vx, e.vy);
-    e.vx = n.x;
-    e.vy = n.y;
-  }
-
-  e.x += e.vx * ENEMY_SPEED * dt;
-  e.y += e.vy * ENEMY_SPEED * dt;
-
-  if (e.x < e.r || e.x > canvas.width - e.r) e.vx *= -1;
-  if (e.y < e.r || e.y > canvas.height - e.r) e.vy *= -1;
-}
-
-
-
-  // ---- Validate target
+ // ---- Validate target
   const target = getTargetEnemy();
   if (combat.targetId && !target) combat.targetId = null;
 
@@ -388,68 +342,12 @@ for (let i = 0; i < enemies.length; i++) {
       combat.cooldown = 1 / combat.fireRate;
     }
   }
-
   // ---- Projectiles update + collisions
-  for (let i = projectiles.length - 1; i >= 0; i--) {
-    const p = projectiles[i];
-
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.ttl -= dt;
-
-    const out =
-      p.ttl <= 0 ||
-      p.x < -80 ||
-      p.x > canvas.width + 80 ||
-      p.y < -80 ||
-      p.y > canvas.height + 80;
-
-    if (out) {
-      projectiles.splice(i, 1);
-      continue;
-    }
-  
-    if (p.fromEnemy) {
-      // hit player
-      const rr = p.r + player.r;
-      if (dist2(p.x, p.y, player.x, player.y) <= rr * rr) {
-        player.hp -= p.dmg;
-        projectiles.splice(i, 1);
-        continue;
-      }
-    } else {
-      // hit enemies
-      for (let ei = enemies.length - 1; ei >= 0; ei--) {
-
-        const e = enemies[ei];
-        const rr = p.r + e.r;
-
-        if (dist2(p.x, p.y, e.x, e.y) <= rr * rr) {
-          e.hp -= p.dmg;
-          e.hitT = 0.12;
-          const ENEMY_AGGRO_TIME = 6.0;
-
-          // Aggro + stehen bleiben (nur setzen, kein Timer-Update hier!)
-          e.aggroT = ENEMY_AGGRO_TIME;  // z.B. 6.0 Sekunden
-          e.stunned = true;
-
-          // optional: wirklich einfrieren
-          e.vx = 0;
-          e.vy = 0;
-
-          // Projectile entfernen
-          projectiles.splice(i, 1);
-
-          // Enemy tot?
-          if (e.hp <= 0) {
-            if (combat.targetId === e.id) combat.targetId = null;
-            enemies.splice(ei, 1);
-          }
-          break;
-        } 
-      }
-    }
-  }
+ updateProjectiles(dt, {
+  canvas, player, enemies, projectiles, combat, dist2,
+  ENEMY_AGGRO_TIME,
+  damage,
+});
 
 
   // ---- Effects
@@ -475,7 +373,7 @@ for (let i = 0; i < enemies.length; i++) {
   if (fpsEl) {
     fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
   }
-
+damage.update(dt);
   input.endFrame();
 }
 
@@ -483,71 +381,75 @@ for (let i = 0; i < enemies.length; i++) {
 function drawHpBar(x, y, w, h, hp, maxHp, label, align = "left") {
   const ratio = maxHp <= 0 ? 0 : clamp(hp / maxHp, 0, 1);
 
+  // We draw in CSS pixels because of ctx.setTransform(dpr,...)
+  const CW = canvas.clientWidth;
+  const CH = canvas.clientHeight;
+
   ctx.save();
   ctx.globalAlpha = 0.9;
 
-  // Für left: x ist links.
-  // Für right: x ist RECHTS (Anker)
-  const bx = align === "right" ? (x - w) : x;
-  const by = y + 2;
+  // Panel metrics
+  const pad = 8;            // outer clamp padding
+  const inner = 12;         // inner padding in panel
+  const lineH = 16;
 
-  // Panel-Layout (kleiner & sauber)
-  const panelPadX = 14;
-  const panelPadY = 12;
-  const panelW = w + 120;
-  const panelH = 44;
+  const text = `${hp} / ${maxHp}`;
 
-  // Panel so platzieren, dass es nicht rausläuft
-  let panelX = align === "right"
-    ? (x - panelW)     // Panel endet bei x
-    : (bx - panelPadX);
+  // Measure text width (needs font set BEFORE measure)
+  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  const tw = ctx.measureText(text).width;
 
-  let panelY = y - panelPadY;
+  // Panel width: bar + gap + hp-text area (min 54)
+  const gap = 10;
+  const hpArea = Math.max(54, Math.ceil(tw));
+  const panelW = inner + w + gap + hpArea + inner;
+  const panelH = inner + lineH + 8 + h + inner;
 
-  const pad = 6;
-  panelX = clamp(panelX, pad, canvas.width - panelW - pad);
-  panelY = clamp(panelY, pad, canvas.height - panelH - pad);
+  // x is "anchor": left = panel starts at x, right = panel ends at x
+  let panelX = align === "right" ? (x - panelW) : x;
+  let panelY = y;
 
-  // Wenn wir das Panel geclamped haben, müssen wir bx bei right ggf. neu ableiten
-  const barX = align === "right"
-    ? (panelX + panelW - panelPadX - w)
-    : (panelX + panelPadX);
+  // Clamp fully inside canvas
+  panelX = clamp(panelX, pad, CW - panelW - pad);
+  panelY = clamp(panelY, pad, CH - panelH - pad);
 
-  // panel bg
+  // Draw panel background
   ctx.fillStyle = "rgba(0,0,0,0.35)";
   ctx.fillRect(panelX, panelY, panelW, panelH);
 
-  // label
-  ctx.globalAlpha = 0.95;
-  ctx.fillStyle = "#fff";
+  // Label (top left/right)
   ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = "#fff";
   ctx.textBaseline = "top";
-  ctx.textAlign = align;
+  ctx.textAlign = align === "right" ? "right" : "left";
+  const labelX = align === "right" ? (panelX + panelW - inner) : (panelX + inner);
+  ctx.fillText(label, labelX, panelY + inner - 2);
 
-  const labelX = align === "right" ? (panelX + panelW - panelPadX) : (panelX + panelPadX);
-  ctx.fillText(label, labelX, panelY + 2);
+  // Bar position
+  const barX = panelX + inner;
+  const barY = panelY + inner + lineH + 6;
 
-  // bar bg
+  // Bar bg
   ctx.globalAlpha = 0.35;
   ctx.fillStyle = "#000";
-  ctx.fillRect(barX, by, w, h);
+  ctx.fillRect(barX, barY, w, h);
 
-  // bar fill
+  // Bar fill
   ctx.globalAlpha = 0.9;
   ctx.fillStyle = ratio <= 0.3 ? "rgb(220,60,60)" : "rgb(32,172,32)";
-  ctx.fillRect(barX, by, w * ratio, h);
+  ctx.fillRect(barX, barY, w * ratio, h);
 
-  // bar stroke
+  // Bar stroke
   ctx.globalAlpha = 0.35;
   ctx.strokeStyle = "#fff";
-  ctx.strokeRect(barX, by, w, h);
+  ctx.strokeRect(barX, barY, w, h);
 
-  // text hp/max
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = "#fff";
+  // HP text (always inside panel, top-right)
+  ctx.globalAlpha = 0.95;
   ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "left";
-  ctx.fillText(`${hp} / ${maxHp}`, barX + w + 12, y);
+  ctx.textAlign = "right";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(text, panelX + panelW - inner, barY - 2);
 
   ctx.restore();
 }
@@ -643,7 +545,7 @@ function renderEnemy(e) {
 function render() {
 
   //console.log(canvas.width, canvas.clientWidth);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, CW(), CH());
 
   // Grid
   ctx.save();
@@ -652,14 +554,15 @@ function render() {
   ctx.lineWidth = 1;
 
   ctx.beginPath();
-  for (let x = 0; x <= canvas.width; x += GRID_STEP) {
+  for (let x = 0; x <= CW(); x += GRID_STEP) {
     ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvas.height);
+    ctx.lineTo(x, CH());
   }
-  for (let y = 0; y <= canvas.height; y += GRID_STEP) {
+  for (let y = 0; y <= CH(); y += GRID_STEP) {
     ctx.moveTo(0, y);
-    ctx.lineTo(canvas.width, y);
+    ctx.lineTo(CW(), y);
   }
+  
   ctx.stroke();
   ctx.restore();
 
@@ -675,15 +578,6 @@ function render() {
   }
   ctx.restore();
 
-  // Player
-  ctx.save();
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = "rgb(32,172,32)";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
   // Projectiles
   ctx.save();
   for (const p of projectiles) {
@@ -694,21 +588,24 @@ function render() {
   }
   ctx.restore();
 
+
   // Enemies
   for (const e of enemies) renderEnemy(e);
 
-  // Target ring
-  const t = getTargetEnemy();
-  if (t) {
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    ctx.strokeStyle = "rgb(32,172,32)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(t.x, t.y, t.r + 8, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
+  // Player
+  ctx.save();
+  ctx.globalAlpha = 0.95;
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+  ctx.fillStyle = "rgb(32,172,32)"; // grün
+  ctx.fill();
+
+  // optional: outline
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
 
   // Muzzle flash
   ctx.save();
@@ -730,12 +627,10 @@ function render() {
     ctx.fill();
   }
   ctx.restore();
+  damage.render(ctx);
 
-  // HUD: HP + Reload
-  const barW = 220;
-  drawHpBar(18, 18, barW, 12, player.hp, player.maxHp, "HP", "left");
-  if (t) drawHpBar(canvas.width - 18, 18, barW, 12, t.hp, t.maxHp, "Target", "right");
-  renderReloadUI();
+   const t = getTargetEnemy();
+   drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
 
   // Pause overlay
   if (paused) {
