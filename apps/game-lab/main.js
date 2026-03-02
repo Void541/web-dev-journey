@@ -5,18 +5,24 @@ import { updateEnemies } from "./src/updateEnemies.js";
 import { updateProjectiles } from "./src/updateProjectiles.js";
 import { drawHud } from "./src/hud.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
+import { createWater } from "./src/water.js";
+import { createIslands } from "./src/islands.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const fpsEl = document.getElementById("fps");
 const input = createInput();
+const islands = createIslands(canvas);
+islands.generateDefault();
+const water = createWater();
 const damage = createDamageSystem();
-const CW = () => canvas.width;
-const CH = () => canvas.height;
+const CW = () => canvas.clientWidth;
+const CH = () => canvas.clientHeight;
 
 // ---------- Canvas fit ----------
 function fitCanvas() {
- 
+  
+
   const wrapper = canvas.parentElement;
   const maxW = wrapper.clientWidth;
   const maxH = wrapper.clientHeight;
@@ -43,9 +49,22 @@ function fitCanvas() {
 
   // Normalize drawing coords back to CSS pixels
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  islands.generateDefault();
 }
 window.addEventListener("resize", fitCanvas);
 fitCanvas();
+
+function getIslandColliders() {
+  if (typeof islands.getColliders === "function") {
+    return islands.getColliders();
+  }
+  if (Array.isArray(islands.colliders)) 
+  return islands.colliders;
+  if (Array.isArray(islands.islands)) return islands.islands; // fallback, if colliders are just the islands themselves
+  return [];
+}
+
 
 // ---------- Utils ----------
 function rand(min, max) {
@@ -194,6 +213,24 @@ ctx.stroke();
     y = rand(margin, h - margin);
   }
 
+  // nach x/y setzen:
+let tries = 0;
+while (tries++ < 40) {
+  // check: liegt in einer Insel?
+  let ok = true;
+  for (const c of islands.getColliders()) {
+    const dx = x - c.x;
+    const dy = y - c.y;
+    const d = Math.hypot(dx, dy);
+    if (d < (c.r + ENEMY_R + 6)) { ok = false; break; }
+  }
+  if (ok) break;
+
+  // neu würfeln
+  x = rand(margin, CW() - margin);
+  y = rand(margin, CH() - margin);
+}
+
   // Richtung grob zur Mitte + bisschen Zufall
   const cx = w * 0.5 + rand(-120, 120);
   const cy = h * 0.5 + rand(-120, 120);
@@ -214,7 +251,6 @@ ctx.stroke();
     aggro: false,
     aggroT: 0,
     stunned: false, 
-
   });
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
@@ -273,6 +309,8 @@ function update(dt) {
     return;
   }
 
+water.update(dt);
+
   // ---- Player movement
   let ax = 0,
     ay = 0;
@@ -287,12 +325,20 @@ function update(dt) {
     ax *= inv;
     ay *= inv;
   }
+  const islandColliders = islands.getColliders();
+
+
+islands.resolveCircle(player);
 
   player.x += ax * PLAYER_SPEED * dt;
   player.y += ay * PLAYER_SPEED * dt;
 
   player.x = clamp(player.x, player.r, CW() - player.r);
   player.y = clamp(player.y, player.r, CH() - player.r);
+
+  if(typeof islands.resolveCircle === "function") {
+    islands.resolveCircle(player);
+  }
 
   const moving = Math.abs(ax) + Math.abs(ay) > 0;
   if (moving) {
@@ -310,7 +356,6 @@ function update(dt) {
     spawnEnemy();
     spawnTimer = ENEMY_SPAWN_EVERY;
   }
-
  // ---- Enemies update (wander + bounce + optional shooting)
 updateEnemies(dt, {
   enemies, player, canvas,
@@ -322,6 +367,8 @@ updateEnemies(dt, {
   ENEMY_AGGRO_TIME,
   norm, rand,
   spawnProjectile,
+  islandColliders,
+  islands,
 });
 
  // ---- Validate target
@@ -342,11 +389,13 @@ updateEnemies(dt, {
       combat.cooldown = 1 / combat.fireRate;
     }
   }
+
   // ---- Projectiles update + collisions
  updateProjectiles(dt, {
   canvas, player, enemies, projectiles, combat, dist2,
   ENEMY_AGGRO_TIME,
   damage,
+  islandColliders,
 });
 
 
@@ -373,7 +422,8 @@ updateEnemies(dt, {
   if (fpsEl) {
     fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
   }
-damage.update(dt);
+  damage.update(dt);
+  
   input.endFrame();
 }
 
@@ -502,12 +552,67 @@ function renderEnemy(e) {
   ctx.save();
 
   const isTarget = combat.targetId === e.id;
+  const angle = Math.atan2(e.vy, e.vx);
+  renderShip(ctx, e.x, e.y, e.r, angle, isTarget, true);
   ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
 
+  function renderShip(ctx, x, y, r, angle, isTarget, isEnemy) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  ctx.globalAlpha = 0.95;
+
+  // hull
+  ctx.fillStyle = isEnemy ? "rgb(170,45,40)" : "rgb(90, 60, 35)";
   ctx.beginPath();
-  ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-  ctx.fillStyle = isTarget ? "rgb(220,80,80)" : "rgb(255, 73, 60)";
+  ctx.moveTo(r + 10, 0);
+  ctx.lineTo(-r - 8, -r);
+  ctx.lineTo(-r - 14, 0);
+  ctx.lineTo(-r - 8, r);
+  ctx.closePath();
   ctx.fill();
+
+  // deck highlight
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.moveTo(r + 4, -2);
+  ctx.lineTo(-r - 6, -r + 4);
+  ctx.lineTo(-r - 10, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // mast
+  ctx.globalAlpha = 0.85;
+  ctx.strokeStyle = "rgba(255,255,255,0.75)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-2, -r - 8);
+  ctx.lineTo(-2, r + 6);
+  ctx.stroke();
+
+  // sail (enemy dunkler)
+  ctx.fillStyle = isEnemy ? "rgba(255,220,220,0.75)" : "rgba(255,255,255,0.85)";
+  ctx.beginPath();
+  ctx.moveTo(-2, -r - 6);
+  ctx.lineTo(r + 8, 0);
+  ctx.lineTo(-2, r - 2);
+  ctx.closePath();
+  ctx.fill();
+
+  // target ring
+  if (isTarget) {
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, r + 6, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
 
   if (isTarget) {
     ctx.globalAlpha = 0.9;
@@ -544,27 +649,9 @@ function renderEnemy(e) {
 // ---------- Render ----------
 function render() {
 
-  //console.log(canvas.width, canvas.clientWidth);
-  ctx.clearRect(0, 0, CW(), CH());
-
-  // Grid
-  ctx.save();
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = "rgba(255,255,255,0.25)";
-  ctx.lineWidth = 1;
-
-  ctx.beginPath();
-  for (let x = 0; x <= CW(); x += GRID_STEP) {
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, CH());
-  }
-  for (let y = 0; y <= CH(); y += GRID_STEP) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(CW(), y);
-  }
+  water.render(ctx, canvas);
   
-  ctx.stroke();
-  ctx.restore();
+  islands.render(ctx);
 
   // Trail
   ctx.save();
@@ -592,20 +679,58 @@ function render() {
   // Enemies
   for (const e of enemies) renderEnemy(e);
 
-  // Player
-  ctx.save();
-  ctx.globalAlpha = 0.95;
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
-  ctx.fillStyle = "rgb(32,172,32)"; // grün
-  ctx.fill();
+ // Player ship (simple)
+ctx.save();
+ctx.translate(player.x, player.y);
 
-  // optional: outline
-  ctx.globalAlpha = 0.9;
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
+// Richtung aus Movement ableiten (wenn du willst). Minimal: immer nach rechts:
+const angle = Math.atan2((input.isDown("s")||input.isDown("arrowdown")) - (input.isDown("w")||input.isDown("arrowup")),
+                         (input.isDown("d")||input.isDown("arrowright")) - (input.isDown("a")||input.isDown("arrowleft")));
+const hasDir = (input.isDown("a")||input.isDown("d")||input.isDown("w")||input.isDown("s")||
+                input.isDown("arrowleft")||input.isDown("arrowright")||input.isDown("arrowup")||input.isDown("arrowdown"));
+ctx.rotate(hasDir ? angle : 0);
+
+ctx.globalAlpha = 0.95;
+
+// hull
+ctx.fillStyle = "rgb(90, 60, 35)";
+ctx.beginPath();
+ctx.moveTo(player.r + 10, 0);          // bow
+ctx.lineTo(-player.r - 8, -player.r);  // stern upper
+ctx.lineTo(-player.r - 14, 0);         // stern middle
+ctx.lineTo(-player.r - 8, player.r);   // stern lower
+ctx.closePath();
+ctx.fill();
+
+// deck highlight
+ctx.globalAlpha = 0.35;
+ctx.fillStyle = "#fff";
+ctx.beginPath();
+ctx.moveTo(player.r + 4, -2);
+ctx.lineTo(-player.r - 6, -player.r + 4);
+ctx.lineTo(-player.r - 10, 0);
+ctx.closePath();
+ctx.fill();
+
+// mast + sail
+ctx.globalAlpha = 0.9;
+ctx.strokeStyle = "rgba(255,255,255,0.85)";
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(-2, -player.r - 8);
+ctx.lineTo(-2, player.r + 6);
+ctx.stroke();
+
+ctx.fillStyle = "rgba(255,255,255,0.85)";
+ctx.beginPath();
+ctx.moveTo(-2, -player.r - 6);
+ctx.lineTo(player.r + 8, 0);
+ctx.lineTo(-2, player.r - 2);
+ctx.closePath();
+ctx.fill();
+
+ctx.restore();
+
 
   // Muzzle flash
   ctx.save();
@@ -626,11 +751,14 @@ function render() {
     ctx.closePath();
     ctx.fill();
   }
+  
   ctx.restore();
   damage.render(ctx);
+  
 
    const t = getTargetEnemy();
    drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
+   
 
   // Pause overlay
   if (paused) {
@@ -649,4 +777,13 @@ function render() {
     ctx.fillText("Press P to resume", canvas.width / 2, canvas.height / 2 + 18);
     ctx.restore();
   }
+  const ic = getIslandColliders();
+  ctx.save();
+  ctx.fillStyle = "rgba(255,0,0,0.5)";
+  for(const c of ic) {
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
 }

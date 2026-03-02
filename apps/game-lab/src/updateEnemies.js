@@ -1,49 +1,29 @@
 // src/updateEnemies.js
 export function updateEnemies(dt, state) {
   const {
-    enemies,
-    player,
-    canvas,
+    enemies, player, canvas,
     ENEMY_SPEED,
     ENEMY_FIRE_ENABLED,
     ENEMY_FIRE_COOLDOWN,
     ENEMY_BULLET_SPEED,
     ENEMY_BULLET_TTL,
-    norm,
-    rand,
+    ENEMY_AGGRO_TIME,
+    norm, rand,
     spawnProjectile,
+    islands, // ✅
   } = state;
 
-  const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
-
-  // IMPORTANT: movement/bounds in CSS pixels (because ctx.setTransform(dpr,..))
-  const CW = canvas.clientWidth;
-  const CH = canvas.clientHeight;
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
   for (let i = 0; i < enemies.length; i++) {
     const e = enemies[i];
     if (!e) continue;
 
-    e.hitT = Math.max(0, e.hitT - dt);
+    e.hitT = Math.max(0, (e.hitT ?? 0) - dt);
 
     // Aggro timer
     e.aggroT = Math.max(0, (e.aggroT ?? 0) - dt);
     const isAggro = e.aggroT > 0;
-
-    // Unfreeze wenn Aggro vorbei
-    if (e.stunned && !isAggro) {
-      e.stunned = false;
-
-      //neue Richtung geben
-        e.vx = rand(-1, 1);
-        e.vy = rand(-1, 1);
-        const n = norm(e.vx, e.vy);
-        e.vx = n.x;
-        e.vy = n.y;
-
-        //turn timer neustarten
-        e.turnT = rand(0.4, 1.2);
-    }
 
     // Shooting (auch wenn stunned)
     if (ENEMY_FIRE_ENABLED && isAggro) {
@@ -75,25 +55,35 @@ export function updateEnemies(dt, state) {
     // Movement only if not stunned
     if (e.stunned) continue;
 
-    e.turnT -= dt;
+    // Wander
+    e.turnT = (e.turnT ?? 0) - dt;
     if (e.turnT <= 0) {
       e.turnT = rand(0.4, 1.2);
-      e.vx += rand(-0.6, 0.6);
-      e.vy += rand(-0.6, 0.6);
+      e.vx = (e.vx ?? 0) + rand(-0.6, 0.6);
+      e.vy = (e.vy ?? 0) + rand(-0.6, 0.6);
       const n = norm(e.vx, e.vy);
       e.vx = n.x;
       e.vy = n.y;
     }
 
+    // Move
     e.x += e.vx * ENEMY_SPEED * dt;
     e.y += e.vy * ENEMY_SPEED * dt;
 
-    // bounce
-    if (e.x < e.r || e.x > CW - e.r) e.vx *= -1;
-    if (e.y < e.r || e.y > CH - e.r) e.vy *= -1;
+    // Bounce screen
+    if (e.x < e.r || e.x > canvas.clientWidth - e.r) e.vx *= -1;
+    if (e.y < e.r || e.y > canvas.clientHeight - e.r) e.vy *= -1;
 
-    // clamp (CSS px)
-    e.x = clamp(e.x, e.r, CW - e.r);
-    e.y = clamp(e.y, e.r, CH - e.r);
+    // Clamp screen
+    e.x = clamp(e.x, e.r, canvas.clientWidth - e.r);
+    e.y = clamp(e.y, e.r, canvas.clientHeight - e.r);
+
+    // ✅ Island collision push-out (der Key!)
+    if (islands?.resolveCircle) {
+      islands.resolveCircle(e);
+      // optional: nach Push-Out nochmal clampen
+      e.x = clamp(e.x, e.r, canvas.clientWidth - e.r);
+      e.y = clamp(e.y, e.r, canvas.clientHeight - e.r);
+    }
   }
 }
