@@ -18,7 +18,6 @@ export function updateProjectiles(dt, state) {
       projectiles.splice(i, 1);
       continue;
     }
-
     if (p.fromEnemy) {
       // hit player
       const rr = p.r + player.r;
