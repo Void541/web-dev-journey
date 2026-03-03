@@ -1,21 +1,16 @@
 // src/islands.js
-export function createIslands(canvas) {
+export function createIslands() {
   const islands = [];
-
-  function add(x, y, r) {
-    islands.push({ x, y, r });
-  }
+  const add = (x, y, r) => islands.push({ x, y, r });
 
   // Example layout (you can tweak later)
-  function generateDefault() {
-    const W = canvas.clientWidth;
-    const H = canvas.clientHeight;
-
+  function generateDefault(world) {
     islands.length = 0;
-    add(W * 0.30, H * 0.35, 55);
-    add(W * 0.70, H * 0.62, 70);
-    add(W * 0.52, H * 0.25, 45);
+    add(world.w * 0.30, world.h * 0.35, 55);
+    add(world.w * 0.70, world.h * 0.62, 70);
+    add(world.w * 0.52, world.h * 0.25, 45);
   }
+
 
   function render(ctx) {
     ctx.save();

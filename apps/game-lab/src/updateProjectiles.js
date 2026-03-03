@@ -1,6 +1,7 @@
 // src/updateProjectiles.js
 export function updateProjectiles(dt, state) {
   const { canvas, player, enemies, projectiles, combat, dist2 } = state;
+  const {onEnemyKilled} = state;
 
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
@@ -23,6 +24,7 @@ export function updateProjectiles(dt, state) {
       const rr = p.r + player.r;
       if (dist2(p.x, p.y, player.x, player.y) <= rr * rr) {
         player.hp -= p.dmg;
+        state.onPlayerHit?.(p); // NEU: Callback auf Player-Hit
         projectiles.splice(i, 1);
         continue;
       }
@@ -51,8 +53,11 @@ export function updateProjectiles(dt, state) {
           projectiles.splice(i, 1);
 
           if (e.hp <= 0) {
+            
             if (combat.targetId === e.id) combat.targetId = null;
+            onEnemyKilled(e); // NEU: Callback auf Enemy-Kill
             enemies.splice(ei, 1);
+
           }
           break;
         }

@@ -8,52 +8,87 @@ import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
 
+let wave = 1;
+let waveActive = false;
+let waveEnemiesLeft = 0;
+const waveCooldown = 2; // Sekunden zwischen Wellen
+let waveTimer = waveCooldown;
+let waveSpawnLeft = 0;
+let waveSpawnTimer = 0;
+const WAVE_SPAWN_EVERY = 0.35// Sekunden zwischen Spawns innerhalb einer Welle
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const fpsEl = document.getElementById("fps");
 const input = createInput();
-const islands = createIslands(canvas);
-islands.generateDefault();
+const islands = createIslands();
 const water = createWater();
 const damage = createDamageSystem();
 const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
 
-// ---------- Canvas fit ----------
-function fitCanvas() {
-  
+// Debug helpers (make module state visible in DevTools)
+window.__dbg = {
+  get wave() { return wave; },
+  get waveActive() { return waveActive; },
+  get waveTimer() { return waveTimer; },
+  get waveSpawnLeft() { return waveSpawnLeft; },
+  get waveEnemiesLeft() { return waveEnemiesLeft; },
+  startWave: () => startWave(),
+};
 
+// --- Repair ---
+const repair = {
+  active: false,
+  rate: 1.2, // HP per second
+  minDelay:0.25, // seconds after taking damage until repair starts
+  t: 0,
+  healAcc: 0, // für diskrete Heal-Amounts, optional
+  interrupted: false, // optional, falls du eine "Repair unterbrochen"-Logik haben willst
+  fxT: 0, // für visuelle Effekte beim Heilen
+  breakFlash: 0, // für visuelle Effekte beim Unterbrechen durch Schaden
+};
+
+//World/Camera
+const world = {
+  w: 4000,
+  h: 1400,
+};
+
+const camera = {
+  x: 0,
+  y: 0,
+  smooth:0.12,
+};
+
+
+function regenerateIslands() {
+  islands.generateDefault(world);
+}
+
+function fitCanvas() {
   const wrapper = canvas.parentElement;
   const maxW = wrapper.clientWidth;
   const maxH = wrapper.clientHeight;
 
   const aspect = 16 / 9;
-
   let cssW = maxW;
   let cssH = cssW / aspect;
-
-  if (cssH > maxH) {
-    cssH = maxH;
-    cssW = cssH * aspect;
-  }
+  if (cssH > maxH) { cssH = maxH; cssW = cssH * aspect; }
 
   const dpr = window.devicePixelRatio || 1;
-
-  // CSS size (layout)
   canvas.style.width = `${cssW}px`;
   canvas.style.height = `${cssH}px`;
-
-  // Real pixel buffer (drawing resolution)
   canvas.width = Math.floor(cssW * dpr);
   canvas.height = Math.floor(cssH * dpr);
 
-  // Normalize drawing coords back to CSS pixels
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  islands.generateDefault();
+  regenerateIslands();
 }
+
 window.addEventListener("resize", fitCanvas);
-fitCanvas();
+fitCanvas(); // das callt dann auch regenerateIslands()
 
 function getIslandColliders() {
   if (typeof islands.getColliders === "function") {
@@ -107,6 +142,8 @@ const ENEMY_BULLET_TTL = 2.6;
 
 const TRAIL_MAX = 80;
 
+
+
 // Seafight-ish combat
 const combat = {
   targetId: null,
@@ -147,7 +184,13 @@ function togglePause() {
   loop.setPaused(paused);
 }
 window.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() === "p") togglePause();
+  const k = e.key.toLowerCase();
+  if (k === "p") togglePause();
+
+  if(k === "r") {
+    repair.active = !repair.active;
+    repair.t = 0;
+  }
 });
 
 // ---------- Theme toggle ----------
@@ -173,15 +216,16 @@ function findEnemyAt(x, y) {
 
 canvas.addEventListener("click", (ev) => {
   const m = getMousePos(ev);
-  const e = findEnemyAt(m.x, m.y);
+  const wpos = screenToWorld(m.x, m.y);
+  const e = findEnemyAt(wpos.x, wpos.y);
   combat.targetId = e ? e.id : null;
 });
 
 // ---------- Spawning ----------
 function spawnEnemy() {
 const step = 48;
-const w = CW();
-const h = CH();
+const w = world.w;
+const h = world.h;
 
 ctx.beginPath();
 for (let x = 0; x <= w; x += step) {
@@ -256,6 +300,19 @@ while (tries++ < 40) {
   if (enemies.length > ENEMY_CAP) enemies.shift();
 }
 
+function startWave() {
+  waveActive = true;
+
+  // Anzahl Gegner = Wellen-Nummer + bisschen Zufall
+  const base = 3;
+  const scale = 2;
+
+  const total = base + wave * scale;
+  waveEnemiesLeft = total; // Setze die Anzahl der Gegner, die in dieser Welle noch gespawnt werden müssen
+  waveSpawnLeft = total; // Setze die Anzahl der Gegner, die noch gespawnt werden müssen
+  waveSpawnTimer = 0.2; // Timer zurücksetzen, damit sofort der erste Gegner spawnt
+}
+
 // projectile travel
 function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
   projectiles.push({
@@ -309,7 +366,67 @@ function update(dt) {
     return;
   }
 
+// --- Repair: wenn aktiv, darfst du nicht bewegen + kontinuierlich heilen
+// Wir merken uns, ob der Spieler sich bewegen wollte:
+const wantsMove =
+  input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
+  input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
+
+// Wenn Repair aktiv und Player will sich bewegen -> abbrechen
+if (repair.active && wantsMove) {
+  repair.active = false;
+  repair.t = 0;
+  repair.interrupted = true; // optional, falls du eine "Repair unterbrochen"-Logik haben willst
+}
+
+// Heal über Zeit (nur wenn aktiv, nicht tot, nicht full hp)
+if (repair.active && player.hp > 0 && player.hp < player.maxHp) {
+  repair.interrupted = false; // optional, falls du eine "Repair unterbrochen"-Logik haben willst
+  repair.fxT += dt; // für visuelle Effekte beim Heilen
+  repair.healAcc += repair.rate * dt; // für diskrete Heal-Amounts, optional
+
+  while (repair.healAcc >= 1 && player.hp < player.maxHp) {
+    player.hp += 1;
+    repair.healAcc -= 1;
+  }
+if (player.hp >= player.maxHp) {
+  repair.active = false;
+  repair.t = 0;
+}
+
+} else {
+  if (!repair.active) repair.healAcc = 0; // reset Acc, wenn Repair nicht aktiv ist
+}
+
 water.update(dt);
+
+// ---- Wave System (D: spawn over time) ----
+if (!waveActive) {
+  waveTimer = Math.max(0, waveTimer - dt);
+
+  if (waveTimer <= 0) {
+    startWave();
+  }
+} else {
+  // Spawn Tick
+  if (waveSpawnLeft > 0) {
+    waveSpawnTimer -= dt;
+
+    const canSpawn = enemies.length < ENEMY_CAP;
+    if (waveSpawnTimer <= 0 && canSpawn) {
+      spawnEnemy();
+      waveSpawnLeft--;
+      waveSpawnTimer = WAVE_SPAWN_EVERY;
+    }
+  }
+
+  // Wave finished: alles gespawnt + alles gekillt
+  if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
+    waveActive = false;
+    wave++;
+    waveTimer = waveCooldown;
+  }
+}
 
   // ---- Player movement
   let ax = 0,
@@ -333,8 +450,8 @@ islands.resolveCircle(player);
   player.x += ax * PLAYER_SPEED * dt;
   player.y += ay * PLAYER_SPEED * dt;
 
-  player.x = clamp(player.x, player.r, CW() - player.r);
-  player.y = clamp(player.y, player.r, CH() - player.r);
+  player.x = clamp(player.x, player.r, world.w - player.r);
+  player.y = clamp(player.y, player.r, world.h - player.r);
 
   if(typeof islands.resolveCircle === "function") {
     islands.resolveCircle(player);
@@ -350,12 +467,7 @@ islands.resolveCircle(player);
     if (trail[i].t <= 0) trail.splice(i, 1);
   }
 
-  // ---- Enemy spawning
-  spawnTimer -= dt;
-  if (spawnTimer <= 0) {
-    spawnEnemy();
-    spawnTimer = ENEMY_SPAWN_EVERY;
-  }
+
  // ---- Enemies update (wander + bounce + optional shooting)
 updateEnemies(dt, {
   enemies, player, canvas,
@@ -396,8 +508,19 @@ updateEnemies(dt, {
   ENEMY_AGGRO_TIME,
   damage,
   islandColliders,
-});
+  onEnemyKilled: () => {
+    waveEnemiesLeft = Math.max(0, waveEnemiesLeft - 1);
+  },
 
+  onPlayerHit: () => {
+    // Repair bricht ab sobald Schaden kommt
+    repair.active = false;
+    repair.t = 0;
+    repair.interrupted = true; 
+    repair.breakFlash = 0.4; // für visuelle Effekte beim Unterbrechen durch Schaden
+  },
+});
+repair.breakFlash = Math.max(0, repair.breakFlash - dt);
 
   // ---- Effects
   for (let i = effects.length - 1; i >= 0; i--) {
@@ -423,7 +546,9 @@ updateEnemies(dt, {
     fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
   }
   damage.update(dt);
-  
+
+  updateCamera();
+
   input.endFrame();
 }
 
@@ -502,6 +627,33 @@ function drawHpBar(x, y, w, h, hp, maxHp, label, align = "left") {
   ctx.fillText(text, panelX + panelW - inner, barY - 2);
 
   ctx.restore();
+}
+
+function clampCam() {
+  const vw = canvas.clientWidth;
+  const vh = canvas.clientHeight;
+  camera.x = clamp(camera.x, 0, Math.max(0, world.w - vw));
+  camera.y = clamp(camera.y, 0, Math.max(0, world.h - vh));
+}
+
+function updateCamera() {
+  const vw = canvas.clientWidth;
+  const vh = canvas.clientHeight;
+
+  const targetX = player.x - vw / 2;
+  const targetY = player.y - vh / 2;
+
+  camera.x += (targetX - camera.x) * camera.smooth;
+  camera.y += (targetY - camera.y) * camera.smooth;
+
+  clampCam();
+}
+
+function screenToWorld(sx, sy) {
+  return {
+    x: sx + camera.x,
+    y: sy + camera.y,
+  };
 }
 
 function renderReloadUI() {
@@ -648,9 +800,27 @@ function renderEnemy(e) {
 
 // ---------- Render ----------
 function render() {
+  // 1) clear in CSS pixels
+  ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+  ctx.clearRect(0, 0, CW(), CH());
 
+  // 2) Screen-space background (bleibt "am Bildschirm kleben")
   water.render(ctx, canvas);
-  
+
+  // Wave info
+  if(!waveActive) {
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(`Next wave in ${Math.ceil(waveTimer)}s`, CW() / 2, 52);
+    ctx.restore();
+  }
+
+  // 3) World-space draw (alles was sich mit Kamera bewegt)
+  ctx.save();
+  ctx.translate(-camera.x, -camera.y);
+
   islands.render(ctx);
 
   // Trail
@@ -675,69 +845,65 @@ function render() {
   }
   ctx.restore();
 
-
   // Enemies
   for (const e of enemies) renderEnemy(e);
 
- // Player ship (simple)
-ctx.save();
-ctx.translate(player.x, player.y);
+  // Player ship
+  ctx.save();
+  ctx.translate(player.x, player.y);
 
-// Richtung aus Movement ableiten (wenn du willst). Minimal: immer nach rechts:
-const angle = Math.atan2((input.isDown("s")||input.isDown("arrowdown")) - (input.isDown("w")||input.isDown("arrowup")),
-                         (input.isDown("d")||input.isDown("arrowright")) - (input.isDown("a")||input.isDown("arrowleft")));
-const hasDir = (input.isDown("a")||input.isDown("d")||input.isDown("w")||input.isDown("s")||
-                input.isDown("arrowleft")||input.isDown("arrowright")||input.isDown("arrowup")||input.isDown("arrowdown"));
-ctx.rotate(hasDir ? angle : 0);
+  const angle = Math.atan2(
+    (input.isDown("s") || input.isDown("arrowdown")) - (input.isDown("w") || input.isDown("arrowup")),
+    (input.isDown("d") || input.isDown("arrowright")) - (input.isDown("a") || input.isDown("arrowleft"))
+  );
+  const hasDir =
+    input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
+    input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
 
-ctx.globalAlpha = 0.95;
+  ctx.rotate(hasDir ? angle : 0);
 
-// hull
-ctx.fillStyle = "rgb(90, 60, 35)";
-ctx.beginPath();
-ctx.moveTo(player.r + 10, 0);          // bow
-ctx.lineTo(-player.r - 8, -player.r);  // stern upper
-ctx.lineTo(-player.r - 14, 0);         // stern middle
-ctx.lineTo(-player.r - 8, player.r);   // stern lower
-ctx.closePath();
-ctx.fill();
+  ctx.globalAlpha = 0.95;
+  ctx.fillStyle = "rgb(90, 60, 35)";
+  ctx.beginPath();
+  ctx.moveTo(player.r + 10, 0);
+  ctx.lineTo(-player.r - 8, -player.r);
+  ctx.lineTo(-player.r - 14, 0);
+  ctx.lineTo(-player.r - 8, player.r);
+  ctx.closePath();
+  ctx.fill();
 
-// deck highlight
-ctx.globalAlpha = 0.35;
-ctx.fillStyle = "#fff";
-ctx.beginPath();
-ctx.moveTo(player.r + 4, -2);
-ctx.lineTo(-player.r - 6, -player.r + 4);
-ctx.lineTo(-player.r - 10, 0);
-ctx.closePath();
-ctx.fill();
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.moveTo(player.r + 4, -2);
+  ctx.lineTo(-player.r - 6, -player.r + 4);
+  ctx.lineTo(-player.r - 10, 0);
+  ctx.closePath();
+  ctx.fill();
 
-// mast + sail
-ctx.globalAlpha = 0.9;
-ctx.strokeStyle = "rgba(255,255,255,0.85)";
-ctx.lineWidth = 2;
-ctx.beginPath();
-ctx.moveTo(-2, -player.r - 8);
-ctx.lineTo(-2, player.r + 6);
-ctx.stroke();
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-2, -player.r - 8);
+  ctx.lineTo(-2, player.r + 6);
+  ctx.stroke();
 
-ctx.fillStyle = "rgba(255,255,255,0.85)";
-ctx.beginPath();
-ctx.moveTo(-2, -player.r - 6);
-ctx.lineTo(player.r + 8, 0);
-ctx.lineTo(-2, player.r - 2);
-ctx.closePath();
-ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.beginPath();
+  ctx.moveTo(-2, -player.r - 6);
+  ctx.lineTo(player.r + 8, 0);
+  ctx.lineTo(-2, player.r - 2);
+  ctx.closePath();
+  ctx.fill();
 
-ctx.restore();
-
+  ctx.restore();
 
   // Muzzle flash
   ctx.save();
   ctx.fillStyle = "#fff";
   for (const e of effects) {
     const life = Math.max(0, e.t / 0.12);
-
     ctx.globalAlpha = 0.55 * life;
     ctx.beginPath();
     ctx.arc(e.x, e.y, 14, 0, Math.PI * 2);
@@ -751,39 +917,155 @@ ctx.restore();
     ctx.closePath();
     ctx.fill();
   }
-  
   ctx.restore();
-  damage.render(ctx);
-  
 
-   const t = getTargetEnemy();
-   drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
-   
 
-  // Pause overlay
-  if (paused) {
-    ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // --- Repair Visual FX ---
+if (repair.active) {
+  ctx.save();
 
-    ctx.fillStyle = "#fff";
-    ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("PAUSED", canvas.width / 2, canvas.height / 2 - 12);
+  // sanfter grüner Glow pulsierend
+  const pulse = 0.6 + Math.sin(repair.fxT * 4) * 0.4;
 
-    ctx.globalAlpha = 0.85;
-    ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("Press P to resume", canvas.width / 2, canvas.height / 2 + 18);
-    ctx.restore();
+  ctx.globalAlpha = 0.25 * pulse;
+  ctx.fillStyle = "rgba(120,255,120,1)";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r + 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  // kleine Partikel (Holzsplitter Look)
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = "rgba(180,255,180,1)";
+
+  for (let i = 0; i < 6; i++) {
+    const angle = repair.fxT * 2 + i;
+    const dist = 18 + (Math.sin(repair.fxT * 3 + i) * 6);
+    const px = player.x + Math.cos(angle) * dist;
+    const py = player.y + Math.sin(angle) * dist;
+
+    ctx.beginPath();
+    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+    ctx.fill();
   }
+
+  ctx.restore();
+}
+
+if (repair.breakFlash > 0) {
+  ctx.save();
+
+  ctx.globalAlpha = repair.breakFlash * 0.8;
+  ctx.fillStyle = "rgba(255,80,80,1)";
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.r + 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+  damage.render(ctx);
+
+  // debug colliders (world-space!)
   const ic = getIslandColliders();
   ctx.save();
-  ctx.fillStyle = "rgba(255,0,0,0.5)";
-  for(const c of ic) {
+  ctx.fillStyle = "rgba(255,0,0,0.25)";
+  for (const c of ic) {
     ctx.beginPath();
     ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.restore();
+
+  // done with world-space
+  ctx.restore();
+  
+  function drawRepairBar() {
+  const x = 18;
+  const y = 112;     // unter HP/Reload
+  const w = 220;
+  const h = 10;
+
+  // Progress bis zum nächsten +1 HP Tick (0..1)
+  const p = Math.max(0, Math.min(1, repair.healAcc));
+
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+
+  // Panel
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  ctx.fillRect(x - 10, y - 18, w + 170, 42);
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  const label =
+    player.hp >= player.maxHp ? "Repair (Full)" :
+    repair.active ? "Repairing..." :
+    repair.interrupted ? "Repair interrupted" :
+    "Repair: Press R";
+
+  ctx.fillText(label, x, y - 16);
+
+  // Bar bg
+  ctx.globalAlpha = 0.35;
+  ctx.fillStyle = "#000";
+  ctx.fillRect(x, y, w, h);
+
+  // Bar fill (nur sichtbar wenn aktiv)
+  ctx.globalAlpha = repair.active ? 0.9 : 0.2;
+  ctx.fillStyle = "rgba(120,255,120,0.95)";
+  ctx.fillRect(x, y, w * p, h);
+
+  // Stroke
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = "#fff";
+  ctx.strokeRect(x, y, w, h);
+
+  // Text rechts: HP ganzzahlig
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "left";
+  ctx.fillText(`${player.hp} / ${player.maxHp}`, x + w + 12, y - 4);
+
+  ctx.restore();
+}
+
+  // 4) Screen-space HUD (NICHT mit Kamera bewegen)
+  const t = getTargetEnemy();
+  drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
+  drawRepairBar();
+
+  ctx.save();
+  ctx.fillStyle = repair.active ? "rgba(120,255,120,0.95)" : "rgba(255,255,255,0.75)";
+  ctx.font = "600 14px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(repair.active ? "Repairing... (R to Stop)" : "Repair: Press R", 18, 92);
+  ctx.restore();
+
+  ctx.save();
+ctx.fillStyle = "#fff";
+ctx.font = "600 16px system-ui";
+ctx.textAlign = "center";
+ctx.fillText(`Wave ${wave}`, canvas.clientWidth / 2, 28);
+ctx.restore();
+
+
+  if (paused) {
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, CW(), CH());
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("PAUSED", CW() / 2, CH() / 2 - 12);
+
+    ctx.globalAlpha = 0.85;
+    ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+    ctx.fillText("Press P to resume", CW() / 2, CH() / 2 + 18);
+    ctx.restore();
+  }
 }
