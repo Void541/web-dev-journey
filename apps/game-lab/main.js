@@ -8,6 +8,10 @@ import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
 
+const OVERWORLD_TARGET_ENEMIES = 18;  // wie viele NPCs "rumfahren"
+const OVERWORLD_SPAWN_EVERY = 1.2;
+let overworldSpawnTimer = 0;
+
 let wave = 1;
 let waveActive = false;
 let waveEnemiesLeft = 0;
@@ -122,6 +126,82 @@ function getMousePos(evt) {
   };
 }
 
+// ---- World presents ----
+const WORLDS={
+  overworld: { w:4000, h:1400 },
+  bonusmap: { w: 1200, h: 700 },
+};
+let mode = "overworld";
+
+function applyWorld(present) {
+  world.w = present.w;
+  world.h = present.h;
+
+  islands.generateDefault(world);
+
+  clampCam();
+}
+
+function resetCommon() {
+  // shared combat/state cleanup
+  combat.targetId = null;
+  combat.cooldown = 0;
+
+  projectiles.length = 0;
+  effects.length = 0;
+  trail.length = 0;
+
+  // optional: player HP beim Wechsel voll
+  player.hp = player.maxHp;
+}
+
+function enterBonusmap() {
+  resetCommon();
+
+  // wave state sauber
+  wave = 1;
+  waveActive = false;
+  waveEnemiesLeft = 0;
+  waveTimer = waveCooldown;
+  waveSpawnLeft = 0;
+  waveSpawnTimer = 0;
+
+  enemies.length = 0;
+
+  // optional: player start pos für bonusmap
+  player.x = 200;
+  player.y = 200;
+
+  // optional: islands neu generieren (wenn bonusmap eigene islands hat)
+  // islands.generateDefault(world);
+}
+// ---------- Overworld ----------
+function enterOverworld() {
+  resetCommon();
+
+  // overworld spawn timer sauber
+  overworldSpawnTimer = 0;
+
+  enemies.length = 0;
+
+  // optional: player start pos für overworld (z.B. Mitte)
+  player.x = world.w * 0.5;
+  player.y = world.h * 0.5;
+
+  // islands ggf. anders / mehr / größere map:
+  islands.generateDefault(world);
+}
+
+function setMode(next) {
+  if (mode === next) return;
+  mode = next;
+
+  if (mode === "bonusmap") {
+    enterBonusmap();
+  } else enterOverworld(); 
+    console.log("Mode", mode);
+}
+
 // ---------- Tuning ----------
 const GRID_STEP = 48;
 
@@ -190,6 +270,9 @@ window.addEventListener("keydown", (e) => {
   if(k === "r") {
     repair.active = !repair.active;
     repair.t = 0;
+  }
+  if(k === "m") {
+    setMode(mode === "bonusmap" ? "overworld" : "bonusmap");
   }
 });
 
@@ -271,8 +354,8 @@ while (tries++ < 40) {
   if (ok) break;
 
   // neu würfeln
-  x = rand(margin, CW() - margin);
-  y = rand(margin, CH() - margin);
+  x = rand(margin, world.w - margin);
+  y = rand(margin, world.h - margin);
 }
 
   // Richtung grob zur Mitte + bisschen Zufall
@@ -358,6 +441,54 @@ function fireAtTarget(target) {
   effects.push({ type: "flash", x: startX, y: startY, t: 0.08 });
 }
 
+function updateOverworld(dt) {
+  overworldSpawnTimer -= dt;
+  const need = enemies.length < OVERWORLD_TARGET_ENEMIES;
+  if (overworldSpawnTimer <= 0 && need) {
+    spawnEnemy();
+    overworldSpawnTimer = OVERWORLD_SPAWN_EVERY;
+  }
+}
+
+function updateBonusmapWaves(dt) {
+// ---- Wave System (D: spawn over time) ----
+if (!waveActive) {
+  waveTimer = Math.max(0, waveTimer - dt);
+
+  if (waveTimer <= 0) {
+    startWave();
+  }
+} else {
+  // Spawn Tick
+  if (waveSpawnLeft > 0) {
+    waveSpawnTimer -= dt;
+
+    const canSpawn = enemies.length < ENEMY_CAP;
+    if (waveSpawnTimer <= 0 && canSpawn) {
+      spawnEnemy();
+      waveSpawnLeft--;
+      waveSpawnTimer = WAVE_SPAWN_EVERY;
+    }
+  }
+
+  if (mode === "bonusmap") {
+    // Bonusmap specific logic
+  updateBonusmapWaves(dt);
+  } else {
+    // Overworld specific logic
+  updateOverworld(dt);  
+  }
+
+
+  // Wave finished: alles gespawnt + alles gekillt
+  if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
+    waveActive = false;
+    wave++;
+    waveTimer = waveCooldown;
+  }
+}
+}
+
 // ---------- Update ----------
 function update(dt) {
   time += dt;
@@ -400,34 +531,6 @@ if (player.hp >= player.maxHp) {
 
 water.update(dt);
 
-// ---- Wave System (D: spawn over time) ----
-if (!waveActive) {
-  waveTimer = Math.max(0, waveTimer - dt);
-
-  if (waveTimer <= 0) {
-    startWave();
-  }
-} else {
-  // Spawn Tick
-  if (waveSpawnLeft > 0) {
-    waveSpawnTimer -= dt;
-
-    const canSpawn = enemies.length < ENEMY_CAP;
-    if (waveSpawnTimer <= 0 && canSpawn) {
-      spawnEnemy();
-      waveSpawnLeft--;
-      waveSpawnTimer = WAVE_SPAWN_EVERY;
-    }
-  }
-
-  // Wave finished: alles gespawnt + alles gekillt
-  if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
-    waveActive = false;
-    wave++;
-    waveTimer = waveCooldown;
-  }
-}
-
   // ---- Player movement
   let ax = 0,
     ay = 0;
@@ -467,6 +570,40 @@ islands.resolveCircle(player);
     if (trail[i].t <= 0) trail.splice(i, 1);
   }
 
+// ---- SPAWNING by MODE ----
+if (mode === "bonusmap") {
+  // ---- Wave System (spawn over time) ----
+  if (!waveActive) {
+    waveTimer = Math.max(0, waveTimer - dt);
+    if (waveTimer <= 0) startWave();
+  } else {
+    // spawn tick
+    if (waveSpawnLeft > 0) {
+      waveSpawnTimer -= dt;
+
+      const canSpawn = enemies.length < ENEMY_CAP;
+      if (waveSpawnTimer <= 0 && canSpawn) {
+        spawnEnemy();
+        waveSpawnLeft--;
+        waveSpawnTimer = WAVE_SPAWN_EVERY;
+      }
+    }
+
+    // wave finished
+    if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
+      waveActive = false;
+      wave++;
+      waveTimer = waveCooldown;
+    }
+  }
+} else {
+  // ---- Overworld: normal spawns (no waves) ----
+  overworldSpawnTimer -= dt;
+  if (overworldSpawnTimer <= 0) {
+    spawnEnemy();
+    overworldSpawnTimer = OVERWORLD_SPAWN_EVERY;
+  }
+}
 
  // ---- Enemies update (wander + bounce + optional shooting)
 updateEnemies(dt, {
@@ -807,6 +944,7 @@ function render() {
   // 2) Screen-space background (bleibt "am Bildschirm kleben")
   water.render(ctx, canvas);
 
+  if (mode === "bonusmap") {
   // Wave info
   if(!waveActive) {
     ctx.save();
@@ -816,6 +954,7 @@ function render() {
     ctx.fillText(`Next wave in ${Math.ceil(waveTimer)}s`, CW() / 2, 52);
     ctx.restore();
   }
+}
 
   // 3) World-space draw (alles was sich mit Kamera bewegt)
   ctx.save();
