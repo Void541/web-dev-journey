@@ -7,19 +7,27 @@ import { drawHud } from "./src/hud.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
+import { createBonusmap } from "./src/modes/bonusmap(Vorläufig Deaktiv).js";
+import { createOverworld } from "./src/modes/overworld.js";
 
-const OVERWORLD_TARGET_ENEMIES = 18;  // wie viele NPCs "rumfahren"
-const OVERWORLD_SPAWN_EVERY = 1.2;
+
+const overworld = createOverworld();
+const bonusmap = createBonusmap();
+
+let currentMode = overworld; // default mode
+
+function setMode(next) {
+  mode = next;
+  state.mode = next;
+
+  applyWorld(WORLDS[next]);
+
+  currentMode= (next === "bonusmap")? bonusmap:overworld;
+  currentMode.enter(state);
+}
+
 let overworldSpawnTimer = 0;
 
-let wave = 1;
-let waveActive = false;
-let waveEnemiesLeft = 0;
-const waveCooldown = 2; // Sekunden zwischen Wellen
-let waveTimer = waveCooldown;
-let waveSpawnLeft = 0;
-let waveSpawnTimer = 0;
-const WAVE_SPAWN_EVERY = 0.35// Sekunden zwischen Spawns innerhalb einer Welle
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -30,16 +38,7 @@ const water = createWater();
 const damage = createDamageSystem();
 const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
-
-// Debug helpers (make module state visible in DevTools)
-window.__dbg = {
-  get wave() { return wave; },
-  get waveActive() { return waveActive; },
-  get waveTimer() { return waveTimer; },
-  get waveSpawnLeft() { return waveSpawnLeft; },
-  get waveEnemiesLeft() { return waveEnemiesLeft; },
-  startWave: () => startWave(),
-};
+const effect = [];
 
 // --- Repair ---
 const repair = {
@@ -91,6 +90,7 @@ function fitCanvas() {
   regenerateIslands();
 }
 
+
 window.addEventListener("resize", fitCanvas);
 fitCanvas(); // das callt dann auch regenerateIslands()
 
@@ -104,6 +104,12 @@ function getIslandColliders() {
   return [];
 }
 
+const enemyTypes = {
+  basic: { hp: 5, r: 16, fireEnabled: true, fireCooldown: 1.2, speed: 1.0, color: "rgb(170,45,40)" },
+  sniper: {hp: 3, r: 18, fireEnabled:true, fireCooldown: 2.6, speed: 1.15,range: 640,bulletSpeed: 520, color: "rgb(60,120,220)" },
+  disabler: {hp: 4, r: 16, fireEnabled:true, fireCooldown: 2.2, speed: 1, disableOnHit: {slowT: 1.2, slowMul: 0.6}, color: "rgb(160,60,200)" },
+  tank: {hp: 16, r: 22, fireEnabled: true, fireCooldown: 2.0, speed: 0.65, color: "rgb(120,40,40)" },
+};
 
 // ---------- Utils ----------
 function rand(min, max) {
@@ -131,7 +137,7 @@ const WORLDS={
   overworld: { w:4000, h:1400 },
   bonusmap: { w: 1200, h: 700 },
 };
-let mode = "overworld";
+
 
 function applyWorld(present) {
   world.w = present.w;
@@ -141,67 +147,6 @@ function applyWorld(present) {
 
   clampCam();
 }
-
-function resetCommon() {
-  // shared combat/state cleanup
-  combat.targetId = null;
-  combat.cooldown = 0;
-
-  projectiles.length = 0;
-  effects.length = 0;
-  trail.length = 0;
-
-  // optional: player HP beim Wechsel voll
-  player.hp = player.maxHp;
-}
-
-function enterBonusmap() {
-  resetCommon();
-
-  // wave state sauber
-  wave = 1;
-  waveActive = false;
-  waveEnemiesLeft = 0;
-  waveTimer = waveCooldown;
-  waveSpawnLeft = 0;
-  waveSpawnTimer = 0;
-
-  enemies.length = 0;
-
-  // optional: player start pos für bonusmap
-  player.x = 200;
-  player.y = 200;
-
-  // optional: islands neu generieren (wenn bonusmap eigene islands hat)
-  // islands.generateDefault(world);
-}
-// ---------- Overworld ----------
-function enterOverworld() {
-  resetCommon();
-
-  // overworld spawn timer sauber
-  overworldSpawnTimer = 0;
-
-  enemies.length = 0;
-
-  // optional: player start pos für overworld (z.B. Mitte)
-  player.x = world.w * 0.5;
-  player.y = world.h * 0.5;
-
-  // islands ggf. anders / mehr / größere map:
-  islands.generateDefault(world);
-}
-
-function setMode(next) {
-  if (mode === next) return;
-  mode = next;
-
-  if (mode === "bonusmap") {
-    enterBonusmap();
-  } else enterOverworld(); 
-    console.log("Mode", mode);
-}
-
 // ---------- Tuning ----------
 const GRID_STEP = 48;
 
@@ -242,6 +187,9 @@ const player = {
   r: PLAYER_R,
   hp: PLAYER_MAX_HP,
   maxHp: PLAYER_MAX_HP,
+
+  slowT: 0, // für Effekte von Disabler-Enemy
+  slowMul: 1.0, // für Effekte von Disabler-Enemy
 };
 
 const enemies = []; // {id,x,y,r,hp,maxHp,vx,vy,turnT,hitT,fireT}
@@ -255,7 +203,45 @@ let time = 0;
 let fpsSmoothing = 0;
 
 let enemyIdCounter = 1;
+let mode ="overworld";
+const state = {
+  canvas, ctx, input,
+  world, camera, 
+  player, enemies, projectiles, effects, trail,
+  combat, islands, water, damage,
+  //timers/mode:
+  mode,
+  overworldSpawnTimer,
+};
+state.enemyTypes = enemyTypes;
+state.mode = mode;
 
+state.wave = 1;
+state.waveActive = false;
+state.waveEnemiesLeft = 0;
+state.waveCooldown = 2;
+state.waveTimer = state.waveCooldown;
+state.waveSpawnLeft = 0;
+state.waveSpawnTimer = 0;
+
+state.overworldSpawnTimer = 0;
+
+const cfg = {
+  ENEMY_CAP,
+  // overworld
+  OVERWORLD_TARGET_ENEMIES: 20,
+  OVERWORLD_SPAWN_EVERY: 1.0,
+  // bonusmap waves
+  WAVE_COOLDOWN: 2,
+  WAVE_SPAWN_EVERY: 0.35,
+  WAVE_BASE: 3,
+  WAVE_SCALE: 2,
+};
+state.cfg = cfg;
+state.spawnEnemy = spawnEnemy;
+
+// Debug helpers (make module state visible in DevTools)
+window.__dbg = {state};
 // ---------- Pause ----------
 const loop = startLoop({ update, render });
 
@@ -271,9 +257,9 @@ window.addEventListener("keydown", (e) => {
     repair.active = !repair.active;
     repair.t = 0;
   }
-  if(k === "m") {
-    setMode(mode === "bonusmap" ? "overworld" : "bonusmap");
-  }
+  //if(k === "m") {
+  //  setMode(mode === "bonusmap" ? "overworld" : "bonusmap");
+  //}
 });
 
 // ---------- Theme toggle ----------
@@ -306,85 +292,68 @@ canvas.addEventListener("click", (ev) => {
 
 // ---------- Spawning ----------
 function spawnEnemy() {
-const step = 48;
-const w = world.w;
-const h = world.h;
+  const w = world.w;
+  const h = world.h;
 
-ctx.beginPath();
-for (let x = 0; x <= w; x += step) {
-  ctx.moveTo(x, 0);
-  ctx.lineTo(x, h);
-}
-for (let y = 0; y <= h; y += step) {
-  ctx.moveTo(0, y);
-  ctx.lineTo(w, y);
-}
-ctx.stroke();
+  const types = Object.keys(enemyTypes);
+  const type = types[Math.floor(Math.random() * types.length)];
+  const tcfg = enemyTypes[type];
 
-  const margin = ENEMY_R + 6; // sicher innerhalb
+  const r = tcfg.r ?? ENEMY_R;
+  const maxHp = tcfg.hp ?? ENEMY_MAX_HP;
+
+  const margin = r + 6;
   const side = Math.floor(Math.random() * 4);
 
   let x = 0, y = 0;
+  if (side === 0) { x = rand(margin, w - margin); y = margin; }
+  else if (side === 1) { x = w - margin; y = rand(margin, h - margin); }
+  else if (side === 2) { x = rand(margin, w - margin); y = h - margin; }
+  else { x = margin; y = rand(margin, h - margin); }
 
-  if (side === 0) {           // top
+  // nicht in Inseln spawnen
+  let tries = 0;
+  while (tries++ < 40) {
+    let ok = true;
+    for (const c of islands.getColliders()) {
+      const d = Math.hypot(x - c.x, y - c.y);
+      if (d < (c.r + r + 6)) { ok = false; break; }
+    }
+    if (ok) break;
+
     x = rand(margin, w - margin);
-    y = margin;
-  } else if (side === 1) {    // right
-    x = w - margin;
-    y = rand(margin, h - margin);
-  } else if (side === 2) {    // bottom
-    x = rand(margin, w - margin);
-    y = h - margin;
-  } else {                    // left
-    x = margin;
     y = rand(margin, h - margin);
   }
 
-  // nach x/y setzen:
-let tries = 0;
-while (tries++ < 40) {
-  // check: liegt in einer Insel?
-  let ok = true;
-  for (const c of islands.getColliders()) {
-    const dx = x - c.x;
-    const dy = y - c.y;
-    const d = Math.hypot(dx, dy);
-    if (d < (c.r + ENEMY_R + 6)) { ok = false; break; }
-  }
-  if (ok) break;
-
-  // neu würfeln
-  x = rand(margin, world.w - margin);
-  y = rand(margin, world.h - margin);
-}
-
-  // Richtung grob zur Mitte + bisschen Zufall
+  // initial dir zur map-mitte
   const cx = w * 0.5 + rand(-120, 120);
   const cy = h * 0.5 + rand(-120, 120);
   const dir = norm(cx - x, cy - y);
 
   enemies.push({
     id: enemyIdCounter++,
-    x,
-    y,
-    r: ENEMY_R,
-    hp: ENEMY_MAX_HP,
-    maxHp: ENEMY_MAX_HP,
+    type,
+    x, y,
+    r,
+    hp: maxHp,
+    maxHp,
     vx: dir.x,
     vy: dir.y,
+    fireEnabled: tcfg.fireEnabled ?? true,
+    fireCooldown: tcfg.fireCooldown ?? ENEMY_FIRE_COOLDOWN,
     turnT: rand(0.4, 1.2),
     hitT: 0,
-    fireT: ENEMY_FIRE_COOLDOWN,
+    fireT: tcfg.fireCooldown ?? ENEMY_FIRE_COOLDOWN,
     aggro: false,
     aggroT: 0,
-    stunned: false, 
+    stunned: false,
+    color: tcfg.color,
   });
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
 }
-
 function startWave() {
-  waveActive = true;
+  state.waveActive = true;
 
   // Anzahl Gegner = Wellen-Nummer + bisschen Zufall
   const base = 3;
@@ -407,6 +376,7 @@ function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
     dmg: dmg ?? 1,
     ttl: ttl ?? 2.0,
     r: r ?? 3,
+    effect: effect ?? null
   });
 }
 
@@ -441,61 +411,25 @@ function fireAtTarget(target) {
   effects.push({ type: "flash", x: startX, y: startY, t: 0.08 });
 }
 
-function updateOverworld(dt) {
-  overworldSpawnTimer -= dt;
-  const need = enemies.length < OVERWORLD_TARGET_ENEMIES;
-  if (overworldSpawnTimer <= 0 && need) {
-    spawnEnemy();
-    overworldSpawnTimer = OVERWORLD_SPAWN_EVERY;
-  }
-}
-
-function updateBonusmapWaves(dt) {
-// ---- Wave System (D: spawn over time) ----
-if (!waveActive) {
-  waveTimer = Math.max(0, waveTimer - dt);
-
-  if (waveTimer <= 0) {
-    startWave();
-  }
-} else {
-  // Spawn Tick
-  if (waveSpawnLeft > 0) {
-    waveSpawnTimer -= dt;
-
-    const canSpawn = enemies.length < ENEMY_CAP;
-    if (waveSpawnTimer <= 0 && canSpawn) {
-      spawnEnemy();
-      waveSpawnLeft--;
-      waveSpawnTimer = WAVE_SPAWN_EVERY;
-    }
-  }
-
-  if (mode === "bonusmap") {
-    // Bonusmap specific logic
-  updateBonusmapWaves(dt);
-  } else {
-    // Overworld specific logic
-  updateOverworld(dt);  
-  }
 
 
-  // Wave finished: alles gespawnt + alles gekillt
-  if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
-    waveActive = false;
-    wave++;
-    waveTimer = waveCooldown;
-  }
-}
-}
 
 // ---------- Update ----------
 function update(dt) {
+  if(Math.random()<0.01){
+    console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
+  }
   time += dt;
+
   if (paused) {
     input.endFrame();
     return;
   }
+
+  player.slowT = Math.max(0, (player.slowT ?? 0) - dt);
+  player.slowMul = player.slowT > 0 ? 0.6 : 1,0; // Beispiel: 40% slow, wenn slowT aktiv
+
+currentMode.update(dt, state);
 
 // --- Repair: wenn aktiv, darfst du nicht bewegen + kontinuierlich heilen
 // Wir merken uns, ob der Spieler sich bewegen wollte:
@@ -550,8 +484,8 @@ water.update(dt);
 
 islands.resolveCircle(player);
 
-  player.x += ax * PLAYER_SPEED * dt;
-  player.y += ay * PLAYER_SPEED * dt;
+  player.x += ax * PLAYER_SPEED * player.slowMul * dt;
+  player.y += ay * PLAYER_SPEED * player.slowMul * dt;
 
   player.x = clamp(player.x, player.r, world.w - player.r);
   player.y = clamp(player.y, player.r, world.h - player.r);
@@ -570,44 +504,11 @@ islands.resolveCircle(player);
     if (trail[i].t <= 0) trail.splice(i, 1);
   }
 
-// ---- SPAWNING by MODE ----
-if (mode === "bonusmap") {
-  // ---- Wave System (spawn over time) ----
-  if (!waveActive) {
-    waveTimer = Math.max(0, waveTimer - dt);
-    if (waveTimer <= 0) startWave();
-  } else {
-    // spawn tick
-    if (waveSpawnLeft > 0) {
-      waveSpawnTimer -= dt;
-
-      const canSpawn = enemies.length < ENEMY_CAP;
-      if (waveSpawnTimer <= 0 && canSpawn) {
-        spawnEnemy();
-        waveSpawnLeft--;
-        waveSpawnTimer = WAVE_SPAWN_EVERY;
-      }
-    }
-
-    // wave finished
-    if (waveSpawnLeft <= 0 && waveEnemiesLeft <= 0 && enemies.length === 0) {
-      waveActive = false;
-      wave++;
-      waveTimer = waveCooldown;
-    }
-  }
-} else {
-  // ---- Overworld: normal spawns (no waves) ----
-  overworldSpawnTimer -= dt;
-  if (overworldSpawnTimer <= 0) {
-    spawnEnemy();
-    overworldSpawnTimer = OVERWORLD_SPAWN_EVERY;
-  }
-}
 
  // ---- Enemies update (wander + bounce + optional shooting)
 updateEnemies(dt, {
   enemies, player, canvas,
+  world,
   ENEMY_SPEED,
   ENEMY_FIRE_ENABLED,
   ENEMY_FIRE_COOLDOWN,
@@ -618,8 +519,11 @@ updateEnemies(dt, {
   spawnProjectile,
   islandColliders,
   islands,
+  mode: state.mode,
+  enemyTypes: state.enemyTypes,
 });
 
+//console.log("Enemy_Speed",ENEMY_SPEED,"mode", mode, "world", state.world);
  // ---- Validate target
   const target = getTargetEnemy();
   if (combat.targetId && !target) combat.targetId = null;
@@ -641,14 +545,12 @@ updateEnemies(dt, {
 
   // ---- Projectiles update + collisions
  updateProjectiles(dt, {
-  canvas, player, enemies, projectiles, combat, dist2,
+  canvas, world: state.world,
+  player, enemies, projectiles, combat, dist2,
   ENEMY_AGGRO_TIME,
   damage,
   islandColliders,
-  onEnemyKilled: () => {
-    waveEnemiesLeft = Math.max(0, waveEnemiesLeft - 1);
-  },
-
+  onEnemyKilled: () => currentMode.onEnemyKilled?.(state),
   onPlayerHit: () => {
     // Repair bricht ab sobald Schaden kommt
     repair.active = false;
@@ -657,6 +559,7 @@ updateEnemies(dt, {
     repair.breakFlash = 0.4; // für visuelle Effekte beim Unterbrechen durch Schaden
   },
 });
+
 repair.breakFlash = Math.max(0, repair.breakFlash - dt);
 
   // ---- Effects
@@ -842,55 +745,114 @@ function renderEnemy(e) {
 
   const isTarget = combat.targetId === e.id;
   const angle = Math.atan2(e.vy, e.vx);
+
   renderShip(ctx, e.x, e.y, e.r, angle, isTarget, true);
   ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
 
-  function renderShip(ctx, x, y, r, angle, isTarget, isEnemy) {
+  ctx.__enemyType = e.type;
+  ctx.__enemyColor = e.color || "rgb(170,45,40)";
+
+ function renderShip(ctx, x, y, r, angle, isTarget, isEnemy) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
 
-  ctx.globalAlpha = 0.95;
+  // --- Klassen-Parameter (Silhouette) ---
+  const type = isEnemy ? (ctx.__enemyType || "basic") : "player";
 
-  // hull
-  ctx.fillStyle = isEnemy ? "rgb(170,45,40)" : "rgb(90, 60, 35)";
+  // Defaults
+  let hullFront = r + 10;
+  let hullBack1 = -r - 8;
+  let hullBack2 = -r - 14;
+  let hullHeight = r;          // wie "breit" das Schiff ist
+  let mastH = r + 8;
+  let mastX = -2;
+  let sailW = r + 8;
+  let sailTop = -r - 6;
+  let sailBottom = r - 2;
+  let mastLineW = 2;
+
+  // --- Silhouetten pro Klasse ---
+  if (type === "tank") {
+    hullFront = r + 8;
+    hullBack1 = -r - 12;
+    hullBack2 = -r - 18;
+    hullHeight = r * 1.25;       // breiter
+    mastH = r + 10;
+    mastLineW = 3;               // dicker Mast
+    sailW = r + 6;               // etwas kompakter
+  }
+
+  if (type === "sniper") {
+    hullFront = r + 16;          // langer Bug
+    hullBack1 = -r - 6;
+    hullBack2 = -r - 10;
+    hullHeight = r * 0.85;       // schlanker
+    mastH = r + 14;              // höherer Mast
+    sailW = r + 14;              // größere Segel
+  }
+
+  if (type === "disabler") {
+    hullFront = r + 12;
+    hullBack1 = -r - 9;
+    hullBack2 = -r - 15;
+    hullHeight = r * 1.05;
+    mastH = r + 12;
+    sailW = r + 10;
+  }
+
+  // --- Optional Aura beim Disabler (super klar lesbar) ---
+  if (type === "disabler") {
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = "rgba(160,60,200,1)";
+    ctx.beginPath();
+    ctx.arc(0, 0, r + 18, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // --- Hull ---
+  ctx.globalAlpha = 0.95;
+  ctx.fillStyle = isEnemy ? (ctx.__enemyColor || "rgb(170,45,40)") : "rgb(90, 60, 35)";
   ctx.beginPath();
-  ctx.moveTo(r + 10, 0);
-  ctx.lineTo(-r - 8, -r);
-  ctx.lineTo(-r - 14, 0);
-  ctx.lineTo(-r - 8, r);
+  ctx.moveTo(hullFront, 0);
+  ctx.lineTo(hullBack1, -hullHeight);
+  ctx.lineTo(hullBack2, 0);
+  ctx.lineTo(hullBack1, hullHeight);
   ctx.closePath();
   ctx.fill();
 
-  // deck highlight
-  ctx.globalAlpha = 0.25;
+  // --- Deck highlight ---
+  ctx.globalAlpha = 0.22;
   ctx.fillStyle = "#fff";
   ctx.beginPath();
   ctx.moveTo(r + 4, -2);
-  ctx.lineTo(-r - 6, -r + 4);
-  ctx.lineTo(-r - 10, 0);
+  ctx.lineTo(hullBack1 + 2, -hullHeight + 4);
+  ctx.lineTo(hullBack2 + 2, 0);
   ctx.closePath();
   ctx.fill();
 
-  // mast
+  // --- Mast ---
   ctx.globalAlpha = 0.85;
   ctx.strokeStyle = "rgba(255,255,255,0.75)";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = mastLineW;
   ctx.beginPath();
-  ctx.moveTo(-2, -r - 8);
-  ctx.lineTo(-2, r + 6);
+  ctx.moveTo(mastX, -mastH);
+  ctx.lineTo(mastX, r + 6);
   ctx.stroke();
 
-  // sail (enemy dunkler)
+  // --- Sail ---
+  ctx.globalAlpha = 0.85;
   ctx.fillStyle = isEnemy ? "rgba(255,220,220,0.75)" : "rgba(255,255,255,0.85)";
   ctx.beginPath();
-  ctx.moveTo(-2, -r - 6);
-  ctx.lineTo(r + 8, 0);
-  ctx.lineTo(-2, r - 2);
+  ctx.moveTo(mastX, sailTop);
+  ctx.lineTo(sailW, 0);
+  ctx.lineTo(mastX, sailBottom);
   ctx.closePath();
   ctx.fill();
 
-  // target ring
+  // --- Target ring ---
   if (isTarget) {
     ctx.globalAlpha = 0.9;
     ctx.strokeStyle = "#fff";
@@ -944,17 +906,6 @@ function render() {
   // 2) Screen-space background (bleibt "am Bildschirm kleben")
   water.render(ctx, canvas);
 
-  if (mode === "bonusmap") {
-  // Wave info
-  if(!waveActive) {
-    ctx.save();
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(`Next wave in ${Math.ceil(waveTimer)}s`, CW() / 2, 52);
-    ctx.restore();
-  }
-}
 
   // 3) World-space draw (alles was sich mit Kamera bewegt)
   ctx.save();
@@ -1041,6 +992,7 @@ function render() {
   // Muzzle flash
   ctx.save();
   ctx.fillStyle = "#fff";
+
   for (const e of effects) {
     const life = Math.max(0, e.t / 0.12);
     ctx.globalAlpha = 0.55 * life;
@@ -1120,7 +1072,7 @@ if (repair.breakFlash > 0) {
   
   function drawRepairBar() {
   const x = 18;
-  const y = 112;     // unter HP/Reload
+  const y = 132;     // unter HP/Reload
   const w = 220;
   const h = 10;
 
@@ -1180,14 +1132,13 @@ if (repair.breakFlash > 0) {
   ctx.fillStyle = repair.active ? "rgba(120,255,120,0.95)" : "rgba(255,255,255,0.75)";
   ctx.font = "600 14px system-ui";
   ctx.textAlign = "left";
-  ctx.fillText(repair.active ? "Repairing... (R to Stop)" : "Repair: Press R", 18, 92);
+  
   ctx.restore();
 
   ctx.save();
 ctx.fillStyle = "#fff";
 ctx.font = "600 16px system-ui";
 ctx.textAlign = "center";
-ctx.fillText(`Wave ${wave}`, canvas.clientWidth / 2, 28);
 ctx.restore();
 
 
