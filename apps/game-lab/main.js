@@ -9,6 +9,11 @@ import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
 import { createBonusmap } from "./src/modes/bonusmap(Vorläufig Deaktiv).js";
 import { createOverworld } from "./src/modes/overworld.js";
+import { enemyTypes } from "./src/enemyTypes.js";
+import { drawMinimap } from "./src/minimap.js";
+import { createWreckSystem } from "./src/wrecks.js";
+import { createLootTable } from "./src/lootTable.js";
+import * as CFG from "./src/config.js";
 
 
 const overworld = createOverworld();
@@ -104,13 +109,6 @@ function getIslandColliders() {
   return [];
 }
 
-const enemyTypes = {
-  basic: { hp: 5, r: 16, fireEnabled: true, fireCooldown: 1.2, speed: 1.0, color: "rgb(170,45,40)" },
-  sniper: {hp: 3, r: 18, fireEnabled:true, fireCooldown: 2.6, speed: 1.15,range: 640,bulletSpeed: 520, color: "rgb(60,120,220)" },
-  disabler: {hp: 4, r: 16, fireEnabled:true, fireCooldown: 2.2, speed: 1, disableOnHit: {slowT: 1.2, slowMul: 0.6}, color: "rgb(160,60,200)" },
-  tank: {hp: 16, r: 22, fireEnabled: true, fireCooldown: 2.0, speed: 0.65, color: "rgb(120,40,40)" },
-};
-
 // ---------- Utils ----------
 function rand(min, max) {
   return Math.random() * (max - min) + min;
@@ -166,8 +164,6 @@ const ENEMY_BULLET_SPEED = 320;
 const ENEMY_BULLET_TTL = 2.6;
 
 const TRAIL_MAX = 80;
-
-
 
 // Seafight-ish combat
 const combat = {
@@ -240,6 +236,34 @@ const cfg = {
 state.cfg = cfg;
 state.spawnEnemy = spawnEnemy;
 
+const wrecks = createWreckSystem({
+  SALVAGE_TIME: 1.8,
+  PICKUP_RADIUS: 46,
+  DESPAWN_TIME: 35,
+});
+
+const lootTable =createLootTable();
+state.lootTable = lootTable;
+
+state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
+state.gold = state.gold ?? 0;
+
+// Gold + wreck callbacks (werden aus updateProjectiles aufgerufen)
+state.onEnemyKilled = (e) => {
+  // Gold sofort
+  const gold = (state.enemyTypes?.[e.type]?.gold ?? 5);
+  state.gold += gold;
+
+  // Wenn du noch mode-spezifische Zähler hast:
+  currentMode.onEnemyKilled?.(state);
+};
+
+state.onSpawnWreck = (e) => {
+  wrecks.spawnWreck(e.x, e.y, e.type);
+};
+
+state.wrecks = wrecks;
+
 // Debug helpers (make module state visible in DevTools)
 window.__dbg = {state};
 // ---------- Pause ----------
@@ -249,6 +273,9 @@ function togglePause() {
   paused = !paused;
   loop.setPaused(paused);
 }
+let showEnemyRanges = false;
+let showMinimap = true;
+
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if (k === "p") togglePause();
@@ -257,6 +284,14 @@ window.addEventListener("keydown", (e) => {
     repair.active = !repair.active;
     repair.t = 0;
   }
+  if (k==="g") {
+    showEnemyRanges = !showEnemyRanges;
+  }
+
+  if(k === "n") {
+    showMinimap = !showMinimap;
+  }
+
   //if(k === "m") {
   //  setMode(mode === "bonusmap" ? "overworld" : "bonusmap");
   //}
@@ -295,9 +330,9 @@ function spawnEnemy() {
   const w = world.w;
   const h = world.h;
 
-  const types = Object.keys(enemyTypes);
+  const types = Object.keys(state.enemyTypes);
   const type = types[Math.floor(Math.random() * types.length)];
-  const tcfg = enemyTypes[type];
+  const tcfg = state.enemyTypes[type];
 
   const r = tcfg.r ?? ENEMY_R;
   const maxHp = tcfg.hp ?? ENEMY_MAX_HP;
@@ -313,7 +348,7 @@ function spawnEnemy() {
 
   // nicht in Inseln spawnen
   let tries = 0;
-  while (tries++ < 40) {
+  while (tries++ < CFG.SPAWN_TRIES) {
     let ok = true;
     for (const c of islands.getColliders()) {
       const d = Math.hypot(x - c.x, y - c.y);
@@ -326,8 +361,8 @@ function spawnEnemy() {
   }
 
   // initial dir zur map-mitte
-  const cx = w * 0.5 + rand(-120, 120);
-  const cy = h * 0.5 + rand(-120, 120);
+  const cx = w * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
+  const cy = h * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
   const dir = norm(cx - x, cy - y);
 
   enemies.push({
@@ -348,6 +383,7 @@ function spawnEnemy() {
     aggroT: 0,
     stunned: false,
     color: tcfg.color,
+    speed: ENEMY_SPEED * (tcfg.speed ?? 1.0),
   });
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
@@ -416,9 +452,10 @@ function fireAtTarget(target) {
 
 // ---------- Update ----------
 function update(dt) {
-  if(Math.random()<0.01){
-    console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
-  }
+  // Debug: Spawn Enemy Test
+  //if(Math.random()<0.01){ 
+  //  console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
+  //}
   time += dt;
 
   if (paused) {
@@ -427,9 +464,12 @@ function update(dt) {
   }
 
   player.slowT = Math.max(0, (player.slowT ?? 0) - dt);
-  player.slowMul = player.slowT > 0 ? 0.6 : 1,0; // Beispiel: 40% slow, wenn slowT aktiv
+  player.slowMul = player.slowT > 0 ? 0.6 : 1.0; // Beispiel: 40% slow, wenn slowT aktiv
 
 currentMode.update(dt, state);
+
+wrecks.update(dt);
+wrecks.trySalvage(dt, state);
 
 // --- Repair: wenn aktiv, darfst du nicht bewegen + kontinuierlich heilen
 // Wir merken uns, ob der Spieler sich bewegen wollte:
@@ -544,21 +584,18 @@ updateEnemies(dt, {
   }
 
   // ---- Projectiles update + collisions
- updateProjectiles(dt, {
-  canvas, world: state.world,
-  player, enemies, projectiles, combat, dist2,
-  ENEMY_AGGRO_TIME,
-  damage,
-  islandColliders,
-  onEnemyKilled: () => currentMode.onEnemyKilled?.(state),
-  onPlayerHit: () => {
-    // Repair bricht ab sobald Schaden kommt
-    repair.active = false;
-    repair.t = 0;
-    repair.interrupted = true; 
-    repair.breakFlash = 0.4; // für visuelle Effekte beim Unterbrechen durch Schaden
-  },
-});
+state.dist2 = dist2;               // falls dist2 nicht im state war
+state.ENEMY_AGGRO_TIME = ENEMY_AGGRO_TIME;
+
+// wenn du onPlayerHit im state haben willst:
+state.onPlayerHit = (p) => {
+  repair.active = false;
+  repair.t = 0;
+  repair.interrupted = true;
+  repair.breakFlash = 0.4;
+};
+
+updateProjectiles(dt, state);
 
 repair.breakFlash = Math.max(0, repair.breakFlash - dt);
 
@@ -741,6 +778,7 @@ function renderReloadUI() {
 }
 
 function renderEnemy(e) {
+ 
   ctx.save();
 
   const isTarget = combat.targetId === e.id;
@@ -864,6 +902,8 @@ function renderEnemy(e) {
 
   ctx.restore();
 }
+  const tcfg = state.enemyTypes?.[e.type] || {};
+  ctx.fillStyle = tcfg.color || "rgb(170,45,40)";
 
   if (isTarget) {
     ctx.globalAlpha = 0.9;
@@ -913,6 +953,8 @@ function render() {
 
   islands.render(ctx);
 
+ wrecks.render(ctx,state);
+
   // Trail
   ctx.save();
   ctx.fillStyle = "#fff";
@@ -937,6 +979,31 @@ function render() {
 
   // Enemies
   for (const e of enemies) renderEnemy(e);
+
+  // --- Debug: enemy attack ranges (G toggles) ---
+if (showEnemyRanges) {
+  ctx.save();
+  ctx.globalAlpha = 0.18;
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = 1;
+
+  for (const e of enemies) {
+    if (!e) continue;
+
+    // nur enemies die schießen dürfen (optional)
+    if (!e.fireEnabled) continue;
+
+    // Range: entweder per Type oder fallback
+    const range =
+      state.enemyTypes?.[e.type]?.range ??
+      (e.type === "sniper" ? CFG.SNIPER_ATTACK_RANGE : CFG.ENEMY_ATTACK_RANGE);
+
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, range, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 
   // Player ship
   ctx.save();
@@ -1070,63 +1137,21 @@ if (repair.breakFlash > 0) {
   // done with world-space
   ctx.restore();
   
-  function drawRepairBar() {
-  const x = 18;
-  const y = 132;     // unter HP/Reload
-  const w = 220;
-  const h = 10;
-
-  // Progress bis zum nächsten +1 HP Tick (0..1)
-  const p = Math.max(0, Math.min(1, repair.healAcc));
-
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-
-  // Panel
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(x - 10, y - 18, w + 170, 42);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-
-  const label =
-    player.hp >= player.maxHp ? "Repair (Full)" :
-    repair.active ? "Repairing..." :
-    repair.interrupted ? "Repair interrupted" :
-    "Repair: Press R";
-
-  ctx.fillText(label, x, y - 16);
-
-  // Bar bg
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#000";
-  ctx.fillRect(x, y, w, h);
-
-  // Bar fill (nur sichtbar wenn aktiv)
-  ctx.globalAlpha = repair.active ? 0.9 : 0.2;
-  ctx.fillStyle = "rgba(120,255,120,0.95)";
-  ctx.fillRect(x, y, w * p, h);
-
-  // Stroke
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = "#fff";
-  ctx.strokeRect(x, y, w, h);
-
-  // Text rechts: HP ganzzahlig
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "left";
-  ctx.fillText(`${player.hp} / ${player.maxHp}`, x + w + 12, y - 4);
-
-  ctx.restore();
-}
-
   // 4) Screen-space HUD (NICHT mit Kamera bewegen)
   const t = getTargetEnemy();
   drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
-  drawRepairBar();
+
+  wrecks.renderHud(ctx, canvas, state);
+
+  ctx.save();
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.font = "600 14px system-ui";
+  ctx.textAlign = "left";
+  ctx.fillText(`Gold: ${state.gold}`, 18, 206);
+  
+  const inv = state.inventory ?? {};
+  ctx.fillText(`Wood ${inv.wood ?? 0} | Metal ${inv.metal ?? 0} | Cloth ${inv.cloth ?? 0} | Tech ${inv.tech ?? 0}`, 18, 226);
+  ctx.restore();
 
   ctx.save();
   ctx.fillStyle = repair.active ? "rgba(120,255,120,0.95)" : "rgba(255,255,255,0.75)";
@@ -1134,6 +1159,14 @@ if (repair.breakFlash > 0) {
   ctx.textAlign = "left";
   
   ctx.restore();
+
+  if(showMinimap) 
+  drawMinimap( ctx, state, {
+    width: 240,
+    height: 135,
+    pad: 16, 
+  });
+  
 
   ctx.save();
 ctx.fillStyle = "#fff";

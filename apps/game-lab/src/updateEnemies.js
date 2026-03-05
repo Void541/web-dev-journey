@@ -17,6 +17,7 @@ export function updateEnemies(dt, state) {
     ENEMY_AGGRO_TIME,
   } = state;
 
+
   const w = world.w;
   const h = world.h;
 
@@ -164,12 +165,15 @@ export function updateEnemies(dt, state) {
 
           const u = norm(dx, dy);
           const isDisabler = e.type === "disabler";
+          
+          const bulletSpeed = state.enemyTypes?.[e.type]?.bulletSpeed ?? ENEMY_BULLET_SPEED;
 
           spawnProjectile({
             x: e.x + u.x * (e.r + 4),
             y: e.y + u.y * (e.r + 4),
-            vx: u.x * ENEMY_BULLET_SPEED,
-            vy: u.y * ENEMY_BULLET_SPEED,
+
+            vx: u.x * bulletSpeed,
+            vy: u.y * bulletSpeed,
             fromEnemy: true,
             dmg: 1,
             ttl: ENEMY_BULLET_TTL,
@@ -186,9 +190,9 @@ export function updateEnemies(dt, state) {
     // ---- Movement (stun blocks movement, aber Shooting oben läuft trotzdem)
     if ((e.stunT ?? 0) > 0) continue;
 
-    const spMul = (state.enemyTypes?.[e.type]?.speed ?? 1.0);
-    const baseSpeed = (e.speed ?? ENEMY_SPEED);
-    const speed = baseSpeed * spMul;
+    const tcfg = state.enemyTypes?.[e.type] ?? {};
+    const speed = ENEMY_SPEED * (tcfg.speedMul ?? 1.0);
+    const preferredRange = tcfg.preferredRange ?? 200;
     const inCombat = e.aggroT > 0;
 
     if(!inCombat && e.stunT <= 0) {
