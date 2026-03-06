@@ -3,7 +3,6 @@ import { createInput } from "./engine/input.js";
 import { clamp } from "./engine/math.js";
 import { updateEnemies } from "./src/updateEnemies.js";
 import { updateProjectiles } from "./src/updateProjectiles.js";
-import { drawHud } from "./src/hud.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
@@ -14,7 +13,7 @@ import { drawMinimap } from "./src/minimap.js";
 import { createWreckSystem } from "./src/wrecks.js";
 import { createLootTable } from "./src/lootTable.js";
 import * as CFG from "./src/config.js";
-
+import { createHudOverlay } from "./src/hudOverlay.js";
 
 const overworld = createOverworld();
 const bonusmap = createBonusmap();
@@ -255,6 +254,9 @@ state.overworldSpawnTimer = 0;
 
 state.pushLootNotice = pushLootNotice;
 
+const hudOverlay = createHudOverlay();
+state.hudOverlay = hudOverlay;
+
 const cfg = {
   ENEMY_CAP,
   // overworld
@@ -312,29 +314,58 @@ function togglePause() {
   paused = !paused;
   loop.setPaused(paused);
 }
-let showEnemyRanges = false;
-let showMinimap = true;
+
+window.__gameActions = {
+  toggleRepair: () => {
+    repair.active = !repair.active;
+    repair.t = 0;
+  },
+
+  holdSalvage: () => {
+    // klick simuliert Salvage-Intent kurz
+    // echte Hold-Logik bleibt weiter auf F
+    state.wrecks?.trySalvage?.(0.2, state);
+  },
+
+  shootTarget: () => {
+    const target = getTargetEnemy();
+    if (!target) return;
+
+    const dx = target.x - player.x;
+    const dy = target.y - player.y;
+    const d = Math.hypot(dx, dy);
+
+    if (d <= combat.range && combat.cooldown <= 0) {
+      fireAtTarget(target);
+      combat.cooldown = 1 / combat.fireRate;
+    }
+  },
+};
 
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
-  if (k === "p") togglePause();
 
-  if(k === "r") {
+  if (k === "p") {
+    togglePause();
+  }
+
+  if (k === "r") {
     repair.active = !repair.active;
     repair.t = 0;
   }
-  if (k==="g") {
+
+  if (k === "g") {
     showEnemyRanges = !showEnemyRanges;
   }
 
-  if(k === "n") {
+  if (k === "n") {
     showMinimap = !showMinimap;
   }
-
-  //if(k === "m") {
-  //  setMode(mode === "bonusmap" ? "overworld" : "bonusmap");
-  //}
 });
+
+let showEnemyRanges = false;
+let showMinimap = true;
+
 
 // ---------- Theme toggle ----------
 const themeBtn = document.getElementById("themeToggle");
@@ -1000,6 +1031,8 @@ ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
 
 // ---------- Render ----------
 function render() {
+
+  
   // 1) clear in CSS pixels
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   ctx.clearRect(0, 0, CW(), CH());
@@ -1170,6 +1203,7 @@ if (repair.active) {
   ctx.restore();
 }
 
+
 if (repair.breakFlash > 0) {
   ctx.save();
 
@@ -1200,18 +1234,19 @@ if (repair.breakFlash > 0) {
   
   // 4) Screen-space HUD (NICHT mit Kamera bewegen)
   const t = getTargetEnemy();
-  drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
 
+  //drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
+  hudOverlay.update(state,t);
   wrecks.renderHud(ctx, canvas, state);
 
   ctx.save();
   ctx.fillStyle = "rgba(255,255,255,0.85)";
   ctx.font = "600 14px system-ui";
   ctx.textAlign = "left";
-  ctx.fillText(`Gold: ${state.gold}`, 18, 206);
+ // ctx.fillText(`Gold: ${state.gold}`, 18, 206);
   
   const inv = state.inventory ?? {};
-  ctx.fillText(`Wood ${inv.wood ?? 0} | Metal ${inv.metal ?? 0} | Cloth ${inv.cloth ?? 0} | Tech ${inv.tech ?? 0}`, 18, 226);
+  //ctx.fillText(`Wood ${inv.wood ?? 0} | Metal ${inv.metal ?? 0} | Cloth ${inv.cloth ?? 0} | Tech ${inv.tech ?? 0}`, 18, 226);
   ctx.restore();
 
   ctx.save();
@@ -1237,15 +1272,16 @@ ctx.restore();
 
 // Loot notifications
 ctx.save();
-ctx.textAlign = "right";
+ctx.textAlign = "left";
 ctx.textBaseline = "middle";
 ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
 for (let i = 0; i < lootNotices.length; i++) {
   const n = lootNotices[i];
   const alpha = Math.min(1, n.t / 0.4); // leicht ausfaden
-  const x = canvas.clientWidth - 24;
-  const y = 80 + i * 22 - n.yOff;
+  
+  const x = canvas.clientWidth - 300;
+  const y = 110 + i * 24 - n.yOff;
 
   // Schatten
   ctx.globalAlpha = alpha * 0.8;
@@ -1258,7 +1294,6 @@ for (let i = 0; i < lootNotices.length; i++) {
   ctx.fillText(n.text, x, y);
 }
 ctx.restore();
-
 
   if (paused) {
     ctx.save();

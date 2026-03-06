@@ -5,32 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Game Lab</title>
 
-  <!-- Optional: nutze dein Portfolio HUD-Style -->
   <link rel="stylesheet" href="../portfolio/style.css" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="../portfolio/index.html">← Zurück</a>
-      <h1 class="title">Game Lab</h1>
-      <div class="header-controls" style="margin-left:auto; display:flex; gap:10px;">
+  <header class="game-header">
+    <div class="game-header-inner">
+      <a class="game-back" href="../portfolio/index.html">← Zurück</a>
+      <h1 class="game-title">Game Lab</h1>
+      <div class="game-header-controls">
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme">🌙</button>
       </div>
     </div>
   </header>
 
-  <main class="container">
-    <div class="lab-shell">
+  <main class="game-main">
+    <!-- GLOBAL HUD (nicht am Canvas klebend) -->
+    <div id="hud-global">
+      <div id="hud-header">
+        <div id="hud-currencies" class="hud-panel">
+          <div class="hud-section-title">Currencies</div>
+          <div class="hud-row">
+            <span class="hud-pill" id="hud-gold">Gold: 0</span>
+            <span class="hud-pill" id="hud-silver">Silver: 0</span>
+            <span class="hud-pill" id="hud-tokens">Tokens: 0</span>
+          </div>
+        </div>
+
+        <div id="hud-materials" class="hud-panel">
+          <div class="hud-section-title">Materials</div>
+          <div class="hud-row">
+            <span class="hud-pill" id="hud-wood">Wood: 0</span>
+            <span class="hud-pill" id="hud-scrap">Scrap: 0</span>
+            <span class="hud-pill" id="hud-cloth">Cloth: 0</span>
+            <span class="hud-pill" id="hud-tech">Tech: 0</span>
+            <span class="hud-pill" id="hud-powder">Powder: 0</span>
+            <span class="hud-pill" id="hud-gear">Gear: 0</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="player-panel" class="hud-floating">
+        <div class="hud-drag-handle">Player</div>
+        <div class="hud-name" id="player-name">Your Ship</div>
+        <div class="hud-bar">
+          <div id="player-hp-fill" class="hud-bar-fill"></div>
+        </div>
+        <div class="hud-value" id="player-hp-text">10 / 10</div>
+      </div>
+
+      <div id="target-panel" class="hud-floating">
+        <div class="hud-drag-handle">Target</div>
+        <div class="hud-name" id="target-name">No Target</div>
+        <div class="hud-bar">
+          <div id="target-hp-fill" class="hud-bar-fill target-bar"></div>
+        </div>
+        <div class="hud-value" id="target-hp-text">-</div>
+      </div>
+      
+<div id="hotbar-panel" class="hud-floating hud-hotbar-panel">
+        <div class="hud-drag-handle">Action</div>
+
+      <div id="hud-hotbar" class="hud-hotbar">
+        <button class="hotbar-btn" id="hotbar-shoot">
+          <span class="hotbar-key">LMB</span>
+          <span class="hotbar-label">Shoot</span>
+        </button>
+
+        <button class="hotbar-btn" id="hotbar-repair">
+          <span class="hotbar-key">R</span>
+          <span class="hotbar-label">Repair</span>
+        </button>
+
+        <button class="hotbar-btn" id="hotbar-salvage">
+          <span class="hotbar-key">F</span>
+          <span class="hotbar-label">Salvage</span>
+        </button>
+
+        <button class="hotbar-btn hotbar-disabled" id="hotbar-craft">
+          <span class="hotbar-key">C</span>
+          <span class="hotbar-label">Craft</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ZENTRIERTE GAME STAGE -->
+    <div class="game-stage-wrap">
       <div class="game-stage">
-      <canvas  id="game" aria-label="Game Canvas"></canvas>
-</div>
-      <div class="hud">
-        <div><strong>WASD</strong> / Pfeile: bewegen</div>
-        <div><strong>R</strong>: Reparieren</div>
-        <div><strong>P</strong>: Pause</div>
-        <div id="fps" class="muted">FPS: --</div>
+        <canvas id="game" aria-label="Game Canvas"></canvas>
+
+        <!-- STAGE HUD (gehört optisch zum Canvas) -->
+        <div id="hud-stage"></div>
       </div>
     </div>
   </main>
