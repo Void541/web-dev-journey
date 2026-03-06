@@ -57,6 +57,7 @@ export function updateProjectiles(dt, state) {
 
               state.addGold?.(gold);
               state.wrecks?.spawn(e.x, e.y, { loot });
+              state.pushLootNotice(`+${gold} Gold`);
 
               // ✅ Kill rewards (Gold instant)
             state.onEnemyKilled?.(e);

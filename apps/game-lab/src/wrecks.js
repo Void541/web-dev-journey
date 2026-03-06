@@ -135,13 +135,16 @@ export function createWreckSystem(cfg = {}) {
 
         // simple mats (später ersetzen durch loot-table)
         inv.wood = (inv.wood ?? 0) + 2;
+        state.pushLootNotice(`+2 Wood`);
         inv.scrap = (inv.scrap ?? 0) + 1;
+        state.pushLootNotice(`+1 Scrap`);
 
         // optional: wenn w.loot existiert
         if (w.loot) {
           for (const [k, v] of Object.entries(w.loot)) {
             if(k=== "__rarity") continue; // Meta info überspringen
             inv[k] = (inv[k] ?? 0) + v;
+            state.pushLootNotice(`+${v} ${k}`); 
           }
         }
 

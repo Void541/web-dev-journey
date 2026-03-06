@@ -45,6 +45,7 @@ const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
 const effect = [];
 
+
 // --- Repair ---
 const repair = {
   active: false,
@@ -163,6 +164,36 @@ const ENEMY_FIRE_COOLDOWN = 1.2;
 const ENEMY_BULLET_SPEED = 320;
 const ENEMY_BULLET_TTL = 2.6;
 
+const ENEMY_NAMES = [
+  "Marlow",
+  "Briggs",
+  "Vane",
+  "Rourke",
+  "Crow",
+  "Sable",
+  "Drake",
+  "Hawke",
+  "Grimm",
+  "Vale",
+  "Ashford",
+  "Blacktide",
+  "Reddock",
+  "Morrow",
+  "Thorne"
+];
+
+function randomEnemyName(type) {
+  const base = ENEMY_NAMES[Math.floor(Math.random() * ENEMY_NAMES.length)];
+
+  const title =
+    type === "tank" ? "Bulwark" :
+    type === "sniper" ? "Sharpshot" :
+    type === "disabler" ? "Hexer" :
+    "Raider";
+
+  return `${title} ${base}`;
+}
+
 const TRAIL_MAX = 80;
 
 // Seafight-ish combat
@@ -222,6 +253,8 @@ state.waveSpawnTimer = 0;
 
 state.overworldSpawnTimer = 0;
 
+state.pushLootNotice = pushLootNotice;
+
 const cfg = {
   ENEMY_CAP,
   // overworld
@@ -263,6 +296,12 @@ state.onSpawnWreck = (e) => {
 };
 
 state.wrecks = wrecks;
+
+const lootNotices = [];
+
+function pushLootNotice(text) {
+  lootNotices.push({ text, t: 2.5, yOff:0 });
+}
 
 // Debug helpers (make module state visible in DevTools)
 window.__dbg = {state};
@@ -384,6 +423,7 @@ function spawnEnemy() {
     stunned: false,
     color: tcfg.color,
     speed: ENEMY_SPEED * (tcfg.speed ?? 1.0),
+    name: randomEnemyName(type),
   });
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
@@ -623,6 +663,14 @@ repair.breakFlash = Math.max(0, repair.breakFlash - dt);
     fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
   }
   damage.update(dt);
+
+  for (let i = lootNotices.length - 1; i >= 0; i--) {
+  const n = lootNotices[i];
+  n.t -= dt;
+  n.yOff += 18 * dt
+
+  if (n.t <= 0) lootNotices.splice(i, 1);
+}
 
   updateCamera();
 
@@ -912,14 +960,27 @@ function renderEnemy(e) {
     ctx.stroke();
   }
 
-  
+  // Enemy name
+ctx.globalAlpha = 0.95;
+ctx.font = "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+ctx.textAlign = "center";
+ctx.textBaseline = "bottom";
+
+// leichter Schatten für Lesbarkeit
+ctx.fillStyle = "rgba(0,0,0,0.7)";
+ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
+
+// Haupttext
+ctx.fillStyle = "#fff";
+ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
+
   // HP bar under model
   const w = 34;
   const h = 5;
   const pct = clamp(e.hp / (e.maxHp || 1), 0, 1);
 
   const bx = e.x - w / 2;
-  const by = e.y + e.r + 8;
+  const by = e.y + e.r + 15;
 
 
   ctx.globalAlpha = 0.35;
@@ -1172,6 +1233,30 @@ if (repair.breakFlash > 0) {
 ctx.fillStyle = "#fff";
 ctx.font = "600 16px system-ui";
 ctx.textAlign = "center";
+ctx.restore();
+
+// Loot notifications
+ctx.save();
+ctx.textAlign = "right";
+ctx.textBaseline = "middle";
+ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+for (let i = 0; i < lootNotices.length; i++) {
+  const n = lootNotices[i];
+  const alpha = Math.min(1, n.t / 0.4); // leicht ausfaden
+  const x = canvas.clientWidth - 24;
+  const y = 80 + i * 22 - n.yOff;
+
+  // Schatten
+  ctx.globalAlpha = alpha * 0.8;
+  ctx.fillStyle = "rgba(0,0,0,0.65)";
+  ctx.fillText(n.text, x + 1, y + 1);
+
+  // Haupttext
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#fff";
+  ctx.fillText(n.text, x, y);
+}
 ctx.restore();
 
 
