@@ -83,6 +83,7 @@ body {
   justify-content: center;
   align-items: center;
   margin: 0 auto;
+  z-index: 1;
 }
 
 #game {
@@ -169,6 +170,7 @@ body {
   backdrop-filter: blur(6px);
   box-shadow: 0 6px 18px rgba(0,0,0,0.25);
   user-select: none;
+  z-index: 110;
 }
 
 #player-panel {
@@ -230,7 +232,7 @@ body {
    ========================= */
 
    .hud-hotbar-panel {
-    bottom: 18px;
+    top: 18px;
     left: 50%;
     transform: translateX(-50%);
     width: auto;
@@ -298,4 +300,80 @@ body {
 
 #hud-stage > * {
   pointer-events: auto;
+}
+/* =========================
+   SHIPYARD PANEL
+   ========================= */
+
+.hidden {
+  display: none !important;
+}
+
+.shipyard-panel {
+  right: 12px;
+  top: 96px;
+  width: 320px;
+}
+
+.shipyard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shipyard-card {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(255,255,255,0.03);
+}
+
+.shipyard-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.shipyard-level {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.shipyard-cost {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 8px;
+}
+
+.shipyard-btn {
+  width: 100%;
+  height: 34px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+
+.shipyard-btn:hover {
+  background: rgba(255,255,255,0.14);
+  border-color: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
+}
+
+.shipyard-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
 }

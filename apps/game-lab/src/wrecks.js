@@ -134,10 +134,9 @@ export function createWreckSystem(cfg = {}) {
         const inv = state.inventory;
 
         // simple mats (später ersetzen durch loot-table)
-        inv.wood = (inv.wood ?? 0) + 2;
-        state.pushLootNotice(`+2 Wood`);
-        inv.scrap = (inv.scrap ?? 0) + 1;
-        state.pushLootNotice(`+1 Scrap`);
+        inv.wood = (inv.wood ?? 0);
+        
+        inv.scrap = (inv.scrap ?? 0);
 
         // optional: wenn w.loot existiert
         if (w.loot) {

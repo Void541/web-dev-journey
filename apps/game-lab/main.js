@@ -14,9 +14,15 @@ import { createWreckSystem } from "./src/wrecks.js";
 import { createLootTable } from "./src/lootTable.js";
 import * as CFG from "./src/config.js";
 import { createHudOverlay } from "./src/hudOverlay.js";
+import { createShipStats } from "./src/shipStats.js";
+import { craftingRecipes } from "./src/craftingRecipes.js ";
+import { craft } from "./src/craftingSystem.js";
 
 const overworld = createOverworld();
 const bonusmap = createBonusmap();
+
+const shipStats = createShipStats();
+
 
 let currentMode = overworld; // default mode
 
@@ -152,6 +158,7 @@ const PLAYER_SPEED = 260;
 const PLAYER_R = 14;
 const PLAYER_MAX_HP = 10;
 
+
 const ENEMY_SPAWN_EVERY = 1.2;
 const ENEMY_SPEED = 90;
 const ENEMY_R = 16;
@@ -211,12 +218,14 @@ const player = {
   x: 200,
   y: 200,
   r: PLAYER_R,
-  hp: PLAYER_MAX_HP,
-  maxHp: PLAYER_MAX_HP,
+  hp: PLAYER_MAX_HP, // Start-HP abhängig von Hull-Level
+  maxHp: PLAYER_MAX_HP, // Max HP abhängig von Hull-Level
 
   slowT: 0, // für Effekte von Disabler-Enemy
   slowMul: 1.0, // für Effekte von Disabler-Enemy
 };
+
+
 
 const enemies = []; // {id,x,y,r,hp,maxHp,vx,vy,turnT,hitT,fireT}
 const projectiles = []; // {x,y,vx,vy,r,ttl,dmg,fromEnemy:boolean}
@@ -257,6 +266,17 @@ state.pushLootNotice = pushLootNotice;
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
 
+state.shipStats = shipStats;
+
+state.ui={
+  shipyardOpen: false,
+};
+
+state.crafting ={
+  recipes: craftingRecipes,
+  craft: (id) => craft(craftingRecipes[id], state)
+};
+
 const cfg = {
   ENEMY_CAP,
   // overworld
@@ -279,6 +299,8 @@ const wrecks = createWreckSystem({
 
 const lootTable =createLootTable();
 state.lootTable = lootTable;
+
+
 
 state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
 state.gold = state.gold ?? 0;
@@ -340,6 +362,14 @@ window.__gameActions = {
       combat.cooldown = 1 / combat.fireRate;
     }
   },
+
+  toggleShipyard: () => {
+    state.ui.shipyardOpen = !state.ui.shipyardOpen;
+  },
+
+  craft: (id) => {
+    state.crafting?.craft?.(id);
+    },
 };
 
 window.addEventListener("keydown", (e) => {
@@ -360,6 +390,9 @@ window.addEventListener("keydown", (e) => {
 
   if (k === "n") {
     showMinimap = !showMinimap;
+  }
+  if (k === "c") {
+    state.ui.shipyardOpen = !state.ui.shipyardOpen;
   }
 });
 
@@ -510,7 +543,7 @@ function fireAtTarget(target) {
     vx: u.x * combat.projectileSpeed,
     vy: u.y * combat.projectileSpeed,
     fromEnemy: false,
-    dmg: combat.damage,
+    dmg: combat.damage = shipStats.getDamage(),
     ttl,
     r: 3,
   });
@@ -527,6 +560,9 @@ function update(dt) {
   //if(Math.random()<0.01){ 
   //  console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
   //}
+  player.maxHp = shipStats.getMaxHp();
+  player.hp = player.maxHp;
+
   time += dt;
 
   if (paused) {
@@ -595,8 +631,8 @@ water.update(dt);
 
 islands.resolveCircle(player);
 
-  player.x += ax * PLAYER_SPEED * player.slowMul * dt;
-  player.y += ay * PLAYER_SPEED * player.slowMul * dt;
+  player.x += ax * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
+  player.y += ay * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
 
   player.x = clamp(player.x, player.r, world.w - player.r);
   player.y = clamp(player.y, player.r, world.h - player.r);
@@ -1009,6 +1045,8 @@ ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
   const w = 34;
   const h = 5;
   const pct = clamp(e.hp / (e.maxHp || 1), 0, 1);
+  const hpDisplay = Math.max(0, Math.ceil(e.hp));
+  const maxHpDisplay = Math.ceil(e.maxHp || 1);
 
   const bx = e.x - w / 2;
   const by = e.y + e.r + 15;
@@ -1098,7 +1136,6 @@ if (showEnemyRanges) {
   }
   ctx.restore();
 }
-
   // Player ship
   ctx.save();
   ctx.translate(player.x, player.y);

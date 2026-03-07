@@ -97,11 +97,20 @@ export function createHudOverlay() {
     repairBtn: document.getElementById("hotbar-repair"),
     salvageBtn: document.getElementById("hotbar-salvage"),
     craftBtn: document.getElementById("hotbar-craft"),
+
+    shipyardPanel: document.getElementById("shipyard-panel"),
+    upgradeCannon: document.getElementById("upgrade-cannon"),
+    levelCannon: document.getElementById("level-cannon"),
+    upgradeHull: document.getElementById("upgrade-hull"),
+    levelHull: document.getElementById("level-hull"),
+    upgradeSail: document.getElementById("upgrade-sail"),
+    levelSail: document.getElementById("level-sail"),
   };
 
   makeDraggable(els.playerPanel, STORAGE_KEYS.player);
   makeDraggable(els.targetPanel, STORAGE_KEYS.target);
   makeDraggable(els.hotbarPanel, STORAGE_KEYS.hotbar);
+  makeDraggable(els.shipyardPanel, STORAGE_KEYS.shipyard);
 
   if (els.repairBtn) {
   els.repairBtn.addEventListener("click", () => {
@@ -127,6 +136,30 @@ if (els.shootBtn) {
   });
 }
 
+if (els.craftBtn) {
+  els.craftBtn.classList.remove("hotbar-disabled");
+  els.craftBtn.addEventListener("click", () => {
+    window.__gameActions?.toggleShipyard?.(); 
+  });
+}
+
+if (els.upgradeCannon) {
+  els.upgradeCannon.addEventListener("click", () => {
+    window.__gameActions?.craft?.("cannonUpgrade");
+  });
+}
+
+if (els.upgradeHull) {
+  els.upgradeHull.addEventListener("click", () => {
+    window.__gameActions?.craft?.("hullReinforcement");
+  });
+}
+
+if (els.upgradeSail) {
+  els.upgradeSail.addEventListener("click", () => {
+    window.__gameActions?.craft?.("sailUpgrade");
+  });
+}
 
 
   function update(state, target) {
@@ -144,8 +177,8 @@ if (els.shootBtn) {
     if (els.powder) els.powder.textContent = `Powder: ${inv.powder ?? 0}`;
     if (els.gear) els.gear.textContent = `Gear: ${inv.gear ?? 0}`;
 
-    const php = state.player?.hp ?? 0;
-    const pmax = state.player?.maxHp ?? 1;
+    const php = Math.max(0, Math.ceil(state.player?.hp ?? 0));
+    const pmax = Math.ceil(state.player?.maxHp ?? 1);
     const pratio = Math.max(0, Math.min(1, php / pmax));
 
     if (els.playerName) els.playerName.textContent = "Your Ship";
@@ -153,8 +186,8 @@ if (els.shootBtn) {
     if (els.playerHpText) els.playerHpText.textContent = `${php} / ${pmax}`;
 
     if (target) {
-      const thp = target.hp ?? 0;
-      const tmax = target.maxHp ?? 1;
+      const thp = Math.max(0, Math.ceil(target.hp ?? 0));
+      const tmax = Math.ceil(target.maxHp ?? 1);
       const tratio = Math.max(0, Math.min(1, thp / tmax));
 
       if (els.targetName) els.targetName.textContent = target.name ?? target.type ?? "Enemy";
@@ -165,6 +198,44 @@ if (els.shootBtn) {
       if (els.targetHpFill) els.targetHpFill.style.width = `0%`;
       if (els.targetHpText) els.targetHpText.textContent = "-";
     }
+
+    const shipStats = state.shipStats ?? {};
+
+  if (els.shipyardPanel) {
+  const open = !!state.ui?.shipyardOpen;
+  els.shipyardPanel.classList.toggle("hidden", !open);
+}
+  if (els.levelCannon) {
+    els.levelCannon.textContent = `Lv. ${shipStats.cannonLevel ?? 1}`;
+  }
+
+  if (els.levelHull) {
+    els.levelHull.textContent = `Lv. ${shipStats.hullLevel ?? 1}`;
+  }
+
+  if (els.levelSail) {
+    els.levelSail.textContent = `Lv. ${shipStats.sailLevel ?? 1}`;
+  }
+
+const recipes = state.crafting?.recipes ?? {};
+
+function canCraft(recipe) {
+  if (!recipe) return false;
+  for (const [res, amount] of Object.entries(recipe.cost)) {
+    if ((inv[res] ?? 0) < amount) return false;
+  }
+  return true;
+}
+
+if (els.upgradeCannon) {
+  els.upgradeCannon.disabled = !canCraft(recipes.cannonUpgrade);
+}
+if (els.upgradeHull) {
+  els.upgradeHull.disabled = !canCraft(recipes.hullUpgrade);
+}
+if (els.upgradeSail) {
+  els.upgradeSail.disabled = !canCraft(recipes.sailUpgrade);
+}
   }
 
   return { update };
