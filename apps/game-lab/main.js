@@ -15,13 +15,15 @@ import { createLootTable } from "./src/lootTable.js";
 import * as CFG from "./src/config.js";
 import { createHudOverlay } from "./src/hudOverlay.js";
 import { createShipStats } from "./src/shipStats.js";
-import { craftingRecipes } from "./src/craftingRecipes.js ";
-import { craft } from "./src/craftingSystem.js";
+import { createCraftingRecipes } from "./src/craftingRecipes.js ";
+import { createCraftingSystem } from "./src/craftingSystem.js";
 
 const overworld = createOverworld();
 const bonusmap = createBonusmap();
 
 const shipStats = createShipStats();
+const craftingRecipes = createCraftingRecipes();
+const craftingSystem = createCraftingSystem(craftingRecipes);
 
 
 let currentMode = overworld; // default mode
@@ -274,7 +276,7 @@ state.ui={
 
 state.crafting ={
   recipes: craftingRecipes,
-  craft: (id) => craft(craftingRecipes[id], state)
+  craft: (id) => craftingSystem.craft(state, id)
 };
 
 const cfg = {
@@ -543,7 +545,7 @@ function fireAtTarget(target) {
     vx: u.x * combat.projectileSpeed,
     vy: u.y * combat.projectileSpeed,
     fromEnemy: false,
-    dmg: combat.damage = shipStats.getDamage(),
+    dmg: combat.damage = state.shipStats.getDamage(),
     ttl,
     r: 3,
   });
@@ -553,6 +555,9 @@ function fireAtTarget(target) {
 
 
 
+player.maxHp = state.shipStats.getMaxHp();
+player.hp = player.maxHp;
+
 
 // ---------- Update ----------
 function update(dt) {
@@ -560,8 +565,6 @@ function update(dt) {
   //if(Math.random()<0.01){ 
   //  console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
   //}
-  player.maxHp = shipStats.getMaxHp();
-  player.hp = player.maxHp;
 
   time += dt;
 

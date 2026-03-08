@@ -1,17 +1,38 @@
 export function createShipStats() {
-    return {
-        cannonLevel: 1,
-        hullLevel: 1,
-        sailLevel: 1,
 
-        getDamage(){
-            return 1+ (this.cannonLevel -1) * 0.6;
-        },
-        getMaxHp(){
-            return 10 + (this.hullLevel -1) * 3;
-        },
-        getSpeed(baseSpeed){
-            return baseSpeed * (1 + (this.sailLevel -1) * 0.08);
-        }
-    };
+  let cannonLevel = 1;
+  let hullLevel = 1;
+  let sailLevel = 1;
+
+  return {
+
+    get cannonLevel() { return cannonLevel; },
+    get hullLevel() { return hullLevel; },
+    get sailLevel() { return sailLevel; },
+
+    upgradeCannon() {
+      cannonLevel++;
+    },
+
+    upgradeHull() {
+      hullLevel++;
+    },
+
+    upgradeSail() {
+      sailLevel++;
+    },
+
+    getDamage() {
+      return 1 + (cannonLevel - 1) * 0.6;
+    },
+
+    getMaxHp() {
+      return 10 + (hullLevel - 1) * 4;
+    },
+
+    getSpeed(baseSpeed = 260) {
+      return baseSpeed + (sailLevel - 1) * 25;
+    }
+
+  };
 }

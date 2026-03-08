@@ -1,29 +1,45 @@
-export const craftingRecipes = {
-  cannonUpgrade: {
-    name: "Cannon Upgrade",
-    cost: { wood: 4, scrap: 2 },
-    apply(state) {
-      state.shipStats.cannonLevel += 1;
-    }
-  },
+export function createCraftingRecipes() {
 
-  hullUpgrade: {
-    name: "Hull Reinforcement",
-    cost: { scrap: 5, cloth: 2 },
-    apply(state) {
-      state.shipStats.hullLevel += 1;
+  return {
 
-      const hp = state.shipStats.getMaxHp();
-      state.player.maxHp = hp;
-      state.player.hp = hp;
-    }
-  },
+    cannonUpgrade: {
+      cost(state) {
+        const lvl = state.shipStats.cannonLevel;
+        return {
+          wood: 4 * lvl,
+          scrap: 2 * lvl,
+        };
+      },
+      apply(state) {
+        state.shipStats.upgradeCannon();
+      }
+    },
 
-  sailUpgrade: {
-    name: "Sail Upgrade",
-    cost: { cloth: 3, tech: 1 },
-    apply(state) {
-      state.shipStats.sailLevel += 1;
+    hullUpgrade: {
+      cost(state) {
+        const lvl = state.shipStats.hullLevel;
+        return {
+          scrap: 5 * lvl,
+          cloth: 2 * lvl,
+        };
+      },
+      apply(state) {
+        state.shipStats.upgradeHull();
+      }
+    },
+
+    sailUpgrade: {
+      cost(state) {
+        const lvl = state.shipStats.sailLevel;
+        return {
+          cloth: 3 * lvl,
+          tech: 1 * lvl,
+        };
+      },
+      apply(state) {
+        state.shipStats.upgradeSail();
+      }
     }
-  }
-};
+
+  };
+}

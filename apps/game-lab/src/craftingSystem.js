@@ -1,19 +1,39 @@
-export function craft(recipe, state) {
-  const inv = state.inventory;
+export function createCraftingSystem(recipes) {
 
-  for (const [res, amount] of Object.entries(recipe.cost)) {
-    if ((inv[res] ?? 0) < amount) {
-      return false;
+  function canCraft(state, recipeId) {
+
+    const recipe = recipes[recipeId];
+    if (!recipe) return false;
+
+    const cost = recipe.cost(state);
+    const inv = state.inventory;
+
+    for (const res in cost) {
+      if ((inv[res] ?? 0) < cost[res]) {
+        return false;
+      }
     }
+
+    return true;
   }
 
-  for (const [res, amount] of Object.entries(recipe.cost)) {
-    inv[res] -= amount;
+  function craft(state, recipeId) {
+
+    const recipe = recipes[recipeId];
+    if (!recipe) return false;
+
+    const cost = recipe.cost(state);
+
+    if (!canCraft(state, recipeId)) return false;
+
+    for (const res in cost) {
+      state.inventory[res] -= cost[res];
+    }
+
+    recipe.apply(state);
+
+    return true;
   }
 
-  recipe.apply(state);
-
-  state.pushLootNotice?.(`${recipe.name} crafted`);
-
-  return true;
+  return { craft, canCraft, recipes };
 }
