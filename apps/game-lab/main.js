@@ -1,7 +1,8 @@
 import { startLoop } from "./src/engine/loop.js";
 import { createInput } from "./src/engine/input.js";
 import { clamp } from "./src/engine/math.js";
-import { updateEnemies } from "./src/systems/enemies/updateEnemies.js";
+import { updateEnemies } from "./src/enemies/updateEnemies.js";
+import { spawnEnemy } from "./src/enemies/spawnEnemy.js";
 import { updateProjectiles } from "./src/updateProjectiles.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
@@ -257,7 +258,9 @@ const trail = [];
 let paused = false;
 let time = 0;
 let fpsSmoothing = 0;
-let enemyIdCounter = 1;
+const enemyRuntime = {
+  nextId: 1,
+}
 
 const state = {
   canvas, ctx, input,
@@ -268,6 +271,9 @@ const state = {
   overworldSpawnTimer,
   enemyTypes,
   sprites,
+  enemyRuntime,
+  randomEnemyName,
+  ENEMY_SPEED,
 };
 
 state.mode = mode;
@@ -293,7 +299,7 @@ const cfg = {
 };
 
 state.cfg = cfg;
-state.spawnEnemy = spawnEnemy;
+state.spawnEnemy = () => spawnEnemy(state);
 
 const wrecks = createWreckSystem({
   SALVAGE_TIME: 1.8,
@@ -307,10 +313,21 @@ state.lootTable = lootTable;
 state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
 state.gold = state.gold ?? 0;
 
-state.onEnemyKilled = (e) => {
-  const gold = state.enemyTypes?.[e.type]?.gold ?? 5;
+state.onEnemyKilled = (enemy, drop) => {
+  const gold = drop?.gold ?? state.enemyTypes?.[enemy.type]?.gold ?? 0;
+  const loot = drop?.loot ?? null;
+
   state.gold += gold;
-  currentMode.onEnemyKilled?.(state);
+
+  if (loot) {
+    state.wrecks?.spawn(enemy.x, enemy.y, { loot });
+  }
+
+  if (gold > 0) {
+    state.pushLootNotice?.(`+${gold} Gold`);
+  }
+
+  currentMode.onEnemyKilled?.(state, enemy, drop);
 };
 
 state.onSpawnWreck = (e) => {
@@ -415,79 +432,6 @@ canvas.addEventListener("click", (ev) => {
 });
 
 // ---------- Spawning ----------
-function spawnEnemy() {
-  const w = world.w;
-  const h = world.h;
-
-  const types = Object.keys(state.enemyTypes);
-  const type = types[Math.floor(Math.random() * types.length)];
-  const tcfg = state.enemyTypes[type];
-
-  const r = tcfg.r ?? ENEMY_R;
-  const maxHp = tcfg.hp ?? ENEMY_MAX_HP;
-
-  const margin = r + 6;
-  const side = Math.floor(Math.random() * 4);
-
-  let x = 0, y = 0;
-  if (side === 0) {
-    x = rand(margin, w - margin);
-    y = margin;
-  } else if (side === 1) {
-    x = w - margin;
-    y = rand(margin, h - margin);
-  } else if (side === 2) {
-    x = rand(margin, w - margin);
-    y = h - margin;
-  } else {
-    x = margin;
-    y = rand(margin, h - margin);
-  }
-
-  let tries = 0;
-  while (tries++ < CFG.SPAWN_TRIES) {
-    let ok = true;
-    for (const c of islands.getColliders()) {
-      const d = Math.hypot(x - c.x, y - c.y);
-      if (d < (c.r + r + 6)) {
-        ok = false;
-        break;
-      }
-    }
-    if (ok) break;
-
-    x = rand(margin, w - margin);
-    y = rand(margin, h - margin);
-  }
-
-  const cx = w * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
-  const cy = h * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
-  const dir = norm(cx - x, cy - y);
-
-  enemies.push({
-    id: enemyIdCounter++,
-    type,
-    x, y,
-    r,
-    hp: maxHp,
-    maxHp,
-    vx: dir.x,
-    vy: dir.y,
-    fireEnabled: tcfg.fireEnabled ?? true,
-    fireCooldown: tcfg.fireCooldown ?? ENEMY_FIRE_COOLDOWN,
-    turnT: rand(0.4, 1.2),
-    hitT: 0,
-    fireT: tcfg.fireCooldown ?? ENEMY_FIRE_COOLDOWN,
-    aggro: false,
-    aggroT: 0,
-    stunned: false,
-    color: tcfg.color,
-    speed: ENEMY_SPEED * (tcfg.speed ?? 1.0),
-    name: randomEnemyName(type),
-  });
-
-  if (enemies.length > ENEMY_CAP) enemies.shift();
-}
 
 function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
   projectiles.push({
