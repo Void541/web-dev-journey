@@ -2,6 +2,7 @@
 export const enemyTypes = {
   basic: {
     name: "Basic",
+    ai: "orbit",
     hp: 5,
     r: 16,
     speedMul: 1.0,
@@ -14,6 +15,7 @@ export const enemyTypes = {
 
   tank: {
     name: "Tank",
+    ai: "tank",
     hp: 16,
     r: 22,
     speedMul: 0.65,
@@ -26,6 +28,7 @@ export const enemyTypes = {
 
   sniper: {
     name: "Sniper",
+    ai: "sniper",
     hp: 6,
     r: 16,
     speedMul: 0.9,
@@ -33,12 +36,13 @@ export const enemyTypes = {
     fireEnabled: true,
     fireCooldown: 2.4,
     preferredRange: 420,
-    rangeMul: 1.35, // optional fürs AI spacing/shot range
+    rangeMul: 1.35,
     gold: 7,
   },
 
   disabler: {
     name: "Disabler",
+    ai: "kite",
     hp: 8,
     r: 17,
     speedMul: 0.95,

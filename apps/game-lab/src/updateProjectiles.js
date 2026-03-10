@@ -11,8 +11,8 @@ export function updateProjectiles(dt, state) {
 
     const out =
       p.ttl <= 0 ||
-      p.x < -80 || p.x > world.width + 80 ||
-      p.y < -80 || p.y > world.height + 80;
+      p.x < -80 || p.x > world.w + 80 ||
+      p.y < -80 || p.y > world.h + 80;
 
     if (out) {
       projectiles.splice(i, 1);
@@ -20,50 +20,51 @@ export function updateProjectiles(dt, state) {
     }
 
     if (p.fromEnemy) {
-      // hit player
       const rr = p.r + player.r;
+
       if (dist2(p.x, p.y, player.x, player.y) <= rr * rr) {
         player.hp -= p.dmg;
+
+        if (p.effect?.kind === "slow") {
+          player.slowT = Math.max(player.slowT ?? 0, p.effect.t ?? 1.2);
+          player.slowMul = p.effect.mul ?? 0.6;
+        }
+
         state.onPlayerHit?.(p);
         projectiles.splice(i, 1);
         continue;
       }
     } else {
-      // hit enemies
       for (let ei = enemies.length - 1; ei >= 0; ei--) {
         const e = enemies[ei];
         if (!e) continue;
 
         const rr = p.r + e.r;
+
         if (dist2(p.x, p.y, e.x, e.y) <= rr * rr) {
           e.hp -= p.dmg;
           e.hitT = 0.12;
-
-          // Aggro / Combat-State (wenn ihr das nutzt)
           e.aggroT = state.ENEMY_AGGRO_TIME;
-          e.stunned = true;
+          e.stunT = 0.35;
 
-          // Damage numbers
-          if (state.damage) state.damage.spawn(e.x, e.y - e.r - 10, p.dmg);
+          state.damage?.spawn?.(e.x, e.y - e.r - 10, p.dmg);
 
           projectiles.splice(i, 1);
 
           if (e.hp <= 0) {
-            if (combat.targetId === e.id) combat.targetId = null;
+            if (combat.targetId === e.id) {
+              combat.targetId = null;
+            }
 
-              const drop = state.lootTable?.rollForEnemy?.(e);
-              const loot =drop?.loot ??{wood:2,scrap:1}; // Fallback loot
-              const gold = drop?.gold ?? (e.gold ?? 1);
+            const drop = state.lootTable?.rollForEnemy?.(e) ?? {
+              loot: { wood: 2, metal: 1 },
+              gold: state.enemyTypes?.[e.type]?.gold ?? 1,
+            };
 
-              state.addGold?.(gold);
-              state.wrecks?.spawn(e.x, e.y, { loot });
-              state.pushLootNotice(`+${gold} Gold`);
-
-              // ✅ Kill rewards (Gold instant)
-            state.onEnemyKilled?.(e);
-
+            state.onEnemyKilled?.(e, drop);
             enemies.splice(ei, 1);
           }
+
           break;
         }
       }

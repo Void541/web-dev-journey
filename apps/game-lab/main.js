@@ -1,32 +1,41 @@
-import { startLoop } from "./engine/loop.js";
-import { createInput } from "./engine/input.js";
-import { clamp } from "./engine/math.js";
-import { updateEnemies } from "./src/updateEnemies.js";
+import { startLoop } from "./src/engine/loop.js";
+import { createInput } from "./src/engine/input.js";
+import { clamp } from "./src/engine/math.js";
+import { updateEnemies } from "./src/systems/enemies/updateEnemies.js";
 import { updateProjectiles } from "./src/updateProjectiles.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
-import { createBonusmap } from "./src/modes/bonusmap(Vorläufig Deaktiv).js";
 import { createOverworld } from "./src/modes/overworld.js";
-import { enemyTypes } from "./src/enemyTypes.js";
+import { enemyTypes } from "./src/entities/enemyTypes.js";
 import { drawMinimap } from "./src/minimap.js";
-import { createWreckSystem } from "./src/wrecks.js";
-import { createLootTable } from "./src/lootTable.js";
+import { createWreckSystem } from "./src/systems/wrecks.js";
+import { createLootTable } from "./src/systems/lootTable.js";
 import * as CFG from "./src/config.js";
-import { createHudOverlay } from "./src/hudOverlay.js";
-import { createShipStats } from "./src/shipStats.js";
-import { createCraftingRecipes } from "./src/craftingRecipes.js ";
-import { createCraftingSystem } from "./src/craftingSystem.js";
+import { createHudOverlay } from "./src/render/hudOverlay.js";
+import { createShipStats } from "./src/systems/shipStats.js";
+import { createCraftingRecipes } from "./src/craftingRecipes.js";
+import { createCraftingSystem } from "./src/systems/craftingSystem.js";
+import { createSpriteManager } from "./src/sprites.js";
 
 const overworld = createOverworld();
-const bonusmap = createBonusmap();
+const sprites = createSpriteManager();
+
+// --- Sprites laden ---
+sprites.load("player", "assets/ships/player.png");
+sprites.load("enemy_tank", "assets/ships/enemy_tank.png");
+sprites.load("enemy_sniper", "assets/ships/enemy_sniper.png");
+sprites.load("enemy_disabler", "assets/ships/enemy_disabler.png");
+sprites.load("enemy_raider", "assets/ships/enemy_raider.png");
+sprites.load("cannonball", "assets/ships/cannonball.png");
 
 const shipStats = createShipStats();
 const craftingRecipes = createCraftingRecipes();
 const craftingSystem = createCraftingSystem(craftingRecipes);
 
-
-let currentMode = overworld; // default mode
+let currentMode = overworld;
+let overworldSpawnTimer = 0;
+let mode = "overworld";
 
 function setMode(next) {
   mode = next;
@@ -34,12 +43,9 @@ function setMode(next) {
 
   applyWorld(WORLDS[next]);
 
-  currentMode= (next === "bonusmap")? bonusmap:overworld;
-  currentMode.enter(state);
+  currentMode = next === "bonusmap" ? bonusmap : overworld;
+  currentMode.enter?.(state);
 }
-
-let overworldSpawnTimer = 0;
-
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -51,21 +57,21 @@ const damage = createDamageSystem();
 const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
 const effect = [];
-
+const effects = [];
 
 // --- Repair ---
 const repair = {
   active: false,
-  rate: 1.2, // HP per second
-  minDelay:0.25, // seconds after taking damage until repair starts
+  rate: 1.2,
+  minDelay: 0.25,
   t: 0,
-  healAcc: 0, // für diskrete Heal-Amounts, optional
-  interrupted: false, // optional, falls du eine "Repair unterbrochen"-Logik haben willst
-  fxT: 0, // für visuelle Effekte beim Heilen
-  breakFlash: 0, // für visuelle Effekte beim Unterbrechen durch Schaden
+  healAcc: 0,
+  interrupted: false,
+  fxT: 0,
+  breakFlash: 0,
 };
 
-//World/Camera
+// World/Camera
 const world = {
   w: 4000,
   h: 1400,
@@ -74,9 +80,8 @@ const world = {
 const camera = {
   x: 0,
   y: 0,
-  smooth:0.12,
+  smooth: 0.12,
 };
-
 
 function regenerateIslands() {
   islands.generateDefault(world);
@@ -90,7 +95,10 @@ function fitCanvas() {
   const aspect = 16 / 9;
   let cssW = maxW;
   let cssH = cssW / aspect;
-  if (cssH > maxH) { cssH = maxH; cssW = cssH * aspect; }
+  if (cssH > maxH) {
+    cssH = maxH;
+    cssW = cssH * aspect;
+  }
 
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = `${cssW}px`;
@@ -103,17 +111,15 @@ function fitCanvas() {
   regenerateIslands();
 }
 
-
 window.addEventListener("resize", fitCanvas);
-fitCanvas(); // das callt dann auch regenerateIslands()
+fitCanvas();
 
 function getIslandColliders() {
   if (typeof islands.getColliders === "function") {
     return islands.getColliders();
   }
-  if (Array.isArray(islands.colliders)) 
-  return islands.colliders;
-  if (Array.isArray(islands.islands)) return islands.islands; // fallback, if colliders are just the islands themselves
+  if (Array.isArray(islands.colliders)) return islands.colliders;
+  if (Array.isArray(islands.islands)) return islands.islands;
   return [];
 }
 
@@ -121,15 +127,18 @@ function getIslandColliders() {
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
+
 function dist2(ax, ay, bx, by) {
   const dx = ax - bx;
   const dy = ay - by;
   return dx * dx + dy * dy;
 }
+
 function norm(dx, dy) {
   const len = Math.hypot(dx, dy) || 1;
   return { x: dx / len, y: dy / len, len };
 }
+
 function getMousePos(evt) {
   const rect = canvas.getBoundingClientRect();
   return {
@@ -138,21 +147,36 @@ function getMousePos(evt) {
   };
 }
 
-// ---- World presents ----
-const WORLDS={
-  overworld: { w:4000, h:1400 },
+function getEnemySpriteKey(type) {
+  switch (type) {
+    case "tank":
+      return "enemy_tank";
+    case "sniper":
+      return "enemy_sniper";
+    case "disabler":
+      return "enemy_disabler";
+    case "raider":
+    case "basic":
+    default:
+      return "enemy_raider";
+  }
+}
+
+// ---- World presets ----
+const WORLDS = {
+  overworld: { w: 4000, h: 1400 },
   bonusmap: { w: 1200, h: 700 },
 };
 
-
-function applyWorld(present) {
-  world.w = present.w;
-  world.h = present.h;
+function applyWorld(preset) {
+  world.w = preset.w;
+  world.h = preset.h;
 
   islands.generateDefault(world);
 
   clampCam();
 }
+
 // ---------- Tuning ----------
 const GRID_STEP = 48;
 
@@ -160,13 +184,12 @@ const PLAYER_SPEED = 260;
 const PLAYER_R = 14;
 const PLAYER_MAX_HP = 10;
 
-
 const ENEMY_SPAWN_EVERY = 1.2;
 const ENEMY_SPEED = 90;
 const ENEMY_R = 16;
 const ENEMY_MAX_HP = 5;
 const ENEMY_CAP = 30;
-const ENEMY_AGGRO_TIME = 6; // Zeit, die ein Enemy nach einem Treffer aggressiv bleibt (d.h. weiter schießt)
+const ENEMY_AGGRO_TIME = 6;
 const ENEMY_FIRE_ENABLED = true;
 const ENEMY_FIRE_COOLDOWN = 1.2;
 const ENEMY_BULLET_SPEED = 320;
@@ -208,88 +231,67 @@ const TRAIL_MAX = 80;
 const combat = {
   targetId: null,
   range: 520,
-  fireRate: 0.9, // shots per second
+  fireRate: 0.9,
   cooldown: 0,
   projectileSpeed: 720,
   damage: 1,
 };
-const ENEMY_AGGRO_DECAY = 4.0; // optional, for UI purposes (z.B. rotes HP-Bar-Overlay, das mit Aggro-Time hochgeht und langsam wieder runterfaded)
+
+const ENEMY_AGGRO_DECAY = 4.0;
 
 // ---------- State ----------
 const player = {
   x: 200,
   y: 200,
   r: PLAYER_R,
-  hp: PLAYER_MAX_HP, // Start-HP abhängig von Hull-Level
-  maxHp: PLAYER_MAX_HP, // Max HP abhängig von Hull-Level
-
-  slowT: 0, // für Effekte von Disabler-Enemy
-  slowMul: 1.0, // für Effekte von Disabler-Enemy
+  hp: PLAYER_MAX_HP,
+  maxHp: PLAYER_MAX_HP,
+  slowT: 0,
+  slowMul: 1.0,
 };
 
-
-
-const enemies = []; // {id,x,y,r,hp,maxHp,vx,vy,turnT,hitT,fireT}
-const projectiles = []; // {x,y,vx,vy,r,ttl,dmg,fromEnemy:boolean}
-const effects = []; // {x,y,t,type}
-const trail = []; // {x,y,t}
+const enemies = [];
+const projectiles = [];
+const trail = [];
 
 let paused = false;
-let spawnTimer = 0;
 let time = 0;
 let fpsSmoothing = 0;
-
 let enemyIdCounter = 1;
-let mode ="overworld";
+
 const state = {
   canvas, ctx, input,
-  world, camera, 
+  world, camera,
   player, enemies, projectiles, effects, trail,
   combat, islands, water, damage,
-  //timers/mode:
   mode,
   overworldSpawnTimer,
+  enemyTypes,
+  sprites,
 };
-state.enemyTypes = enemyTypes;
+
 state.mode = mode;
-
-state.wave = 1;
-state.waveActive = false;
-state.waveEnemiesLeft = 0;
-state.waveCooldown = 2;
-state.waveTimer = state.waveCooldown;
-state.waveSpawnLeft = 0;
-state.waveSpawnTimer = 0;
-
-state.overworldSpawnTimer = 0;
-
 state.pushLootNotice = pushLootNotice;
 
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
-
 state.shipStats = shipStats;
 
-state.ui={
+state.ui = {
   shipyardOpen: false,
 };
 
-state.crafting ={
+state.crafting = {
   recipes: craftingRecipes,
   craft: (id) => craftingSystem.craft(state, id)
 };
 
 const cfg = {
   ENEMY_CAP,
-  // overworld
   OVERWORLD_TARGET_ENEMIES: 20,
   OVERWORLD_SPAWN_EVERY: 1.0,
-  // bonusmap waves
-  WAVE_COOLDOWN: 2,
-  WAVE_SPAWN_EVERY: 0.35,
-  WAVE_BASE: 3,
-  WAVE_SCALE: 2,
 };
+
 state.cfg = cfg;
 state.spawnEnemy = spawnEnemy;
 
@@ -299,21 +301,15 @@ const wrecks = createWreckSystem({
   DESPAWN_TIME: 35,
 });
 
-const lootTable =createLootTable();
+const lootTable = createLootTable();
 state.lootTable = lootTable;
-
-
 
 state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
 state.gold = state.gold ?? 0;
 
-// Gold + wreck callbacks (werden aus updateProjectiles aufgerufen)
 state.onEnemyKilled = (e) => {
-  // Gold sofort
-  const gold = (state.enemyTypes?.[e.type]?.gold ?? 5);
+  const gold = state.enemyTypes?.[e.type]?.gold ?? 5;
   state.gold += gold;
-
-  // Wenn du noch mode-spezifische Zähler hast:
   currentMode.onEnemyKilled?.(state);
 };
 
@@ -326,11 +322,12 @@ state.wrecks = wrecks;
 const lootNotices = [];
 
 function pushLootNotice(text) {
-  lootNotices.push({ text, t: 2.5, yOff:0 });
+  lootNotices.push({ text, t: 2.5, yOff: 0 });
 }
 
-// Debug helpers (make module state visible in DevTools)
-window.__dbg = {state};
+// Debug helpers
+window.__dbg = { state };
+
 // ---------- Pause ----------
 const loop = startLoop({ update, render });
 
@@ -346,8 +343,6 @@ window.__gameActions = {
   },
 
   holdSalvage: () => {
-    // klick simuliert Salvage-Intent kurz
-    // echte Hold-Logik bleibt weiter auf F
     state.wrecks?.trySalvage?.(0.2, state);
   },
 
@@ -371,36 +366,26 @@ window.__gameActions = {
 
   craft: (id) => {
     state.crafting?.craft?.(id);
-    },
+  },
 };
 
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
 
-  if (k === "p") {
-    togglePause();
-  }
+  if (k === "p") togglePause();
 
   if (k === "r") {
     repair.active = !repair.active;
     repair.t = 0;
   }
 
-  if (k === "g") {
-    showEnemyRanges = !showEnemyRanges;
-  }
-
-  if (k === "n") {
-    showMinimap = !showMinimap;
-  }
-  if (k === "c") {
-    state.ui.shipyardOpen = !state.ui.shipyardOpen;
-  }
+  if (k === "g") showEnemyRanges = !showEnemyRanges;
+  if (k === "n") showMinimap = !showMinimap;
+  if (k === "c") state.ui.shipyardOpen = !state.ui.shipyardOpen;
 });
 
 let showEnemyRanges = false;
 let showMinimap = true;
-
 
 // ---------- Theme toggle ----------
 const themeBtn = document.getElementById("themeToggle");
@@ -413,11 +398,10 @@ if (themeBtn) {
 
 // ---------- Targeting ----------
 function findEnemyAt(x, y) {
-  // topmost (last) enemy wins
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
     if (!e) continue;
-    const rr = (e.r + 8) * (e.r + 8); // clickable padding
+    const rr = (e.r + 8) * (e.r + 8);
     if (dist2(x, y, e.x, e.y) <= rr) return e;
   }
   return null;
@@ -446,18 +430,29 @@ function spawnEnemy() {
   const side = Math.floor(Math.random() * 4);
 
   let x = 0, y = 0;
-  if (side === 0) { x = rand(margin, w - margin); y = margin; }
-  else if (side === 1) { x = w - margin; y = rand(margin, h - margin); }
-  else if (side === 2) { x = rand(margin, w - margin); y = h - margin; }
-  else { x = margin; y = rand(margin, h - margin); }
+  if (side === 0) {
+    x = rand(margin, w - margin);
+    y = margin;
+  } else if (side === 1) {
+    x = w - margin;
+    y = rand(margin, h - margin);
+  } else if (side === 2) {
+    x = rand(margin, w - margin);
+    y = h - margin;
+  } else {
+    x = margin;
+    y = rand(margin, h - margin);
+  }
 
-  // nicht in Inseln spawnen
   let tries = 0;
   while (tries++ < CFG.SPAWN_TRIES) {
     let ok = true;
     for (const c of islands.getColliders()) {
       const d = Math.hypot(x - c.x, y - c.y);
-      if (d < (c.r + r + 6)) { ok = false; break; }
+      if (d < (c.r + r + 6)) {
+        ok = false;
+        break;
+      }
     }
     if (ok) break;
 
@@ -465,7 +460,6 @@ function spawnEnemy() {
     y = rand(margin, h - margin);
   }
 
-  // initial dir zur map-mitte
   const cx = w * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
   const cy = h * 0.5 + rand(-CFG.SPAWN_CENTER_VARIANCE, CFG.SPAWN_CENTER_VARIANCE);
   const dir = norm(cx - x, cy - y);
@@ -494,20 +488,7 @@ function spawnEnemy() {
 
   if (enemies.length > ENEMY_CAP) enemies.shift();
 }
-function startWave() {
-  state.waveActive = true;
 
-  // Anzahl Gegner = Wellen-Nummer + bisschen Zufall
-  const base = 3;
-  const scale = 2;
-
-  const total = base + wave * scale;
-  waveEnemiesLeft = total; // Setze die Anzahl der Gegner, die in dieser Welle noch gespawnt werden müssen
-  waveSpawnLeft = total; // Setze die Anzahl der Gegner, die noch gespawnt werden müssen
-  waveSpawnTimer = 0.2; // Timer zurücksetzen, damit sofort der erste Gegner spawnt
-}
-
-// projectile travel
 function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
   projectiles.push({
     x,
@@ -518,7 +499,7 @@ function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
     dmg: dmg ?? 1,
     ttl: ttl ?? 2.0,
     r: r ?? 3,
-    effect: effect ?? null
+    effect: null,
   });
 }
 
@@ -545,7 +526,7 @@ function fireAtTarget(target) {
     vx: u.x * combat.projectileSpeed,
     vy: u.y * combat.projectileSpeed,
     fromEnemy: false,
-    dmg: combat.damage = state.shipStats.getDamage(),
+    dmg: state.shipStats.getDamage(),
     ttl,
     r: 3,
   });
@@ -553,19 +534,11 @@ function fireAtTarget(target) {
   effects.push({ type: "flash", x: startX, y: startY, t: 0.08 });
 }
 
-
-
 player.maxHp = state.shipStats.getMaxHp();
 player.hp = player.maxHp;
 
-
 // ---------- Update ----------
 function update(dt) {
-  // Debug: Spawn Enemy Test
-  //if(Math.random()<0.01){ 
-  //  console.log("Mode",mode,"enemies",enemies.length,"timer:", state.overworldSpawnTimer);
-  //}
-
   time += dt;
 
   if (paused) {
@@ -574,50 +547,45 @@ function update(dt) {
   }
 
   player.slowT = Math.max(0, (player.slowT ?? 0) - dt);
-  player.slowMul = player.slowT > 0 ? 0.6 : 1.0; // Beispiel: 40% slow, wenn slowT aktiv
+  player.slowMul = player.slowT > 0 ? 0.6 : 1.0;
 
-currentMode.update(dt, state);
+  currentMode.update?.(dt, state);
 
-wrecks.update(dt);
-wrecks.trySalvage(dt, state);
+  wrecks.update(dt);
+  wrecks.trySalvage(dt, state);
 
-// --- Repair: wenn aktiv, darfst du nicht bewegen + kontinuierlich heilen
-// Wir merken uns, ob der Spieler sich bewegen wollte:
-const wantsMove =
-  input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
-  input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
+  const wantsMove =
+    input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
+    input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
 
-// Wenn Repair aktiv und Player will sich bewegen -> abbrechen
-if (repair.active && wantsMove) {
-  repair.active = false;
-  repair.t = 0;
-  repair.interrupted = true; // optional, falls du eine "Repair unterbrochen"-Logik haben willst
-}
-
-// Heal über Zeit (nur wenn aktiv, nicht tot, nicht full hp)
-if (repair.active && player.hp > 0 && player.hp < player.maxHp) {
-  repair.interrupted = false; // optional, falls du eine "Repair unterbrochen"-Logik haben willst
-  repair.fxT += dt; // für visuelle Effekte beim Heilen
-  repair.healAcc += repair.rate * dt; // für diskrete Heal-Amounts, optional
-
-  while (repair.healAcc >= 1 && player.hp < player.maxHp) {
-    player.hp += 1;
-    repair.healAcc -= 1;
+  if (repair.active && wantsMove) {
+    repair.active = false;
+    repair.t = 0;
+    repair.interrupted = true;
   }
-if (player.hp >= player.maxHp) {
-  repair.active = false;
-  repair.t = 0;
-}
 
-} else {
-  if (!repair.active) repair.healAcc = 0; // reset Acc, wenn Repair nicht aktiv ist
-}
+  if (repair.active && player.hp > 0 && player.hp < player.maxHp) {
+    repair.interrupted = false;
+    repair.fxT += dt;
+    repair.healAcc += repair.rate * dt;
 
-water.update(dt);
+    while (repair.healAcc >= 1 && player.hp < player.maxHp) {
+      player.hp += 1;
+      repair.healAcc -= 1;
+    }
 
-  // ---- Player movement
-  let ax = 0,
-    ay = 0;
+    if (player.hp >= player.maxHp) {
+      repair.active = false;
+      repair.t = 0;
+    }
+  } else {
+    if (!repair.active) repair.healAcc = 0;
+  }
+
+  water.update(dt);
+
+  let ax = 0;
+  let ay = 0;
 
   if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
   if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
@@ -629,10 +597,12 @@ water.update(dt);
     ax *= inv;
     ay *= inv;
   }
+
   const islandColliders = islands.getColliders();
 
-
-islands.resolveCircle(player);
+  if (typeof islands.resolveCircle === "function") {
+    islands.resolveCircle(player);
+  }
 
   player.x += ax * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
   player.y += ay * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
@@ -640,7 +610,7 @@ islands.resolveCircle(player);
   player.x = clamp(player.x, player.r, world.w - player.r);
   player.y = clamp(player.y, player.r, world.h - player.r);
 
-  if(typeof islands.resolveCircle === "function") {
+  if (typeof islands.resolveCircle === "function") {
     islands.resolveCircle(player);
   }
 
@@ -649,36 +619,32 @@ islands.resolveCircle(player);
     trail.push({ x: player.x - ax * 6, y: player.y - ay * 6, t: 0.6 });
     if (trail.length > TRAIL_MAX) trail.shift();
   }
+
   for (let i = trail.length - 1; i >= 0; i--) {
     trail[i].t -= dt;
     if (trail[i].t <= 0) trail.splice(i, 1);
   }
 
+  updateEnemies(dt, {
+    enemies, player, canvas,
+    world,
+    ENEMY_SPEED,
+    ENEMY_FIRE_ENABLED,
+    ENEMY_FIRE_COOLDOWN,
+    ENEMY_BULLET_SPEED,
+    ENEMY_BULLET_TTL,
+    ENEMY_AGGRO_TIME,
+    norm, rand,
+    spawnProjectile,
+    islandColliders,
+    islands,
+    mode: state.mode,
+    enemyTypes: state.enemyTypes,
+  });
 
- // ---- Enemies update (wander + bounce + optional shooting)
-updateEnemies(dt, {
-  enemies, player, canvas,
-  world,
-  ENEMY_SPEED,
-  ENEMY_FIRE_ENABLED,
-  ENEMY_FIRE_COOLDOWN,
-  ENEMY_BULLET_SPEED,
-  ENEMY_BULLET_TTL,
-  ENEMY_AGGRO_TIME,
-  norm, rand,
-  spawnProjectile,
-  islandColliders,
-  islands,
-  mode: state.mode,
-  enemyTypes: state.enemyTypes,
-});
-
-//console.log("Enemy_Speed",ENEMY_SPEED,"mode", mode, "world", state.world);
- // ---- Validate target
   const target = getTargetEnemy();
   if (combat.targetId && !target) combat.targetId = null;
 
-  // ---- Auto fire (Seafight)
   combat.cooldown = Math.max(0, combat.cooldown - dt);
   if (target) {
     const dx = target.x - player.x;
@@ -693,29 +659,25 @@ updateEnemies(dt, {
     }
   }
 
-  // ---- Projectiles update + collisions
-state.dist2 = dist2;               // falls dist2 nicht im state war
-state.ENEMY_AGGRO_TIME = ENEMY_AGGRO_TIME;
+  state.dist2 = dist2;
+  state.ENEMY_AGGRO_TIME = ENEMY_AGGRO_TIME;
 
-// wenn du onPlayerHit im state haben willst:
-state.onPlayerHit = (p) => {
-  repair.active = false;
-  repair.t = 0;
-  repair.interrupted = true;
-  repair.breakFlash = 0.4;
-};
+  state.onPlayerHit = () => {
+    repair.active = false;
+    repair.t = 0;
+    repair.interrupted = true;
+    repair.breakFlash = 0.4;
+  };
 
-updateProjectiles(dt, state);
+  updateProjectiles(dt, state);
 
-repair.breakFlash = Math.max(0, repair.breakFlash - dt);
+  repair.breakFlash = Math.max(0, repair.breakFlash - dt);
 
-  // ---- Effects
   for (let i = effects.length - 1; i >= 0; i--) {
     effects[i].t -= dt;
     if (effects[i].t <= 0) effects.splice(i, 1);
   }
 
-  // ---- Game over simple reset
   if (player.hp <= 0) {
     player.hp = player.maxHp;
     enemies.length = 0;
@@ -726,103 +688,27 @@ repair.breakFlash = Math.max(0, repair.breakFlash - dt);
     combat.cooldown = 0;
   }
 
-  // ---- FPS HUD
   const fps = 1 / dt;
   fpsSmoothing = fpsSmoothing ? fpsSmoothing * 0.9 + fps * 0.1 : fps;
   if (fpsEl) {
     fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
   }
+
   damage.update(dt);
 
   for (let i = lootNotices.length - 1; i >= 0; i--) {
-  const n = lootNotices[i];
-  n.t -= dt;
-  n.yOff += 18 * dt
+    const n = lootNotices[i];
+    n.t -= dt;
+    n.yOff += 18 * dt;
 
-  if (n.t <= 0) lootNotices.splice(i, 1);
-}
+    if (n.t <= 0) lootNotices.splice(i, 1);
+  }
 
   updateCamera();
-
   input.endFrame();
 }
 
 // ---------- Render helpers ----------
-function drawHpBar(x, y, w, h, hp, maxHp, label, align = "left") {
-  const ratio = maxHp <= 0 ? 0 : clamp(hp / maxHp, 0, 1);
-
-  // We draw in CSS pixels because of ctx.setTransform(dpr,...)
-  const CW = canvas.clientWidth;
-  const CH = canvas.clientHeight;
-
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-
-  // Panel metrics
-  const pad = 8;            // outer clamp padding
-  const inner = 12;         // inner padding in panel
-  const lineH = 16;
-
-  const text = `${hp} / ${maxHp}`;
-
-  // Measure text width (needs font set BEFORE measure)
-  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  const tw = ctx.measureText(text).width;
-
-  // Panel width: bar + gap + hp-text area (min 54)
-  const gap = 10;
-  const hpArea = Math.max(54, Math.ceil(tw));
-  const panelW = inner + w + gap + hpArea + inner;
-  const panelH = inner + lineH + 8 + h + inner;
-
-  // x is "anchor": left = panel starts at x, right = panel ends at x
-  let panelX = align === "right" ? (x - panelW) : x;
-  let panelY = y;
-
-  // Clamp fully inside canvas
-  panelX = clamp(panelX, pad, CW - panelW - pad);
-  panelY = clamp(panelY, pad, CH - panelH - pad);
-
-  // Draw panel background
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(panelX, panelY, panelW, panelH);
-
-  // Label (top left/right)
-  ctx.font = "700 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillStyle = "#fff";
-  ctx.textBaseline = "top";
-  ctx.textAlign = align === "right" ? "right" : "left";
-  const labelX = align === "right" ? (panelX + panelW - inner) : (panelX + inner);
-  ctx.fillText(label, labelX, panelY + inner - 2);
-
-  // Bar position
-  const barX = panelX + inner;
-  const barY = panelY + inner + lineH + 6;
-
-  // Bar bg
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#000";
-  ctx.fillRect(barX, barY, w, h);
-
-  // Bar fill
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = ratio <= 0.3 ? "rgb(220,60,60)" : "rgb(32,172,32)";
-  ctx.fillRect(barX, barY, w * ratio, h);
-
-  // Bar stroke
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = "#fff";
-  ctx.strokeRect(barX, barY, w, h);
-
-  // HP text (always inside panel, top-right)
-  ctx.globalAlpha = 0.95;
-  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "right";
-  ctx.fillStyle = "#fff";
-  ctx.fillText(text, panelX + panelW - inner, barY - 2);
-
-  ctx.restore();
-}
 
 function clampCam() {
   const vw = canvas.clientWidth;
@@ -851,76 +737,16 @@ function screenToWorld(sx, sy) {
   };
 }
 
-function renderReloadUI() {
-  const pad = 18;
-  const w = 220;
-  const h = 10;
 
-  const cdMax = 1 / combat.fireRate;
-  const t = clamp(1 - combat.cooldown / cdMax, 0, 1);
-
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-
-  // small panel under player HP
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(pad - 10, pad + 52, w + 170, 36);
-
-  ctx.fillStyle = "#fff";
-  ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textBaseline = "top";
-  ctx.textAlign = "left";
-  ctx.fillText("Cannons", pad, pad + 56);
-
-  const bx = pad + 78;
-  const by = pad + 60;
-  const barW = w;
-
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#000";
-  ctx.fillRect(bx, by, barW, h);
-
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = t >= 1 ? "rgb(32,172,32)" : "rgb(60,160,255)";
-  ctx.fillRect(bx, by, barW * t, h);
-
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = "#fff";
-  ctx.strokeRect(bx, by, barW, h);
-
-  ctx.globalAlpha = 0.9;
-  const label = t >= 1 ? "Ready" : `Reload ${combat.cooldown.toFixed(2)}s`;
-  ctx.fillText(label, bx, by + 14);
-
-  ctx.restore();
-}
-
-function renderEnemy(e) {
- 
-  ctx.save();
-
-  const isTarget = combat.targetId === e.id;
-  const angle = Math.atan2(e.vy, e.vx);
-
-  renderShip(ctx, e.x, e.y, e.r, angle, isTarget, true);
-  ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
-
-  ctx.__enemyType = e.type;
-  ctx.__enemyColor = e.color || "rgb(170,45,40)";
-
- function renderShip(ctx, x, y, r, angle, isTarget, isEnemy) {
+function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basic", color = "rgb(170,45,40)") {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
 
-  // --- Klassen-Parameter (Silhouette) ---
-  const type = isEnemy ? (ctx.__enemyType || "basic") : "player";
-
-  // Defaults
   let hullFront = r + 10;
   let hullBack1 = -r - 8;
   let hullBack2 = -r - 14;
-  let hullHeight = r;          // wie "breit" das Schiff ist
+  let hullHeight = r;
   let mastH = r + 8;
   let mastX = -2;
   let sailW = r + 8;
@@ -928,24 +754,23 @@ function renderEnemy(e) {
   let sailBottom = r - 2;
   let mastLineW = 2;
 
-  // --- Silhouetten pro Klasse ---
   if (type === "tank") {
     hullFront = r + 8;
     hullBack1 = -r - 12;
     hullBack2 = -r - 18;
-    hullHeight = r * 1.25;       // breiter
+    hullHeight = r * 1.25;
     mastH = r + 10;
-    mastLineW = 3;               // dicker Mast
-    sailW = r + 6;               // etwas kompakter
+    mastLineW = 3;
+    sailW = r + 6;
   }
 
   if (type === "sniper") {
-    hullFront = r + 16;          // langer Bug
+    hullFront = r + 16;
     hullBack1 = -r - 6;
     hullBack2 = -r - 10;
-    hullHeight = r * 0.85;       // schlanker
-    mastH = r + 14;              // höherer Mast
-    sailW = r + 14;              // größere Segel
+    hullHeight = r * 0.85;
+    mastH = r + 14;
+    sailW = r + 14;
   }
 
   if (type === "disabler") {
@@ -957,7 +782,6 @@ function renderEnemy(e) {
     sailW = r + 10;
   }
 
-  // --- Optional Aura beim Disabler (super klar lesbar) ---
   if (type === "disabler") {
     ctx.save();
     ctx.globalAlpha = 0.25;
@@ -968,9 +792,8 @@ function renderEnemy(e) {
     ctx.restore();
   }
 
-  // --- Hull ---
   ctx.globalAlpha = 0.95;
-  ctx.fillStyle = isEnemy ? (ctx.__enemyColor || "rgb(170,45,40)") : "rgb(90, 60, 35)";
+  ctx.fillStyle = isEnemy ? color : "rgb(90, 60, 35)";
   ctx.beginPath();
   ctx.moveTo(hullFront, 0);
   ctx.lineTo(hullBack1, -hullHeight);
@@ -979,7 +802,6 @@ function renderEnemy(e) {
   ctx.closePath();
   ctx.fill();
 
-  // --- Deck highlight ---
   ctx.globalAlpha = 0.22;
   ctx.fillStyle = "#fff";
   ctx.beginPath();
@@ -989,7 +811,6 @@ function renderEnemy(e) {
   ctx.closePath();
   ctx.fill();
 
-  // --- Mast ---
   ctx.globalAlpha = 0.85;
   ctx.strokeStyle = "rgba(255,255,255,0.75)";
   ctx.lineWidth = mastLineW;
@@ -998,7 +819,6 @@ function renderEnemy(e) {
   ctx.lineTo(mastX, r + 6);
   ctx.stroke();
 
-  // --- Sail ---
   ctx.globalAlpha = 0.85;
   ctx.fillStyle = isEnemy ? "rgba(255,220,220,0.75)" : "rgba(255,255,255,0.85)";
   ctx.beginPath();
@@ -1008,7 +828,6 @@ function renderEnemy(e) {
   ctx.closePath();
   ctx.fill();
 
-  // --- Target ring ---
   if (isTarget) {
     ctx.globalAlpha = 0.9;
     ctx.strokeStyle = "#fff";
@@ -1020,40 +839,50 @@ function renderEnemy(e) {
 
   ctx.restore();
 }
+
+function renderEnemy(e) {
+  ctx.save();
+
+  const isTarget = combat.targetId === e.id;
+  const angle = Math.atan2(e.vy, e.vx);
+  const spriteKey = getEnemySpriteKey(e.type);
+
+  const drewSprite = state.sprites?.draw(
+    ctx,
+    spriteKey,
+    e.x,
+    e.y,
+    e.r * 3.2,
+    e.r * 3.2,
+    angle
+  );
+
+  if (!drewSprite) {
+    renderFallbackShip(ctx, e.x, e.y, e.r, angle, isTarget, true, e.type, e.color || "rgb(170,45,40)");
+  }
+
+  ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
+
   const tcfg = state.enemyTypes?.[e.type] || {};
   ctx.fillStyle = tcfg.color || "rgb(170,45,40)";
 
-  if (isTarget) {
-    ctx.globalAlpha = 0.9;
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
+  ctx.globalAlpha = 0.95;
+  ctx.font = "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
 
-  // Enemy name
-ctx.globalAlpha = 0.95;
-ctx.font = "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-ctx.textAlign = "center";
-ctx.textBaseline = "bottom";
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
 
-// leichter Schatten für Lesbarkeit
-ctx.fillStyle = "rgba(0,0,0,0.7)";
-ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
+  ctx.fillStyle = "#fff";
+  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
 
-// Haupttext
-ctx.fillStyle = "#fff";
-ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
-
-  // HP bar under model
   const w = 34;
   const h = 5;
   const pct = clamp(e.hp / (e.maxHp || 1), 0, 1);
-  const hpDisplay = Math.max(0, Math.ceil(e.hp));
-  const maxHpDisplay = Math.ceil(e.maxHp || 1);
 
   const bx = e.x - w / 2;
   const by = e.y + e.r + 15;
-
 
   ctx.globalAlpha = 0.35;
   ctx.fillStyle = "#000";
@@ -1072,25 +901,17 @@ ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
 
 // ---------- Render ----------
 function render() {
-
-  
-  // 1) clear in CSS pixels
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   ctx.clearRect(0, 0, CW(), CH());
 
-  // 2) Screen-space background (bleibt "am Bildschirm kleben")
   water.render(ctx, canvas);
 
-
-  // 3) World-space draw (alles was sich mit Kamera bewegt)
   ctx.save();
   ctx.translate(-camera.x, -camera.y);
 
   islands.render(ctx);
+  wrecks.render(ctx, state);
 
- wrecks.render(ctx,state);
-
-  // Trail
   ctx.save();
   ctx.fillStyle = "#fff";
   for (const p of trail) {
@@ -1105,90 +926,72 @@ function render() {
   // Projectiles
   ctx.save();
   for (const p of projectiles) {
-    ctx.fillStyle = p.fromEnemy ? "rgba(255,120,120,0.95)" : "#fff";
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fill();
+    const angle = Math.atan2(p.vy, p.vx);
+    const drewProjectile = state.sprites?.draw(
+      ctx,
+      "cannonball",
+      p.x,
+      p.y,
+      p.r * 5,
+      p.r * 5,
+      angle
+    );
+
+    if (!drewProjectile) {
+      ctx.fillStyle = p.fromEnemy ? "rgba(255,120,120,0.95)" : "#fff";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
   ctx.restore();
 
-  // Enemies
   for (const e of enemies) renderEnemy(e);
 
-  // --- Debug: enemy attack ranges (G toggles) ---
-if (showEnemyRanges) {
-  ctx.save();
-  ctx.globalAlpha = 0.18;
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 1;
+  if (showEnemyRanges) {
+    ctx.save();
+    ctx.globalAlpha = 0.18;
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1;
 
-  for (const e of enemies) {
-    if (!e) continue;
+    for (const e of enemies) {
+      if (!e) continue;
+      if (!e.fireEnabled) continue;
 
-    // nur enemies die schießen dürfen (optional)
-    if (!e.fireEnabled) continue;
+      const range =
+        state.enemyTypes?.[e.type]?.range ??
+        (e.type === "sniper" ? CFG.SNIPER_ATTACK_RANGE : CFG.ENEMY_ATTACK_RANGE);
 
-    // Range: entweder per Type oder fallback
-    const range =
-      state.enemyTypes?.[e.type]?.range ??
-      (e.type === "sniper" ? CFG.SNIPER_ATTACK_RANGE : CFG.ENEMY_ATTACK_RANGE);
-
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, range, 0, Math.PI * 2);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, range, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
-  ctx.restore();
-}
-  // Player ship
-  ctx.save();
-  ctx.translate(player.x, player.y);
 
-  const angle = Math.atan2(
+  // Player ship
+  const playerAngle = Math.atan2(
     (input.isDown("s") || input.isDown("arrowdown")) - (input.isDown("w") || input.isDown("arrowup")),
     (input.isDown("d") || input.isDown("arrowright")) - (input.isDown("a") || input.isDown("arrowleft"))
   );
+
   const hasDir =
     input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
     input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
 
-  ctx.rotate(hasDir ? angle : 0);
+  const drewPlayer = state.sprites?.draw(
+    ctx,
+    "player",
+    player.x,
+    player.y,
+    player.r * 4.2,
+    player.r * 4.2,
+    hasDir ? playerAngle : 0
+  );
 
-  ctx.globalAlpha = 0.95;
-  ctx.fillStyle = "rgb(90, 60, 35)";
-  ctx.beginPath();
-  ctx.moveTo(player.r + 10, 0);
-  ctx.lineTo(-player.r - 8, -player.r);
-  ctx.lineTo(-player.r - 14, 0);
-  ctx.lineTo(-player.r - 8, player.r);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(player.r + 4, -2);
-  ctx.lineTo(-player.r - 6, -player.r + 4);
-  ctx.lineTo(-player.r - 10, 0);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.globalAlpha = 0.9;
-  ctx.strokeStyle = "rgba(255,255,255,0.85)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-2, -player.r - 8);
-  ctx.lineTo(-2, player.r + 6);
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.beginPath();
-  ctx.moveTo(-2, -player.r - 6);
-  ctx.lineTo(player.r + 8, 0);
-  ctx.lineTo(-2, player.r - 2);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
+  if (!drewPlayer) {
+    renderFallbackShip(ctx, player.x, player.y, player.r, hasDir ? playerAngle : 0, false, false, "player");
+  }
 
   // Muzzle flash
   ctx.save();
@@ -1211,54 +1014,48 @@ if (showEnemyRanges) {
   }
   ctx.restore();
 
+  if (repair.active) {
+    ctx.save();
 
-  // --- Repair Visual FX ---
-if (repair.active) {
-  ctx.save();
+    const pulse = 0.6 + Math.sin(repair.fxT * 4) * 0.4;
 
-  // sanfter grüner Glow pulsierend
-  const pulse = 0.6 + Math.sin(repair.fxT * 4) * 0.4;
-
-  ctx.globalAlpha = 0.25 * pulse;
-  ctx.fillStyle = "rgba(120,255,120,1)";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r + 22, 0, Math.PI * 2);
-  ctx.fill();
-
-  // kleine Partikel (Holzsplitter Look)
-  ctx.globalAlpha = 0.6;
-  ctx.fillStyle = "rgba(180,255,180,1)";
-
-  for (let i = 0; i < 6; i++) {
-    const angle = repair.fxT * 2 + i;
-    const dist = 18 + (Math.sin(repair.fxT * 3 + i) * 6);
-    const px = player.x + Math.cos(angle) * dist;
-    const py = player.y + Math.sin(angle) * dist;
-
+    ctx.globalAlpha = 0.25 * pulse;
+    ctx.fillStyle = "rgba(120,255,120,1)";
     ctx.beginPath();
-    ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+    ctx.arc(player.x, player.y, player.r + 22, 0, Math.PI * 2);
     ctx.fill();
+
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = "rgba(180,255,180,1)";
+
+    for (let i = 0; i < 6; i++) {
+      const angle = repair.fxT * 2 + i;
+      const dist = 18 + (Math.sin(repair.fxT * 3 + i) * 6);
+      const px = player.x + Math.cos(angle) * dist;
+      const py = player.y + Math.sin(angle) * dist;
+
+      ctx.beginPath();
+      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
   }
 
-  ctx.restore();
-}
+  if (repair.breakFlash > 0) {
+    ctx.save();
 
+    ctx.globalAlpha = repair.breakFlash * 0.8;
+    ctx.fillStyle = "rgba(255,80,80,1)";
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r + 18, 0, Math.PI * 2);
+    ctx.fill();
 
-if (repair.breakFlash > 0) {
-  ctx.save();
-
-  ctx.globalAlpha = repair.breakFlash * 0.8;
-  ctx.fillStyle = "rgba(255,80,80,1)";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.r + 18, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
+    ctx.restore();
+  }
 
   damage.render(ctx);
 
-  // debug colliders (world-space!)
   const ic = getIslandColliders();
   ctx.save();
   ctx.fillStyle = "rgba(255,0,0,0.25)";
@@ -1269,71 +1066,55 @@ if (repair.breakFlash > 0) {
   }
   ctx.restore();
 
-  // done with world-space
   ctx.restore();
-  
-  // 4) Screen-space HUD (NICHT mit Kamera bewegen)
+
   const t = getTargetEnemy();
 
-  //drawHud(ctx, canvas, player, t, combat, drawHpBar, renderReloadUI);
-  hudOverlay.update(state,t);
+  hudOverlay.update(state, t);
   wrecks.renderHud(ctx, canvas, state);
-
-  ctx.save();
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.font = "600 14px system-ui";
-  ctx.textAlign = "left";
- // ctx.fillText(`Gold: ${state.gold}`, 18, 206);
-  
-  const inv = state.inventory ?? {};
-  //ctx.fillText(`Wood ${inv.wood ?? 0} | Metal ${inv.metal ?? 0} | Cloth ${inv.cloth ?? 0} | Tech ${inv.tech ?? 0}`, 18, 226);
-  ctx.restore();
 
   ctx.save();
   ctx.fillStyle = repair.active ? "rgba(120,255,120,0.95)" : "rgba(255,255,255,0.75)";
   ctx.font = "600 14px system-ui";
   ctx.textAlign = "left";
-  
   ctx.restore();
 
-  if(showMinimap) 
-  drawMinimap( ctx, state, {
-    width: 240,
-    height: 135,
-    pad: 16, 
-  });
-  
+  if (showMinimap) {
+    drawMinimap(ctx, state, {
+      width: 240,
+      height: 135,
+      pad: 16,
+    });
+  }
 
   ctx.save();
-ctx.fillStyle = "#fff";
-ctx.font = "600 16px system-ui";
-ctx.textAlign = "center";
-ctx.restore();
-
-// Loot notifications
-ctx.save();
-ctx.textAlign = "left";
-ctx.textBaseline = "middle";
-ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-for (let i = 0; i < lootNotices.length; i++) {
-  const n = lootNotices[i];
-  const alpha = Math.min(1, n.t / 0.4); // leicht ausfaden
-  
-  const x = canvas.clientWidth - 300;
-  const y = 110 + i * 24 - n.yOff;
-
-  // Schatten
-  ctx.globalAlpha = alpha * 0.8;
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
-  ctx.fillText(n.text, x + 1, y + 1);
-
-  // Haupttext
-  ctx.globalAlpha = alpha;
   ctx.fillStyle = "#fff";
-  ctx.fillText(n.text, x, y);
-}
-ctx.restore();
+  ctx.font = "600 16px system-ui";
+  ctx.textAlign = "center";
+  ctx.restore();
+
+  // Loot notifications
+  ctx.save();
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+  for (let i = 0; i < lootNotices.length; i++) {
+    const n = lootNotices[i];
+    const alpha = Math.min(1, n.t / 0.4);
+
+    const x = canvas.clientWidth - 300;
+    const y = 110 + i * 24 - n.yOff;
+
+    ctx.globalAlpha = alpha * 0.8;
+    ctx.fillStyle = "rgba(0,0,0,0.65)";
+    ctx.fillText(n.text, x + 1, y + 1);
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#fff";
+    ctx.fillText(n.text, x, y);
+  }
+  ctx.restore();
 
   if (paused) {
     ctx.save();
