@@ -18,6 +18,12 @@ import { createShipStats } from "./src/systems/shipStats.js";
 import { createCraftingRecipes } from "./src/craftingRecipes.js";
 import { createCraftingSystem } from "./src/systems/craftingSystem.js";
 import { createSpriteManager } from "./src/sprites.js";
+import {
+  createPlayerCombat,
+  getTargetEnemy,
+  fireAtTarget,
+  updatePlayerCombat,
+} from "./src/combat/playerCombat.js";
 
 const overworld = createOverworld();
 const sprites = createSpriteManager();
@@ -229,14 +235,7 @@ function randomEnemyName(type) {
 const TRAIL_MAX = 80;
 
 // Seafight-ish combat
-const combat = {
-  targetId: null,
-  range: 520,
-  fireRate: 0.9,
-  cooldown: 0,
-  projectileSpeed: 720,
-  damage: 1,
-};
+const combat = createPlayerCombat();
 
 const ENEMY_AGGRO_DECAY = 4.0;
 
@@ -277,11 +276,15 @@ const state = {
 };
 
 state.mode = mode;
+state.spawnProjectile = spawnProjectile;
+state.spawnEnemy = () => spawnEnemy(state);
 state.pushLootNotice = pushLootNotice;
 
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
 state.shipStats = shipStats;
+
+
 
 state.ui = {
   shipyardOpen: false,
@@ -363,19 +366,21 @@ window.__gameActions = {
     state.wrecks?.trySalvage?.(0.2, state);
   },
 
-  shootTarget: () => {
-    const target = getTargetEnemy();
-    if (!target) return;
+shootTarget: () => {
+  const target = getTargetEnemy(state);
+  if (!target) return;
 
-    const dx = target.x - player.x;
-    const dy = target.y - player.y;
-    const d = Math.hypot(dx, dy);
+  const dx = target.x - player.x;
+  const dy = target.y - player.y;
+  const d = Math.hypot(dx, dy);
 
-    if (d <= combat.range && combat.cooldown <= 0) {
-      fireAtTarget(target);
+  if (d <= combat.range && combat.cooldown <= 0) {
+    const fired = fireAtTarget(state, target);
+    if (fired) {
       combat.cooldown = 1 / combat.fireRate;
     }
-  },
+  }
+},
 
   toggleShipyard: () => {
     state.ui.shipyardOpen = !state.ui.shipyardOpen;
@@ -447,36 +452,7 @@ function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
   });
 }
 
-function getTargetEnemy() {
-  if (!combat.targetId) return null;
-  return enemies.find((e) => e && e.id === combat.targetId) || null;
-}
 
-function fireAtTarget(target) {
-  const dx = target.x - player.x;
-  const dy = target.y - player.y;
-  const d = Math.hypot(dx, dy) || 1;
-
-  const u = { x: dx / d, y: dy / d };
-
-  const startX = player.x + u.x * (player.r + 6);
-  const startY = player.y + u.y * (player.r + 6);
-
-  const ttl = d / combat.projectileSpeed + 0.35;
-
-  spawnProjectile({
-    x: startX,
-    y: startY,
-    vx: u.x * combat.projectileSpeed,
-    vy: u.y * combat.projectileSpeed,
-    fromEnemy: false,
-    dmg: state.shipStats.getDamage(),
-    ttl,
-    r: 3,
-  });
-
-  effects.push({ type: "flash", x: startX, y: startY, t: 0.08 });
-}
 
 player.maxHp = state.shipStats.getMaxHp();
 player.hp = player.maxHp;
@@ -586,22 +562,7 @@ function update(dt) {
     enemyTypes: state.enemyTypes,
   });
 
-  const target = getTargetEnemy();
-  if (combat.targetId && !target) combat.targetId = null;
-
-  combat.cooldown = Math.max(0, combat.cooldown - dt);
-  if (target) {
-    const dx = target.x - player.x;
-    const dy = target.y - player.y;
-    const d = Math.hypot(dx, dy);
-
-    if (d > combat.range || target.hp <= 0) {
-      combat.targetId = null;
-    } else if (combat.cooldown <= 0) {
-      fireAtTarget(target);
-      combat.cooldown = 1 / combat.fireRate;
-    }
-  }
+  updatePlayerCombat(dt, state);
 
   state.dist2 = dist2;
   state.ENEMY_AGGRO_TIME = ENEMY_AGGRO_TIME;
@@ -1012,7 +973,7 @@ function render() {
 
   ctx.restore();
 
-  const t = getTargetEnemy();
+  const t = getTargetEnemy(state);
 
   hudOverlay.update(state, t);
   wrecks.renderHud(ctx, canvas, state);
