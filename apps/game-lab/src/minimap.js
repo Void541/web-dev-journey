@@ -15,7 +15,7 @@ export function drawMinimap(ctx, state, opts = {}) {
 
   // Top-right by default
   const x0 = (opts.x ?? (canvas.clientWidth - pad - mmW));
-  const y0 = (opts.y ?? (pad));
+  const y0 = (opts.y ?? pad);
 
   const bgAlpha = opts.bgAlpha ?? 0.35;
 
@@ -40,7 +40,6 @@ export function drawMinimap(ctx, state, opts = {}) {
   ctx.strokeRect(x0, y0, mmW, mmH);
 
   // ---- Camera viewport rect ----
-  // camera.x/y in world units, viewport size is canvas.clientWidth/Height in world units
   const vw = canvas.clientWidth;
   const vh = canvas.clientHeight;
 
@@ -57,21 +56,35 @@ export function drawMinimap(ctx, state, opts = {}) {
   // ---- Enemies ----
   for (const e of enemies) {
     if (!e) continue;
-    const ex = mapX(e.x);
-    const ey = mapY(e.y);
 
-    // Farbe nach Klasse
-    const col =
-      e.type === "tank"     ? "rgba(120,40,40,0.95)" :
-      e.type === "sniper"   ? "rgba(190,120,255,0.95)" :
-      e.type === "disabler" ? "rgba(80,200,255,0.95)" :
-                              "rgba(220,70,70,0.95)"; // basic default
+    const mx = mapX(e.x);
+    const my = mapY(e.y);
 
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = col;
-    ctx.beginPath();
-    ctx.arc(ex, ey, 2.6, 0, Math.PI * 2);
-    ctx.fill();
+    if (e.isAdmiral) {
+      ctx.save();
+      ctx.globalAlpha = 0.95;
+      ctx.fillStyle = "rgb(255,215,90)";
+      ctx.strokeStyle = "rgba(0,0,0,0.55)";
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(mx, my - 5);
+      ctx.lineTo(mx + 5, my);
+      ctx.lineTo(mx, my + 5);
+      ctx.lineTo(mx - 5, my);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      ctx.fillStyle = "rgb(220,70,70)";
+      ctx.beginPath();
+      ctx.arc(mx, my, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
   }
 
   // ---- Player ----
@@ -85,12 +98,13 @@ export function drawMinimap(ctx, state, opts = {}) {
     ctx.arc(px, py, 3.2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Richtung optional (kleiner Strich nach vorn)
     const dirLen = 8;
-    const vx = (state.input?.isDown?.("d") || state.input?.isDown?.("arrowright")) -
-               (state.input?.isDown?.("a") || state.input?.isDown?.("arrowleft"));
-    const vy = (state.input?.isDown?.("s") || state.input?.isDown?.("arrowdown")) -
-               (state.input?.isDown?.("w") || state.input?.isDown?.("arrowup"));
+    const vx =
+      (state.input?.isDown?.("d") || state.input?.isDown?.("arrowright")) -
+      (state.input?.isDown?.("a") || state.input?.isDown?.("arrowleft"));
+    const vy =
+      (state.input?.isDown?.("s") || state.input?.isDown?.("arrowdown")) -
+      (state.input?.isDown?.("w") || state.input?.isDown?.("arrowup"));
 
     if (vx || vy) {
       const L = Math.hypot(vx, vy) || 1;

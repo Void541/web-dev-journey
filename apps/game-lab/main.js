@@ -277,14 +277,19 @@ const state = {
 
 state.mode = mode;
 state.spawnProjectile = spawnProjectile;
-state.spawnEnemy = () => spawnEnemy(state);
+state.spawnEnemy = (options) => spawnEnemy(state, options);
 state.pushLootNotice = pushLootNotice;
 
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
 state.shipStats = shipStats;
 
-
+state.admirals = {
+  killCount: 0,
+  killsNeeded: 5,
+  active: 0,
+  maxActive: 1,
+};
 
 state.ui = {
   shipyardOpen: false,
@@ -302,7 +307,6 @@ const cfg = {
 };
 
 state.cfg = cfg;
-state.spawnEnemy = () => spawnEnemy(state);
 
 const wrecks = createWreckSystem({
   SALVAGE_TIME: 1.8,
@@ -317,7 +321,10 @@ state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
 state.gold = state.gold ?? 0;
 
 state.onEnemyKilled = (enemy, drop) => {
-  const gold = drop?.gold ?? state.enemyTypes?.[enemy.type]?.gold ?? 0;
+  const gold =
+    (drop?.gold ?? state.enemyTypes?.[enemy.type]?.gold ?? 0) +
+    (enemy.goldBonus ?? 0);
+
   const loot = drop?.loot ?? null;
 
   state.gold += gold;
@@ -328,6 +335,27 @@ state.onEnemyKilled = (enemy, drop) => {
 
   if (gold > 0) {
     state.pushLootNotice?.(`+${gold} Gold`);
+  }
+
+  if (enemy.isAdmiral) {
+    state.admirals.active = Math.max(0, state.admirals.active - 1);
+    state.pushLootNotice?.(`${enemy.name} defeated`);
+  } else {
+    state.admirals.killCount += 1;
+
+    const adm = state.admirals;
+    if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive) {
+      const spawned = state.spawnEnemy?.({
+        type: enemy.type,
+        admiral: true,
+      });
+
+      if (spawned) {
+        adm.killCount = 0;
+        adm.active += 1;
+        state.pushLootNotice?.(`${spawned.name} has appeared!`);
+      }
+    }
   }
 
   currentMode.onEnemyKilled?.(state, enemy, drop);
@@ -400,6 +428,12 @@ window.addEventListener("keydown", (e) => {
     repair.active = !repair.active;
     repair.t = 0;
   }
+  if (k === "m") {
+  state.spawnEnemy?.({
+    type: "basic",
+    admiral: true,
+  });
+}
 
   if (k === "g") showEnemyRanges = !showEnemyRanges;
   if (k === "n") showMinimap = !showMinimap;
@@ -459,7 +493,16 @@ player.hp = player.maxHp;
 
 // ---------- Update ----------
 function update(dt) {
+
   time += dt;
+
+   const newMaxHp = state.shipStats.getMaxHp();
+
+  if (player.maxHp !== newMaxHp) {
+    const hpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 1;
+    player.maxHp = newMaxHp;
+    player.hp = Math.min(player.maxHp, Math.max(1, Math.round(player.maxHp * hpRatio)));
+  }
 
   if (paused) {
     input.endFrame();
@@ -766,6 +809,43 @@ function renderEnemy(e) {
     renderFallbackShip(ctx, e.x, e.y, e.r, angle, isTarget, true, e.type, e.color || "rgb(170,45,40)");
   }
 
+  if (e.isAdmiral) {
+    ctx.save();
+
+    // Goldene Aura
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = "rgba(255,215,80,1)";
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, e.r + 22, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Admiral-Symbol über dem Schiff
+    const iconY = e.y - e.r - 20;
+
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = "rgb(255,215,90)";
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(e.x, iconY - 10);       // oben
+    ctx.lineTo(e.x + 10, iconY);       // rechts
+    ctx.lineTo(e.x, iconY + 10);       // unten
+    ctx.lineTo(e.x - 10, iconY);       // links
+    ctx.closePath();
+
+    ctx.fill();
+    ctx.stroke();
+
+    // kleiner Punkt in der Mitte
+    ctx.beginPath();
+    ctx.arc(e.x, iconY, 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+
+    ctx.restore();
+  }
+
   ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
 
   const tcfg = state.enemyTypes?.[e.type] || {};
@@ -779,8 +859,12 @@ function renderEnemy(e) {
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
 
-  ctx.fillStyle = "#fff";
-  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
+ctx.fillStyle = e.isAdmiral ? "rgb(255,215,90)" : "#fff";
+ctx.font = e.isAdmiral
+  ? "700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial"
+  : "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
 
   const w = 34;
   const h = 5;
@@ -797,11 +881,13 @@ function renderEnemy(e) {
   ctx.fillStyle = "rgb(32,172,32)";
   ctx.fillRect(bx, by, w * pct, h);
 
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = "#fff";
-  ctx.strokeRect(bx, by, w, h);
+ctx.globalAlpha = 0.35;
+ctx.strokeStyle = e.isAdmiral ? "rgb(255,210,60)" : "#fff";
+ctx.lineWidth = e.isAdmiral ? 2 : 1;
+ctx.strokeRect(bx, by, w, h);
 
   ctx.restore();
+
 }
 
 // ---------- Render ----------
@@ -1003,6 +1089,26 @@ function render() {
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+
+   // Admiral progress
+if (state.admirals) {
+  const remaining = Math.max(0, state.admirals.killsNeeded - state.admirals.killCount);
+  const text =
+    state.admirals.active > 0
+      ? "Admiral active"
+      : `Next Admiral in: ${remaining} kills`;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(16, 92, 220, 34);
+
+  ctx.fillStyle = state.admirals.active > 0 ? "rgb(255,215,90)" : "#fff";
+  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, 28, 109);
+  ctx.restore();
+}
 
   for (let i = 0; i < lootNotices.length; i++) {
     const n = lootNotices[i];
