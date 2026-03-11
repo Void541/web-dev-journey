@@ -25,6 +25,8 @@ import {
   updatePlayerCombat,
 } from "./src/combat/playerCombat.js";
 
+const DEV_MODE = true;
+
 const overworld = createOverworld();
 const sprites = createSpriteManager();
 
@@ -419,6 +421,22 @@ shootTarget: () => {
   },
 };
 
+if (DEV_MODE) {
+  window.addEventListener("keydown", (e) => {
+    const k = e.key.toLowerCase();
+
+if (k === "m") {
+  state.spawnEnemy?.({
+    type: "basic",
+    admiral: true,
+  });
+
+    if (k === "k") killAllEnemies();
+    if (k === "l") giveLoot();
+}
+  });
+}
+
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
 
@@ -428,12 +446,6 @@ window.addEventListener("keydown", (e) => {
     repair.active = !repair.active;
     repair.t = 0;
   }
-  if (k === "m") {
-  state.spawnEnemy?.({
-    type: "basic",
-    admiral: true,
-  });
-}
 
   if (k === "g") showEnemyRanges = !showEnemyRanges;
   if (k === "n") showMinimap = !showMinimap;

@@ -30,14 +30,15 @@ export function updateEnemyShooting(e, dt, state, toPlayer) {
       vx: toPlayer.ux * bulletSpeed,
       vy: toPlayer.uy * bulletSpeed,
       fromEnemy: true,
-      dmg: Math.max(1, Math.round(1 * (e.damageMul ?? 1.0))),
+      isAdmiralShot: !!e.isAdmiral,
+      dmg: Math.max(1, Math.round(1 * (e.damageMul ?? 1))),
       ttl: ENEMY_BULLET_TTL,
       r: 3,
       effect: isDisabler
         ? { kind: "slow", t: 1.2, mul: 0.6 }
         : null,
-    });
-  }
+  });
+}
 
   e.fireT = cd;
 }
