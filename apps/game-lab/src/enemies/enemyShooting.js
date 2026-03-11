@@ -30,7 +30,7 @@ export function updateEnemyShooting(e, dt, state, toPlayer) {
       vx: toPlayer.ux * bulletSpeed,
       vy: toPlayer.uy * bulletSpeed,
       fromEnemy: true,
-      dmg: 1,
+      dmg: Math.max(1, Math.round(1 * (e.damageMul ?? 1.0))),
       ttl: ENEMY_BULLET_TTL,
       r: 3,
       effect: isDisabler

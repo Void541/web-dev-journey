@@ -1,25 +1,29 @@
 // src/lootTable.js
 
-// Kleine Helpers
-function rand() { return Math.random(); }
-function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function rand() {
+  return Math.random();
+}
 
-// Weighted random (z.B. rarity)
+function clamp(v, a, b) {
+  return Math.max(a, Math.min(b, v));
+}
+
 function pickWeighted(items) {
   let sum = 0;
   for (const it of items) sum += it.w;
+
   let r = rand() * sum;
   for (const it of items) {
     r -= it.w;
     if (r <= 0) return it;
   }
+
   return items[items.length - 1];
 }
 
-// Rollt mehrere mögliche Drops aus einer Liste
-// entries: [{id:"wood", min:1, max:3, p:0.8}, ...]
 function rollEntries(entries) {
   const out = {};
+
   for (const e of entries) {
     const p = e.p ?? 1;
     if (rand() > p) continue;
@@ -28,149 +32,186 @@ function rollEntries(entries) {
     const max = e.max ?? min;
     const amt = Math.floor(min + rand() * (max - min + 1));
 
-    if (amt > 0) out[e.id] = (out[e.id] ?? 0) + amt;
+    if (amt > 0) {
+      out[e.id] = (out[e.id] ?? 0) + amt;
+    }
   }
+
   return out;
 }
 
-// Merge helper
 function mergeLoot(a, b) {
   const out = { ...(a || {}) };
+
   for (const [k, v] of Object.entries(b || {})) {
+    if (k === "__rarity") continue;
     out[k] = (out[k] ?? 0) + v;
   }
+
   return out;
 }
 
-/**
- * LootTable-Konzept:
- * - Gold: gibt’s sofort on kill (nicht im Wreck)
- * - Wreck Loot: Materialien/Items zum Salvagen
- *
- * Enemy-Type bestimmt:
- * - base materials
- * - chance für “special drop”
- * - rolls count (mehr rolls = mehr loot variety)
- */
 export function createLootTable(cfg = {}) {
   const C = {
-    // Rarity weights (mehr = häufiger)
     rarityWeights: cfg.rarityWeights ?? [
-      { id: "common",   w: 70 },
+      { id: "common", w: 68 },
       { id: "uncommon", w: 22 },
-      { id: "rare",     w: 7  },
-      { id: "epic",     w: 1  },
+      { id: "rare", w: 8 },
+      { id: "epic", w: 2 },
     ],
 
-    // Global base mats (fast immer)
+    // Early game: die 4 Basisressourcen sollen regelmäßig vorkommen
     baseMats: cfg.baseMats ?? [
       { id: "wood",  min: 1, max: 3, p: 0.95 },
-      { id: "scrap", min: 0, max: 2, p: 0.85 },
+      { id: "scrap", min: 1, max: 2, p: 0.82 },
+      { id: "cloth", min: 0, max: 1, p: 0.42 },
+      { id: "tech",  min: 0, max: 1, p: 0.12 },
     ],
 
-    // Per rarity: “special pool” (seltene Items)
     specialPools: cfg.specialPools ?? {
       common: [
-        { id: "cloth", min: 0, max: 1, p: 0.25 },
+        { id: "wood",  min: 1, max: 2, p: 0.55 },
+        { id: "scrap", min: 1, max: 2, p: 0.45 },
+        { id: "cloth", min: 1, max: 1, p: 0.35 },
       ],
       uncommon: [
-        { id: "cloth",   min: 1, max: 2, p: 0.65 },
-        { id: "powder",  min: 0, max: 1, p: 0.40 },
+        { id: "cloth", min: 1, max: 2, p: 0.70 },
+        { id: "tech",  min: 1, max: 1, p: 0.30 },
+        { id: "powder", min: 0, max: 1, p: 0.35 },
       ],
       rare: [
-        { id: "powder",  min: 1, max: 2, p: 0.70 },
-        { id: "gear",    min: 0, max: 1, p: 0.45 },
+        { id: "cloth", min: 1, max: 2, p: 0.65 },
+        { id: "tech",  min: 1, max: 2, p: 0.65 },
+        { id: "gear",  min: 0, max: 1, p: 0.45 },
       ],
       epic: [
-        { id: "gear",     min: 1, max: 2, p: 0.75 },
-        { id: "blueprint",min: 1, max: 1, p: 0.35 }, // super selten
+        { id: "tech", min: 2, max: 3, p: 0.85 },
+        { id: "gear", min: 1, max: 2, p: 0.70 },
+        { id: "blueprint", min: 1, max: 1, p: 0.35 },
       ],
     },
 
-    // Enemy-Type Tuning
     byType: cfg.byType ?? {
       basic: {
         rolls: 1,
         matMul: 1.0,
-        specialChance: 0.10,
+        specialChance: 0.22,
+        gold: 2,
       },
+
       rammer: {
         rolls: 1,
-        matMul: 1.1,
-        specialChance: 0.12,
+        matMul: 1.05,
+        specialChance: 0.18,
+        gold: 2,
       },
+
       tank: {
         rolls: 2,
-        matMul: 1.4,
-        specialChance: 0.18,
+        matMul: 1.35,
+        specialChance: 0.24,
+        gold: 4,
+        bonusLoot: [
+          { id: "scrap", min: 1, max: 2, p: 0.75 },
+        ],
       },
+
       sniper: {
         rolls: 1,
         matMul: 1.0,
-        specialChance: 0.16,
+        specialChance: 0.24,
+        gold: 3,
+        bonusLoot: [
+          { id: "tech", min: 0, max: 1, p: 0.30 },
+        ],
       },
+
       disabler: {
         rolls: 1,
-        matMul: 1.0,
-        specialChance: 0.20,
+        matMul: 1.05,
+        specialChance: 0.28,
+        gold: 3,
+        bonusLoot: [
+          { id: "cloth", min: 1, max: 2, p: 0.55 },
+        ],
       },
+    },
+
+    admiral: cfg.admiral ?? {
+      matMul: 2.2,
+      extraRolls: 2,
+      guaranteed: [
+        { id: "cloth", min: 1, max: 2, p: 1.0 },
+        { id: "tech", min: 1, max: 2, p: 1.0 },
+      ],
+      extraGold: 10,
+      specialChanceBonus: 0.30,
     },
   };
 
   function scaleLoot(loot, mul) {
     const out = {};
+
     for (const [k, v] of Object.entries(loot || {})) {
-      // mats skalieren (runde “gamey”)
       out[k] = Math.max(0, Math.round(v * mul));
     }
+
     return out;
   }
 
-  /**
-   * Return: { loot: {...}, rarity: "common"|"uncommon"|..., gold: number }
-   * gold kannst du separat on-kill geben (empfohlen).
-   */
   function rollForEnemy(enemy) {
     const type = enemy?.type ?? "basic";
     const tcfg = C.byType[type] ?? C.byType.basic;
 
-    // 1) Base mats
     let loot = rollEntries(C.baseMats);
 
-    // 2) Extra rolls (mehr variety)
-    const rolls = clamp(tcfg.rolls ?? 1, 1, 4);
-    for (let i = 0; i < rolls; i++) {
-      // etwas “zusätzliche mats”
+    if (tcfg.bonusLoot) {
+      loot = mergeLoot(loot, rollEntries(tcfg.bonusLoot));
+    }
+
+    let rarity = "common";
+    const totalRolls = clamp(
+      (tcfg.rolls ?? 1) + (enemy?.isAdmiral ? C.admiral.extraRolls : 0),
+      1,
+      6
+    );
+
+    for (let i = 0; i < totalRolls; i++) {
       const extra = rollEntries([
-        { id: "wood",  min: 0, max: 2, p: 0.65 },
-        { id: "scrap", min: 0, max: 2, p: 0.55 },
+        { id: "wood",  min: 0, max: 2, p: 0.60 },
+        { id: "scrap", min: 0, max: 2, p: 0.50 },
+        { id: "cloth", min: 0, max: 1, p: 0.30 },
+        { id: "tech",  min: 0, max: 1, p: 0.10 },
       ]);
+
       loot = mergeLoot(loot, extra);
 
-      // special chance
-      if (rand() < (tcfg.specialChance ?? 0)) {
-        const r = pickWeighted(C.rarityWeights).id;
-        const pool = C.specialPools[r] ?? [];
+      const specialChance =
+        (tcfg.specialChance ?? 0) +
+        (enemy?.isAdmiral ? C.admiral.specialChanceBonus : 0);
+
+      if (rand() < specialChance) {
+        const rolledRarity = pickWeighted(C.rarityWeights).id;
+        const pool = C.specialPools[rolledRarity] ?? [];
         loot = mergeLoot(loot, rollEntries(pool));
-        // optional: rarity meta nur fürs UI (wenn du willst)
-        loot.__rarity = r;
+        rarity = rolledRarity;
       }
     }
 
-    // 3) Type scaling (Tank gibt mehr mats)
-    loot = scaleLoot(loot, tcfg.matMul ?? 1.0);
+    if (enemy?.isAdmiral) {
+      loot = mergeLoot(loot, rollEntries(C.admiral.guaranteed));
+    }
 
-    // 4) Gold (instant)
-    // (optional) du kannst das später aus enemyStats ziehen
-    const baseGold =
-      type === "tank" ? 4 :
-      type === "sniper" ? 3 :
-      type === "disabler" ? 3 :
-      type === "rammer" ? 2 : 1;
+    const totalMul =
+      (tcfg.matMul ?? 1.0) * (enemy?.isAdmiral ? C.admiral.matMul : 1.0);
 
-    const gold = baseGold;
+    loot = scaleLoot(loot, totalMul);
 
-    return { loot, gold, rarity: loot.__rarity ?? "common" };
+    const gold =
+      (tcfg.gold ?? 1) +
+      (enemy?.isAdmiral ? C.admiral.extraGold : 0);
+
+    return { loot, gold, rarity };
   }
 
   return { rollForEnemy };

@@ -29,8 +29,9 @@ export function spawnEnemy(state, options = {}) {
 
   const hpMul = admiral ? 3.0 : 1.0;
   const radiusMul = admiral ? 1.35 : 1.0;
-  const fireCooldownMul = admiral ? 0.85 : 1.0;
+  const fireCooldownMul = admiral ? 0.75 : 1.0;
   const goldBonus = admiral ? 12 : 0;
+  const damageMul = admiral ? 2.0 : 1.0;
 
   const r = Math.round((tcfg.r ?? 16) * radiusMul);
   const maxHp = Math.round((tcfg.hp ?? 5) * hpMul);
@@ -132,6 +133,7 @@ if (x == null || y == null) {
     name: admiral ? `Admiral ${baseName}` : baseName,
     isAdmiral: admiral,
     goldBonus,
+    damageMul
   };
 
 

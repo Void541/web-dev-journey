@@ -25,6 +25,14 @@ export function updateProjectiles(dt, state) {
       if (dist2(p.x, p.y, player.x, player.y) <= rr * rr) {
         player.hp -= p.dmg;
 
+       if (state.damage) {
+         if (p.isAdmiralShot) {
+            state.damage.spawnAdmiralHit(player.x, player.y - player.r - 12, p.dmg);
+           } else {
+            state.damage.spawnPlayerHit(player.x, player.y - player.r - 12, p.dmg);
+        }
+      }
+
         if (p.effect?.kind === "slow") {
           player.slowT = Math.max(player.slowT ?? 0, p.effect.t ?? 1.2);
           player.slowMul = p.effect.mul ?? 0.6;
@@ -47,7 +55,7 @@ export function updateProjectiles(dt, state) {
           e.aggroT = state.ENEMY_AGGRO_TIME;
           e.stunT = 0.35;
 
-          state.damage?.spawn?.(e.x, e.y - e.r - 10, p.dmg);
+          state.damage?.spawnEnemyHit?.(e.x, e.y - e.r - 10, p.dmg);
 
           projectiles.splice(i, 1);
 
