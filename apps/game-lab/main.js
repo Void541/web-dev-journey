@@ -8,6 +8,7 @@ import { createDamageSystem } from "./src/damageNumbers.js";
 import { createWater } from "./src/water.js";
 import { createIslands } from "./src/islands.js";
 import { createOverworld } from "./src/modes/overworld.js";
+import { createPirateCove } from "./src/modes/pirateCove.js";
 import { enemyTypes } from "./src/entities/enemyTypes.js";
 import { drawMinimap } from "./src/minimap.js";
 import { createWreckSystem } from "./src/systems/wrecks.js";
@@ -23,11 +24,12 @@ import {
   getTargetEnemy,
   fireAtTarget,
   updatePlayerCombat,
-} from "./src/combat/playerCombat.js";
+} from "./src/systems/playerCombat.js";
 
 const DEV_MODE = true;
 
 const overworld = createOverworld();
+const pirateCove = createPirateCove();
 const sprites = createSpriteManager();
 
 // --- Sprites laden ---
@@ -52,7 +54,14 @@ function setMode(next) {
 
   applyWorld(WORLDS[next]);
 
-  currentMode = next === "bonusmap" ? bonusmap : overworld;
+  if (next === "bonusmap") {
+  currentMode = bonusmap;
+} else if (next === "pirateCove") {
+  currentMode = pirateCove;
+} else {
+  currentMode = overworld;
+}
+
   currentMode.enter?.(state);
 }
 
@@ -175,6 +184,7 @@ function getEnemySpriteKey(type) {
 const WORLDS = {
   overworld: { w: 4000, h: 1400 },
   bonusmap: { w: 1200, h: 700 },
+  pirateCove: { w: 1400, h: 800 },
 };
 
 function applyWorld(preset) {
@@ -278,6 +288,7 @@ const state = {
 };
 
 state.mode = mode;
+state.setMode = setMode;
 state.spawnProjectile = spawnProjectile;
 state.spawnEnemy = (options) => spawnEnemy(state, options);
 state.pushLootNotice = pushLootNotice;
@@ -299,7 +310,13 @@ state.ui = {
 
 state.crafting = {
   recipes: craftingRecipes,
-  craft: (id) => craftingSystem.craft(state, id)
+  craft: (id) => {
+    if (state.mode !== "pirateCove") {
+      state.pushLootNotice?.("Crafting only available in Pirate Cove");
+      return false;
+    }
+    return craftingSystem.craft(state, id);
+  }
 };
 
 const cfg = {

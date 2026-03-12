@@ -24,6 +24,12 @@ export function createOverworld() {
       state.spawnEnemy(); // <- kommt aus main.js/state
       state.overworldSpawnTimer = state.cfg.OVERWORLD_SPAWN_EVERY;
     }
+
+    // Übergang zur Pirate Cove über den nördlichen Rand
+    if (state.player.y <= state.player.r + 4) {
+      state.setMode?.("pirateCove");
+     return
+    }
   }
 
   return { enter, update };

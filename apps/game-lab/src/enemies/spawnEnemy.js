@@ -1,6 +1,7 @@
 import * as CFG from "../config.js";
 import { pickEnemyType } from "./pickEnemyType.js";
 
+
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
@@ -15,6 +16,9 @@ function clamp(v, min, max) {
 }
 
 export function spawnEnemy(state, options = {}) {
+
+  if (state.mode === "pirateCove") return null; // Pirate Cove spawnt keine normalen Gegner
+
   const { enemies, enemyTypes, islands, world } = state;
 
   const {
