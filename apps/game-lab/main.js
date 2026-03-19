@@ -16,8 +16,8 @@ import { createLootTable } from "./src/systems/lootTable.js";
 import * as CFG from "./src/config.js";
 import { createHudOverlay } from "./src/render/hudOverlay.js";
 import { createShipStats } from "./src/systems/shipStats.js";
-import { createCraftingRecipes } from "./src/craftingRecipes.js";
-import { createCraftingSystem } from "./src/systems/craftingSystem.js";
+import { createCraftingRecipes } from "./src/crafting/craftingRecipes.js";
+import { createCraftingSystem } from "./src/crafting/craftingSystem.js";
 import { createSpriteManager } from "./src/sprites.js";
 import {
   createPlayerCombat,
@@ -25,6 +25,10 @@ import {
   fireAtTarget,
   updatePlayerCombat,
 } from "./src/systems/playerCombat.js";
+import { createQuestTracker } from "./src/ui/questTracker.js";
+import { renderWorkshopUI } from "./src/ui/workshop.js";
+import { getEquippedCannon } from "./src/systems/cannons.js";
+
 
 const DEV_MODE = true;
 
@@ -48,21 +52,21 @@ let currentMode = overworld;
 let overworldSpawnTimer = 0;
 let mode = "overworld";
 
-function setMode(next) {
+function setMode(next, options = {}) {
   mode = next;
   state.mode = next;
 
   applyWorld(WORLDS[next]);
 
   if (next === "bonusmap") {
-  currentMode = bonusmap;
-} else if (next === "pirateCove") {
-  currentMode = pirateCove;
-} else {
-  currentMode = overworld;
-}
+    currentMode = bonusmap;
+  } else if (next === "pirateCove") {
+    currentMode = pirateCove;
+  } else {
+    currentMode = overworld;
+  }
 
-  currentMode.enter?.(state);
+  currentMode.enter?.(state, options);
 }
 
 const canvas = document.getElementById("game");
@@ -285,8 +289,12 @@ const state = {
   enemyRuntime,
   randomEnemyName,
   ENEMY_SPEED,
+  transitions: {
+  overworldReturn: null, // placeholder für Übergang von Pirate Cove zurück zur Overworld
+},
 };
 
+state.questTracker = createQuestTracker(state);
 state.mode = mode;
 state.setMode = setMode;
 state.spawnProjectile = spawnProjectile;
@@ -296,6 +304,10 @@ state.pushLootNotice = pushLootNotice;
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
 state.shipStats = shipStats;
+state.playerLoadout = {
+  cannon: "rapid",
+};
+
 
 state.admirals = {
   killCount: 0,
@@ -304,8 +316,21 @@ state.admirals = {
   maxActive: 1,
 };
 
+state.quests = state.quests ?? {
+  active: null,
+  completed: [],
+};
+
+state.progress = state.progress ?? {
+  kills: 0,
+  admiralKills: 0,
+};
+
 state.ui = {
   shipyardOpen: false,
+  workshopOpen: false,
+  dockmasterOpen: false,
+  craftingOpen: false,
 };
 
 state.crafting = {
@@ -356,26 +381,37 @@ state.onEnemyKilled = (enemy, drop) => {
     state.pushLootNotice?.(`+${gold} Gold`);
   }
 
+if(enemy.isAdmiral) {
+  state.progress.admiralKills += 1;
+} else {
+  state.progress.kills += 1;
+}
+
   if (enemy.isAdmiral) {
     state.admirals.active = Math.max(0, state.admirals.active - 1);
     state.pushLootNotice?.(`${enemy.name} defeated`);
-  } else {
+ } else {
+  const countsForAdmiral =
+    enemy.type === "basic" || enemy.type === "raider";
+
+  if (countsForAdmiral) {
     state.admirals.killCount += 1;
+  }
 
-    const adm = state.admirals;
-    if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive) {
-      const spawned = state.spawnEnemy?.({
-        type: enemy.type,
-        admiral: true,
-      });
+  const adm = state.admirals;
+  if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive) {
+    const spawned = state.spawnEnemy?.({
+      type: "raider",
+      admiral: true,
+    });
 
-      if (spawned) {
-        adm.killCount = 0;
-        adm.active += 1;
-        state.pushLootNotice?.(`${spawned.name} has appeared!`);
-      }
+    if (spawned) {
+      adm.killCount = 0;
+      adm.active += 1;
+      state.pushLootNotice?.(`${spawned.name} has appeared!`);
     }
   }
+}
 
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
@@ -429,8 +465,8 @@ shootTarget: () => {
   }
 },
 
-  toggleShipyard: () => {
-    state.ui.shipyardOpen = !state.ui.shipyardOpen;
+  toggleWorkshop: () => {
+    state.ui.workshopOpen = !state.ui.workshopOpen;
   },
 
   craft: (id) => {
@@ -459,6 +495,13 @@ window.addEventListener("keydown", (e) => {
 
   if (k === "p") togglePause();
 
+  if (k === "escape") {
+    state.ui.dockmasterOpen = false;
+    state.ui.merchantOpen = false;
+    state.ui.navigatorOpen = false;
+    state.ui.workshopOpen = false;
+  }
+
   if (k === "r") {
     repair.active = !repair.active;
     repair.t = 0;
@@ -466,7 +509,7 @@ window.addEventListener("keydown", (e) => {
 
   if (k === "g") showEnemyRanges = !showEnemyRanges;
   if (k === "n") showMinimap = !showMinimap;
-  if (k === "c") state.ui.shipyardOpen = !state.ui.shipyardOpen;
+  if (k === "c") state.ui.workshopOpen = !state.ui.workshopOpen;
 });
 
 let showEnemyRanges = false;
@@ -682,6 +725,47 @@ function update(dt) {
   }
 
   updateCamera();
+
+  if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
+    const rect = state.canvas.getBoundingClientRect();
+    const mx = state.input.mouse.x - rect.left;
+    const my = state.input.mouse.y - rect.top;
+
+    for (const b of state.ui.workshopButtons ?? []) {
+      const inside =
+        mx >= b.x &&
+        mx <= b.x + b.w &&
+        my >= b.y &&
+        my <= b.y + b.h;
+
+      if (!inside) continue;
+      if (b.disabled) continue;
+
+      state.crafting?.craft?.(b.id);
+    }
+    for (const b of state.ui.cannonButtons ?? []) {
+      const inside =
+        mx >= b.x &&
+        mx <= b.x + b.w &&
+        my >= b.y &&
+        my <= b.y + b.h;
+        if (!inside) continue;
+          state.playerLoadout.cannon = b.id;
+
+          state.pushLootNotice?.(`Equipped ${b.label}`);
+
+          state.effects.push({
+            x: player.x,
+            y: player.y,
+            t: 0.4,
+            size: 20,
+            type: "equip",
+          });
+    }
+  }
+
+  state.questTracker.update();
+
   input.endFrame();
 }
 
@@ -932,6 +1016,8 @@ function render() {
   islands.render(ctx);
   wrecks.render(ctx, state);
 
+  currentMode.renderWorld?.(ctx, state);
+
   ctx.save();
   ctx.fillStyle = "#fff";
   for (const p of trail) {
@@ -1013,6 +1099,19 @@ function render() {
     renderFallbackShip(ctx, player.x, player.y, player.r, hasDir ? playerAngle : 0, false, false, "player");
   }
 
+  const cannon = getEquippedCannon(state);
+
+ctx.save();
+ctx.fillStyle = "rgba(0,0,0,0.45)";
+ctx.fillRect(16, 132, 220, 34);
+
+ctx.fillStyle = "#fff";
+ctx.font = "600 14px system-ui";
+ctx.textAlign = "left";
+ctx.textBaseline = "middle";
+ctx.fillText(`Cannon: ${cannon.name}`, 28, 149);
+ctx.restore();
+
   // Muzzle flash
   ctx.save();
   ctx.fillStyle = "#fff";
@@ -1088,6 +1187,8 @@ function render() {
 
   ctx.restore();
 
+  currentMode.renderUI?.(ctx, state);
+
   const t = getTargetEnemy(state);
 
   hudOverlay.update(state, t);
@@ -1125,7 +1226,7 @@ if (state.admirals) {
   const text =
     state.admirals.active > 0
       ? "Admiral active"
-      : `Next Admiral in: ${remaining} kills`;
+      : `Next Admiral in: ${remaining} Raider kills`;
 
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -1155,6 +1256,8 @@ if (state.admirals) {
     ctx.fillText(n.text, x, y);
   }
   ctx.restore();
+
+  renderWorkshopUI(ctx, state);
 
   if (paused) {
     ctx.save();

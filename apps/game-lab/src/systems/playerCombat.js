@@ -1,11 +1,9 @@
+import { getEquippedCannon } from "./cannons.js";
+
 export function createPlayerCombat() {
   return {
     targetId: null,
-    range: 520,
-    fireRate: 0.9,
     cooldown: 0,
-    projectileSpeed: 720,
-    damage: 1,
   };
 }
 
@@ -17,44 +15,43 @@ export function getTargetEnemy(state) {
 }
 
 export function fireAtTarget(state, target) {
-  const { player, combat, effects, shipStats, spawnProjectile } = state;
-  if (!target) return false;
+  const { player, combat } = state;
+  if (!target || !player || !combat) return false;
+
+  const cannon = getEquippedCannon(state);
 
   const dx = target.x - player.x;
   const dy = target.y - player.y;
   const d = Math.hypot(dx, dy) || 1;
 
-  const u = {
-    x: dx / d,
-    y: dy / d,
-  };
+  const nx = dx / d;
+  const ny = dy / d;
 
-  const startX = player.x + u.x * (player.r + 6);
-  const startY = player.y + u.y * (player.r + 6);
-  const ttl = d / combat.projectileSpeed + 0.35;
+  const muzzleX = player.x + nx * (player.r + 8);
+  const muzzleY = player.y + ny * (player.r + 8);
 
-  spawnProjectile({
-    x: startX,
-    y: startY,
-    vx: u.x * combat.projectileSpeed,
-    vy: u.y * combat.projectileSpeed,
+  state.spawnProjectile?.({
+    x: muzzleX,
+    y: muzzleY,
+    vx: nx * cannon.projectileSpeed,
+    vy: ny * cannon.projectileSpeed,
     fromEnemy: false,
-    dmg: shipStats?.getDamage?.() ?? combat.damage ?? 1,
-    ttl,
+    dmg: cannon.damage,
+    ttl: d / cannon.projectileSpeed + 0.35,
     r: 3,
   });
 
-  effects.push({
-    type: "flash",
-    x: startX,
-    y: startY,
-    t: 0.08,
+  state.effects?.push({
+    x: muzzleX,
+    y: muzzleY,
+    t: 0.12,
   });
 
   return true;
 }
 
 export function updatePlayerCombat(dt, state) {
+  const cannon = getEquippedCannon(state);
   const { combat, player } = state;
 
   if (!combat) return;
@@ -71,6 +68,7 @@ export function updatePlayerCombat(dt, state) {
     combat.targetId = null;
   }
 
+  // Cooldown runterzählen
   combat.cooldown = Math.max(0, combat.cooldown - dt);
 
   if (!target) return;
@@ -79,7 +77,8 @@ export function updatePlayerCombat(dt, state) {
   const dy = target.y - player.y;
   const d = Math.hypot(dx, dy);
 
-  if (d > combat.range || target.hp <= 0) {
+  // 🔥 FIX: range kommt jetzt aus cannon
+  if (d > cannon.range || target.hp <= 0) {
     combat.targetId = null;
     return;
   }
@@ -87,7 +86,8 @@ export function updatePlayerCombat(dt, state) {
   if (combat.cooldown <= 0) {
     const fired = fireAtTarget(state, target);
     if (fired) {
-      combat.cooldown = 1 / combat.fireRate;
+      // 🔥 FIX: cooldown gehört zu combat
+      combat.cooldown = 1 / cannon.fireRate;
     }
   }
 }
