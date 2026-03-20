@@ -1101,17 +1101,6 @@ function render() {
 
   const cannon = getEquippedCannon(state);
 
-ctx.save();
-ctx.fillStyle = "rgba(0,0,0,0.45)";
-ctx.fillRect(16, 132, 220, 34);
-
-ctx.fillStyle = "#fff";
-ctx.font = "600 14px system-ui";
-ctx.textAlign = "left";
-ctx.textBaseline = "middle";
-ctx.fillText(`Cannon: ${cannon.name}`, 28, 149);
-ctx.restore();
-
   // Muzzle flash
   ctx.save();
   ctx.fillStyle = "#fff";
@@ -1239,6 +1228,18 @@ if (state.admirals) {
   ctx.fillText(text, 28, 109);
   ctx.restore();
 }
+
+ctx.save();
+ctx.fillStyle = "rgba(0,0,0,0.45)";
+ctx.fillRect(16, 132, 220, 34);
+
+ctx.fillStyle = "#fff";
+ctx.font = "600 14px system-ui";
+ctx.textAlign = "left";
+ctx.textBaseline = "middle";
+ctx.fillText(`Cannon: ${cannon.name}`, 28, 149);
+ctx.restore();
+
 
   for (let i = 0; i < lootNotices.length; i++) {
     const n = lootNotices[i];
