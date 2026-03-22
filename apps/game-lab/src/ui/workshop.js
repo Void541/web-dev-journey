@@ -4,10 +4,10 @@ export function renderWorkshopUI(ctx, state) {
   const recipes = state.crafting?.recipes?.list ?? [];
   const inventory = state.inventory ?? {};
 
-  const x = state.canvas.clientWidth / 2 - 360;
-  const y = state.canvas.clientHeight / 2 - 220;
-  const w = 720;
-  const h = 440;
+  const x = state.canvas.clientWidth / 2 - 470;
+  const y = state.canvas.clientHeight / 2 - 290;
+  const w = 940;
+  const h = 580;
 
   ctx.save();
 
@@ -29,35 +29,47 @@ export function renderWorkshopUI(ctx, state) {
   ctx.fillText("Harbor Workshop", x + 18, y + 10);
 
   // Panels
-  const leftX = x + 20;
-  const leftY = y + 58;
-  const leftW = 250;
-  const leftH = 330;
+  const col1X = x + 20;
+  const col1Y = y + 58;
+  const col1W = 220;
+  const col1H = 470;
 
-  const rightX = x + 290;
-  const rightY = y + 58;
-  const rightW = 410;
-  const rightH = 330;
+  const col2X = x + 260;
+  const col2Y = y + 58;
+  const col2W = 280;
+  const col2H = 470;
+
+  const col3X = x + 560;
+  const col3Y = y + 58;
+  const col3W = 360;
+  const col3H = 470;
 
   ctx.fillStyle = "rgba(255,255,255,0.04)";
-  ctx.fillRect(leftX, leftY, leftW, leftH);
+  ctx.fillRect(col1X, col1Y, col1W, col1H);
   ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.strokeRect(leftX, leftY, leftW, leftH);
+  ctx.strokeRect(col1X, col1Y, col1W, col1H);
 
   ctx.fillStyle = "rgba(255,255,255,0.04)";
-  ctx.fillRect(rightX, rightY, rightW, rightH);
+  ctx.fillRect(col2X, col2Y, col2W, col2H);
   ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.strokeRect(rightX, rightY, rightW, rightH);
+  ctx.strokeRect(col2X, col2Y, col2W, col2H);
+
+  ctx.fillStyle = "rgba(255,255,255,0.04)";
+  ctx.fillRect(col3X, col3Y, col3W, col3H);
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.strokeRect(col3X, col3Y, col3W, col3H);
 
   // Mouse
   const rect = state.canvas.getBoundingClientRect();
   const mx = (state.input?.mouse?.x ?? -9999) - rect.left;
   const my = (state.input?.mouse?.y ?? -9999) - rect.top;
 
-  // Inventory
+  // =========================
+  // Inventory (left column)
+  // =========================
   ctx.fillStyle = "#fff";
   ctx.font = "700 16px system-ui";
-  ctx.fillText("Inventory", leftX + 12, leftY + 10);
+  ctx.fillText("Inventory", col1X + 12, col1Y + 10);
 
   ctx.font = "14px system-ui";
   ctx.fillStyle = "rgba(255,255,255,0.9)";
@@ -72,22 +84,115 @@ export function renderWorkshopUI(ctx, state) {
     `Gear: ${inventory.gear ?? 0}`,
   ];
 
-  let invY = leftY + 54;
+  let invY = col1Y + 48;
   for (const line of invLines) {
-    ctx.fillText(line, leftX + 12, invY);
-    invY += 24;
+    ctx.fillText(line, col1X + 12, invY);
+    invY += 26;
   }
 
-  // Cannon Loadout
-  const currentCannon = state.playerLoadout?.cannon ?? "light";
+  // =========================
+  // Loadout (middle column)
+  // =========================
+  const ship = state.playerShip ?? { id: "sloop" };
+  const shipSlots =
+    ship.id === "frigate" ? 3 :
+    ship.id === "brig" ? 2 :
+    1;
 
+  const equippedCannons = state.playerLoadout?.cannons ?? ["light", null, null];
+
+  // Cannon Loadout title
   ctx.fillStyle = "#fff";
-  ctx.font = "14px system-ui";
+  ctx.font = "700 16px system-ui";
+  ctx.fillText("Cannon Loadout", col2X + 12, col2Y + 10);
+
+  ctx.font = "13px system-ui";
+  ctx.fillStyle = "rgba(255,255,255,0.65)";
+  ctx.fillText(`Available Slots: ${shipSlots}`, col2X + 12, col2Y + 32);
+
+ // Slot overview
+  const activeSlot = state.ui?.activeCannonSlot ?? 0;
+
+  const slotRows = [
+    { index: 0, y: col2Y + 52 },
+    { index: 1, y: col2Y + 80 },
+    { index: 2, y: col2Y + 108 },
+  ];
+
+  state.ui.cannonSlotButtons = [];
+
+  for (const row of slotRows) {
+    const active = row.index < shipSlots;
+    const value = equippedCannons[row.index];
+    const selected = activeSlot === row.index;
+
+    const slotButton = {
+      index: row.index,
+      x: col2X + 12,
+      y: row.y,
+      w: 230,
+      h: 22,
+      disabled: !active,
+    };
+
+    state.ui.cannonSlotButtons.push(slotButton);
+
+    ctx.fillStyle = !active
+      ? "rgba(120,120,120,0.10)"
+      : selected
+        ? "rgba(90,180,255,0.22)"
+        : "rgba(255,255,255,0.08)";
+    ctx.fillRect(slotButton.x, slotButton.y, slotButton.w, slotButton.h);
+
+    ctx.strokeStyle = !active
+      ? "rgba(120,120,120,0.20)"
+      : selected
+        ? "rgba(90,180,255,0.65)"
+        : "rgba(255,255,255,0.20)";
+    ctx.strokeRect(slotButton.x, slotButton.y, slotButton.w, slotButton.h);
+
+    ctx.fillStyle = active ? "#fff" : "rgba(255,255,255,0.4)";
+    ctx.font = "13px system-ui";
+    ctx.fillText(
+      `Slot ${row.index + 1}: ${active ? (value ?? "Empty") : "Locked"}`,
+      slotButton.x + 8,
+      slotButton.y + 4
+    );
+  }
+  for (const row of slotRows) {
+    const active = row.index < shipSlots;
+    const value = equippedCannons[row.index];
+
+    ctx.fillStyle = active
+      ? "rgba(255,255,255,0.08)"
+      : "rgba(120,120,120,0.10)";
+    ctx.fillRect(col2X + 12, row.y, 230, 22);
+
+    ctx.strokeStyle = active
+      ? "rgba(255,255,255,0.20)"
+      : "rgba(120,120,120,0.20)";
+    ctx.strokeRect(col2X + 12, row.y, 230, 22);
+
+    ctx.fillStyle = active ? "#fff" : "rgba(255,255,255,0.4)";
+    ctx.font = "13px system-ui";
+    ctx.fillText(
+      `Slot ${row.index + 1}: ${active ? (value ?? "Empty") : "Locked"}`,
+      col2X + 20,
+      row.y + 4
+    );
+  }
+
+  // Equip Slot 1
+  ctx.fillStyle = "#fff";
+  ctx.font = "13px system-ui";
+  ctx.fillText(`Equip to Slot ${(activeSlot ?? 0)+ 1}`, col2X + 12, col2Y + 150);
+
+  const currentCannon = equippedCannons[activeSlot] ?? "light";
 
   const cannonButtons = [
-    { id: "light", label: "Light Cannon", x: leftX + 12, y: leftY + 240, w: 210, h: 28 },
-    { id: "heavy", label: "Heavy Cannon", x: leftX + 12, y: leftY + 274, w: 210, h: 28 },
-    { id: "rapid", label: "Rapid Cannon", x: leftX + 12, y: leftY + 308, w: 210, h: 28 },
+    { id: "light", label: "Light Cannon", x: col2X + 12, y: col2Y + 168, w: 230, h: 28 },
+    { id: "heavy", label: "Heavy Cannon", x: col2X + 12, y: col2Y + 202, w: 230, h: 28 },
+    { id: "rapid", label: "Rapid Cannon", x: col2X + 12, y: col2Y + 236, w: 230, h: 28 },
   ];
 
   state.ui.cannonButtons = cannonButtons;
@@ -121,30 +226,76 @@ export function renderWorkshopUI(ctx, state) {
     );
   }
 
-  // Crafting
+  // Ship Loadout
+  const currentShip = state.playerShip?.id ?? "sloop";
+
   ctx.fillStyle = "#fff";
   ctx.font = "700 16px system-ui";
-  ctx.fillText("Crafting", rightX + 12, rightY + 10);
+  ctx.fillText("Ship Loadout", col2X + 12, col2Y + 300);
+
+  const shipButtons = [
+    { id: "sloop", label: "Sloop", x: col2X + 12, y: col2Y + 328, w: 230, h: 28 },
+    { id: "brig", label: "Brig", x: col2X + 12, y: col2Y + 362, w: 230, h: 28 },
+    { id: "frigate", label: "Frigate", x: col2X + 12, y: col2Y + 396, w: 230, h: 28 },
+  ];
+
+  state.ui.shipButtons = shipButtons;
+
+  for (const b of shipButtons) {
+    const selected = currentShip === b.id;
+    const hover =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+    ctx.fillStyle = selected
+      ? "rgba(90,180,255,0.28)"
+      : hover
+        ? "rgba(255,255,255,0.18)"
+        : "rgba(255,255,255,0.08)";
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+
+    ctx.strokeStyle = selected
+      ? "rgba(90,180,255,0.7)"
+      : "rgba(255,255,255,0.28)";
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "14px system-ui";
+    ctx.fillText(
+      selected ? `${b.label} (Equipped)` : b.label,
+      b.x + 10,
+      b.y + 6
+    );
+  }
+
+  // =========================
+  // Crafting (right column)
+  // =========================
+  ctx.fillStyle = "#fff";
+  ctx.font = "700 16px system-ui";
+  ctx.fillText("Crafting", col3X + 12, col3Y + 10);
 
   state.ui.workshopButtons = [];
 
-  let by = rightY + 38;
+  let by = col3Y + 38;
 
   if (recipes.length === 0) {
     ctx.font = "14px system-ui";
     ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.fillText("No recipes found", rightX + 12, by);
+    ctx.fillText("No recipes found", col3X + 12, by);
   }
 
   for (const recipe of recipes) {
     const canCraft = state.crafting?.recipes?.canCraft?.(state, recipe.id) ?? false;
 
     ctx.fillStyle = "rgba(255,255,255,0.03)";
-    ctx.fillRect(rightX + 8, by - 6, rightW - 16, 58);
+    ctx.fillRect(col3X + 8, by - 6, col3W - 16, 58);
 
     ctx.fillStyle = "#fff";
     ctx.font = "15px system-ui";
-    ctx.fillText(recipe.name ?? recipe.id, rightX + 16, by);
+    ctx.fillText(recipe.name ?? recipe.id, col3X + 16, by);
 
     const costText = Object.entries(recipe.cost ?? {})
       .map(([k, v]) => `${v} ${k}`)
@@ -152,11 +303,11 @@ export function renderWorkshopUI(ctx, state) {
 
     ctx.font = "13px system-ui";
     ctx.fillStyle = "rgba(255,255,255,0.68)";
-    ctx.fillText(costText || "No cost", rightX + 16, by + 20);
+    ctx.fillText(costText || "No cost", col3X + 16, by + 20);
 
     const button = {
       id: recipe.id,
-      x: rightX + rightW - 118,
+      x: col3X + col3W - 118,
       y: by + 1,
       w: 96,
       h: 28,
@@ -186,7 +337,7 @@ export function renderWorkshopUI(ctx, state) {
     ctx.fillText(canCraft ? "Craft" : "Locked", button.x + 20, button.y + 6);
 
     by += 66;
-    if (by > rightY + rightH - 30) break;
+    if (by > col3Y + col3H - 30) break;
   }
 
   // Footer

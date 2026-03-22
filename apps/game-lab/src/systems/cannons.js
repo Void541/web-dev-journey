@@ -27,7 +27,15 @@ export const CANNON_TYPES = {
   },
 };
 
+export function getCannonStats(id) {
+  return CANNON_TYPES[id] ?? CANNON_TYPES.light;
+}
+
 export function getEquippedCannon(state) {
-  const id = state.playerLoadout?.cannon ?? "light";
-  return CANNON_TYPES[id];
+  const id = state.playerLoadout?.cannons?.[0] ?? "light";
+  return CANNON_TYPES[id] ?? CANNON_TYPES.light;
+}
+
+export function getEquippedCannons(state) {
+  return state.playerLoadout?.cannons ?? ["light", null, null];
 }

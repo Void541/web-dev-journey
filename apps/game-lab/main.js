@@ -22,13 +22,13 @@ import { createSpriteManager } from "./src/sprites.js";
 import {
   createPlayerCombat,
   getTargetEnemy,
-  fireAtTarget,
+  fireCannonAtTarget,
   updatePlayerCombat,
 } from "./src/systems/playerCombat.js";
 import { createQuestTracker } from "./src/ui/questTracker.js";
 import { renderWorkshopUI } from "./src/ui/workshop.js";
 import { getEquippedCannon } from "./src/systems/cannons.js";
-
+import { getEquippedShip } from "./src/systems/ships.js";
 
 const DEV_MODE = true;
 
@@ -303,11 +303,19 @@ state.pushLootNotice = pushLootNotice;
 
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
-state.shipStats = shipStats;
-state.playerLoadout = {
-  cannon: "rapid",
+
+
+state.playerShip = {
+  id: "frigate",
 };
 
+const equippedShip = getEquippedShip(state);
+
+state.shipStats = shipStats;
+state.playerLoadout = {
+  cannons:["light", null, null],
+  cooldowns: [0, 0, 0],
+};
 
 state.admirals = {
   killCount: 0,
@@ -331,7 +339,10 @@ state.ui = {
   workshopOpen: false,
   dockmasterOpen: false,
   craftingOpen: false,
+  activeCannonSlot: 0,
 };
+
+state.ui.activeCannonSlot = state.ui.cannonSlot ?? 0;
 
 state.crafting = {
   recipes: craftingRecipes,
@@ -458,7 +469,7 @@ shootTarget: () => {
   const d = Math.hypot(dx, dy);
 
   if (d <= combat.range && combat.cooldown <= 0) {
-    const fired = fireAtTarget(state, target);
+    const fired = fireCannonAtTarget(state, target, combat.cannonId);
     if (fired) {
       combat.cooldown = 1 / combat.fireRate;
     }
@@ -568,13 +579,18 @@ function update(dt) {
 
   time += dt;
 
-   const newMaxHp = state.shipStats.getMaxHp();
+const equippedShip = getEquippedShip(state);
+const newMaxHp = Number(equippedShip.maxHp) || 10;
 
-  if (player.maxHp !== newMaxHp) {
-    const hpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 1;
-    player.maxHp = newMaxHp;
-    player.hp = Math.min(player.maxHp, Math.max(1, Math.round(player.maxHp * hpRatio)));
-  }
+const oldMaxHp = Number(player.maxHp) || newMaxHp;
+const oldHp = Number(player.hp) || oldMaxHp;
+
+if (oldMaxHp !== newMaxHp) {
+  const hpRatio = oldMaxHp > 0 ? oldHp / oldMaxHp : 1;
+
+  player.maxHp = newMaxHp;
+  player.hp = Math.max(1, Math.min(newMaxHp, Math.round(newMaxHp * hpRatio)));
+}
 
   if (paused) {
     input.endFrame();
@@ -639,8 +655,11 @@ function update(dt) {
     islands.resolveCircle(player);
   }
 
-  player.x += ax * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
-  player.y += ay * shipStats.getSpeed(PLAYER_SPEED) * player.slowMul * dt;
+  const ship = getEquippedShip(state);
+  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul;
+
+  player.x += ax * moveSpeed * player.slowMul * dt;
+  player.y += ay * moveSpeed * player.slowMul * dt;
 
   player.x = clamp(player.x, player.r, world.w - player.r);
   player.y = clamp(player.y, player.r, world.h - player.r);
@@ -726,49 +745,114 @@ function update(dt) {
 
   updateCamera();
 
-  if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
-    const rect = state.canvas.getBoundingClientRect();
-    const mx = state.input.mouse.x - rect.left;
-    const my = state.input.mouse.y - rect.top;
 
-    for (const b of state.ui.workshopButtons ?? []) {
-      const inside =
-        mx >= b.x &&
-        mx <= b.x + b.w &&
-        my >= b.y &&
-        my <= b.y + b.h;
+if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
+  const rect = state.canvas.getBoundingClientRect();
+  const mx = state.input.mouse.x - rect.left;
+  const my = state.input.mouse.y - rect.top;
 
-      if (!inside) continue;
-      if (b.disabled) continue;
+  // Crafting buttons
+  for (const b of state.ui.workshopButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
 
-      state.crafting?.craft?.(b.id);
-    }
-    for (const b of state.ui.cannonButtons ?? []) {
-      const inside =
-        mx >= b.x &&
-        mx <= b.x + b.w &&
-        my >= b.y &&
-        my <= b.y + b.h;
-        if (!inside) continue;
-          state.playerLoadout.cannon = b.id;
+    if (!inside) continue;
+    if (b.disabled) continue;
 
-          state.pushLootNotice?.(`Equipped ${b.label}`);
-
-          state.effects.push({
-            x: player.x,
-            y: player.y,
-            t: 0.4,
-            size: 20,
-            type: "equip",
-          });
-    }
+    state.crafting?.craft?.(b.id);
   }
 
-  state.questTracker.update();
+  // Cannon slot selection
+  for (const b of state.ui.cannonSlotButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
 
-  input.endFrame();
+    if (!inside) continue;
+    if (b.disabled) continue;
+
+    state.ui.activeCannonSlot = b.index;
+    state.pushLootNotice?.(`Selected Slot ${b.index + 1}`);
+  }
+
+  // Cannon equip buttons
+  for (const b of state.ui.cannonButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+    if (!inside) continue;
+
+    state.playerLoadout = state.playerLoadout ?? {};
+    state.playerLoadout.cannons = state.playerLoadout.cannons ?? ["light", null, null];
+
+    const slot = state.ui?.activeCannonSlot ?? 0;
+    state.playerLoadout.cannons[slot] = b.id;
+
+    state.pushLootNotice?.(`Equipped ${b.label} to Slot ${slot + 1}`);
+
+    state.effects.push({
+      x: player.x,
+      y: player.y,
+      t: 0.4,
+      size: 20,
+      type: "equip",
+    });
+  }
+
+  // Ship buttons
+  for (const b of state.ui.shipButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+    if (!inside) continue;
+
+    state.playerShip = state.playerShip ?? {};
+    state.playerShip.id = b.id;
+
+    state.playerLoadout = state.playerLoadout ?? {};
+    state.playerLoadout.cannons = state.playerLoadout.cannons ?? ["light", null, null];
+    state.playerLoadout.cooldowns = state.playerLoadout.cooldowns ?? [0, 0, 0];
+
+    for(let i = 0; i < 3; i++) {
+      state.playerLoadout.cannons[i] = null;
+      state.playerLoadout.cooldowns[i] = 0;
+    }
+
+    const maxSlots =
+      b.id === "brig" ? 2 :
+      b.id === "frigate" ? 3 :
+      1;
+
+    for (let i = maxSlots; i < 3; i++) {
+      state.playerLoadout.cannons[i] = null;
+    }
+
+    if (!state.playerLoadout.cannons[0]) {
+      state.playerLoadout.cannons[0] = "light";
+    }
+
+    if ((state.ui.activeCannonSlot ?? 0) >= maxSlots) {
+      state.ui.activeCannonSlot = 0;
+    }
+
+    state.pushLootNotice?.(`Equipped ship: ${b.label}`);
+  }
 }
 
+state.questTracker.update();
+input.endFrame();
+}
 // ---------- Render helpers ----------
 
 function clampCam() {
@@ -1229,15 +1313,21 @@ if (state.admirals) {
   ctx.restore();
 }
 
+const equippedShipHud = getEquippedShip(state);
+
 ctx.save();
 ctx.fillStyle = "rgba(0,0,0,0.45)";
-ctx.fillRect(16, 132, 220, 34);
+ctx.fillRect(16, 172, 220, 34);
 
 ctx.fillStyle = "#fff";
 ctx.font = "600 14px system-ui";
 ctx.textAlign = "left";
 ctx.textBaseline = "middle";
-ctx.fillText(`Cannon: ${cannon.name}`, 28, 149);
+ctx.fillText(
+  `Ship: ${equippedShipHud.name} (${equippedShipHud.cannonSlots} slots)`,
+  28,
+  189
+);
 ctx.restore();
 
 

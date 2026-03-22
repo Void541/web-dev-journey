@@ -32,7 +32,16 @@ export function createShipStats() {
 
     getSpeed(baseSpeed = 260) {
       return baseSpeed + (sailLevel - 1) * 25;
-    }
+    },
 
+    getFireRate() {
+    const ship = this.state.playerShip?.id;
+
+    if(ship === "frigate") return 1.2;
+    if(ship === "brig") return 1.0;
+
+    return 0.8;
+  }
   };
+  
 }
