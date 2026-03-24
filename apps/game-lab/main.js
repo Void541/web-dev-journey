@@ -29,6 +29,7 @@ import { createQuestTracker } from "./src/ui/questTracker.js";
 import { renderWorkshopUI } from "./src/ui/workshop.js";
 import { getEquippedCannon } from "./src/systems/cannons.js";
 import { getEquippedShip } from "./src/systems/ships.js";
+import { getEquippedCrew } from "./src/systems/crew.js";
 
 const DEV_MODE = true;
 
@@ -93,6 +94,7 @@ const repair = {
   breakFlash: 0,
 };
 
+
 // World/Camera
 const world = {
   w: 4000,
@@ -121,6 +123,7 @@ function fitCanvas() {
     cssH = maxH;
     cssW = cssH * aspect;
   }
+
 
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = `${cssW}px`;
@@ -341,6 +344,17 @@ state.ui = {
   craftingOpen: false,
   activeCannonSlot: 0,
 };
+
+state.crew = state.crew ?? {};
+
+state.crew = {
+  gunner:false,
+  navigator:false,
+  firstMate:false,
+  captain:true,
+};
+
+const equippedCrew = getEquippedCrew(state);
 
 state.ui.activeCannonSlot = state.ui.cannonSlot ?? 0;
 
@@ -609,6 +623,9 @@ if (oldMaxHp !== newMaxHp) {
     input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
     input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
 
+const equippedCrew = getEquippedCrew(state);
+const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
+
   if (repair.active && wantsMove) {
     repair.active = false;
     repair.t = 0;
@@ -618,7 +635,7 @@ if (oldMaxHp !== newMaxHp) {
   if (repair.active && player.hp > 0 && player.hp < player.maxHp) {
     repair.interrupted = false;
     repair.fxT += dt;
-    repair.healAcc += repair.rate * dt;
+    repair.healAcc += repair.rate * dt * repairMul;
 
     while (repair.healAcc >= 1 && player.hp < player.maxHp) {
       player.hp += 1;
@@ -656,7 +673,8 @@ if (oldMaxHp !== newMaxHp) {
   }
 
   const ship = getEquippedShip(state);
-  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul;
+  const speedMul = equippedCrew.navigator?.speed ?? 1.0;
+  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul * speedMul;
 
   player.x += ax * moveSpeed * player.slowMul * dt;
   player.y += ay * moveSpeed * player.slowMul * dt;
@@ -727,12 +745,6 @@ if (oldMaxHp !== newMaxHp) {
     combat.cooldown = 0;
   }
 
-  const fps = 1 / dt;
-  fpsSmoothing = fpsSmoothing ? fpsSmoothing * 0.9 + fps * 0.1 : fps;
-  if (fpsEl) {
-    fpsEl.textContent = `FPS: ${fpsSmoothing.toFixed(0)} | E: ${enemies.length} | P: ${projectiles.length}`;
-  }
-
   damage.update(dt);
 
   for (let i = lootNotices.length - 1; i >= 0; i--) {
@@ -764,6 +776,25 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
 
     state.crafting?.craft?.(b.id);
   }
+
+//Crew selection buttons
+for (const b of state.ui.crewButtons ?? []) {
+  const inside =
+    mx >= b.x &&
+    mx <= b.x + b.w &&
+    my >= b.y &&
+    my <= b.y + b.h;
+
+    if(!inside) continue;
+    if(b.disabled) continue;
+
+    state.crew = state.crew ?? {};
+    state.crew[b.id] = !(state.crew?.[b.id] ?? false);
+
+    state.pushLootNotice?.(`${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`);
+  }
+  console.log("Crew:", state.crew);
+console.log("Equipped:", getEquippedCrew(state));
 
   // Cannon slot selection
   for (const b of state.ui.cannonSlotButtons ?? []) {
@@ -1184,6 +1215,7 @@ function render() {
   }
 
   const cannon = getEquippedCannon(state);
+  const equippedCrew = getEquippedCrew(state);
 
   // Muzzle flash
   ctx.save();

@@ -1,3 +1,5 @@
+import { CrewSystem } from "../systems/crew.js";
+
 export function renderWorkshopUI(ctx, state) {
   if (!state.ui?.workshopOpen) return;
 
@@ -339,6 +341,73 @@ export function renderWorkshopUI(ctx, state) {
     by += 66;
     if (by > col3Y + col3H - 30) break;
   }
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 16px system-ui";
+    by += 30;
+    ctx.fillText("Crew", col3X + 12, by);
+    by += 28;
+
+    state.ui.crewButtons = [];
+
+    const crewEntries = Object.values(CrewSystem);
+
+    for (const member of crewEntries) {
+      const active = member.id === "captain" 
+      ? true 
+      : (state.crew?.[member.id] ?? false);
+
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillRect(col3X + 8, by - 6, col3W - 16, 58);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "15px system-ui";
+    ctx.fillText(member.name ?? member.id, col3X + 16, by);
+
+      const button = {
+      id: member.id,
+      label: member.name,
+      x: col3X + col3W - 102,
+      y: by + 8,
+      w: 84,
+      h: 28,
+      disabled: member.id === "captain",
+    };
+    by += 38;
+      state.ui.crewButtons.push(button);
+
+      ctx.font = "13px system-ui";
+      ctx.fillStyle = "rgba(255,255,255,0.68)";
+      ctx.fillText(active? "active" : "inactive", col3X + 16, by - 12);
+
+      const buttonText = member.id === "captain" 
+      ? "Fixed" 
+      : active 
+        ? "Active" 
+        : "Equip";
+
+      const hover =
+      mx >= button.x &&
+      mx <= button.x + button.w &&
+      my >= button.y &&
+      my <= button.y + button.h;
+
+      ctx.fillStyle = button.disabled
+      ? "rgba(255, 220, 120, 0.9)" //gold
+      : hover
+        ? "rgba(120,255,160,0.9)" //grün
+        : "rgba(255,255,255,0.6)"; //grau
+    ctx.fillRect(button.x, button.y, button.w, button.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.strokeRect(button.x, button.y, button.w, button.h);
+    ctx.fillStyle = button.disabled ? "rgba(255,255,255,0.45)" : "#fff";
+    ctx.font = "14px system-ui";
+    ctx.fillText(buttonText, button.x + 20, button.y + 6);
+
+    by += 18;
+
+  }
+
 
   // Footer
   ctx.fillStyle = "rgba(255,255,255,0.6)";

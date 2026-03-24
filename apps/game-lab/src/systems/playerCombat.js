@@ -1,4 +1,5 @@
 import { getEquippedCannons, getCannonStats } from "./cannons.js";
+import { getEquippedCrew } from "./crew.js";
 
 export function createPlayerCombat() {
   return {
@@ -26,20 +27,27 @@ export function fireCannonAtTarget(state, target, cannonId) {
   const dirX = dx / d;
   const dirY = dy / d;
 
+  const equippedCrew = getEquippedCrew(state);
+  const dmgMul = equippedCrew.gunner?.dmgMul ?? 1.0;
+ 
   state.spawnProjectile({
     x: state.player.x,
     y: state.player.y,
     vx: dirX * cannon.projectileSpeed,
     vy: dirY * cannon.projectileSpeed,
-    dmg: cannon.damage,
+    dmg: cannon.damage * dmgMul,
     ttl: 2,
     r: 3,
   });
-
+console.log(`Fired ${cannon.name} at target ${target.id} with damage ${cannon.damage * dmgMul}`);
   return true;
 }
 
 export function updatePlayerCombat(dt, state) {
+
+  const equippedCrew = getEquippedCrew(state);
+  const reloadMul = equippedCrew.gunner?.reloadCooldownMul ?? 1.0;
+
   const { combat, player } = state;
   if (!combat) return;
 
@@ -56,6 +64,7 @@ export function updatePlayerCombat(dt, state) {
 
   if (!target) return;
 
+
   const cannons = getEquippedCannons(state);
   state.playerLoadout = state.playerLoadout ?? {};
   state.playerLoadout.cooldowns = state.playerLoadout.cooldowns ?? [0, 0, 0];
@@ -63,6 +72,8 @@ export function updatePlayerCombat(dt, state) {
   const dx = target.x - player.x;
   const dy = target.y - player.y;
   const d = Math.hypot(dx, dy);
+
+
 
   // Reichweite prüfen:
   // Wenn mindestens eine belegte Kanone in Reichweite ist, darf geschossen werden
@@ -104,7 +115,8 @@ export function updatePlayerCombat(dt, state) {
 
     const fired = fireCannonAtTarget(state, target, cannonId);
     if (fired) {
-      state.playerLoadout.cooldowns[i] = 1 / cannon.fireRate;
+
+      state.playerLoadout.cooldowns[i] = 1 / cannon.fireRate * reloadMul;
     }
   }
 }
