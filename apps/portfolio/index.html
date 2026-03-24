@@ -4,52 +4,52 @@
   <meta name="description" content="Void – Web Development Portfolio. HTML, CSS, JavaScript projects.">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Void – Web Dev Journey</title>
-  <link rel="stylesheet" href="style.css" >
-  <link rel="icon" href="https://fav.farm/🔥" >
+  <title>Fabian Materna – Web Dev Journey</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="https://fav.farm/🔥">
 </head>
 <body>
   <header id="top" class="site-header">
-  <div class="container header-inner">
-    <a class="brand" href="#top">Void</a>
+    <div class="container header-inner">
+      <a class="brand" href="#top">Fabian Materna <span class="alias">aka Void</span> </a>
 
-    <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
-      ☰
-    </button>
 
-    <nav class="nav" id="siteNav">
-      <a href="#projects" data-i18n="nav_projects">Projekte</a>
-      <a href="#contact" data-i18n="nav_contact">Kontakt</a>
-      <a href="#about" data-i18n="nav_about">Über mich</a>
-    </nav>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
+        ☰
+      </button>
 
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
-      🌙
-    </button>
-    <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">
-  DE
-</button>
-  </div>
-</header>
+      <nav class="nav" id="siteNav">
+        <a href="#projects" data-i18n="nav_projects">Projekte</a>
+        <a href="#about" data-i18n="nav_about">Über mich</a>
+        <a href="#contact" data-i18n="nav_contact">Kontakt</a>
+      </nav>
 
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
+        🌙
+      </button>
+
+      <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">
+        DE
+      </button>
+    </div>
+  </header>
 
   <main>
     <section class="hero">
       <div class="container">
-        <h1 data-i18n="hero_titel">Web Dev Journey</h1>
-        <p data-i18n="hero_subtitle">
-          Ich baue gerade mein Fundament in HTML, CSS & JavaScript – Schritt für Schritt, jeden Tag.
+        <h1 data-i18n="hero_title">Web Dev Journey</h1>
+        <p class="subtitle" data-i18n="hero_subtitle">
+          Ich baue mein Fundament in HTML, CSS und JavaScript und entwickle Schritt für Schritt echte Projekte für meinen Weg in die Webentwicklung.
         </p>
 
-        <a class="btn primary" href="#projects" data-i18n="btn_projects">
-          Projekte ansehen
-        </a>
-
-        <a class="btn secondary" href="#about" data-i18n="btn_about">Mehr über mich</a>
+        <div class="hero-actions">
+          <a class="btn primary" href="#projects" data-i18n="btn_projects">Projekte ansehen</a>
+          <a class="btn secondary" href="#about" data-i18n="btn_about">Mehr über mich</a>
+        </div>
 
         <ul class="hero-meta">
           <li data-i18n="meta_focus">Fokus: Webentwicklung</li>
-          <li data-i18n="meta_rhythm">Rhythmus: 30 Min/Tag</li>
+          <li data-i18n="meta_rhythm">Rhythmus: Konstantes Lernen & Bauen</li>
           <li data-i18n="meta_goal">Ziel: Junior / Werkstudent</li>
         </ul>
       </div>
@@ -58,30 +58,32 @@
     <section id="about" class="section">
       <div class="container">
         <h2 class="section-title" data-i18n="about_title">Über mich</h2>
-        <p data-i18n="about_text"></p>
+        <p data-i18n="about_text">
+          Ich bin ein angehender Webentwickler und baue Projekte, um meine Fähigkeiten in HTML, CSS und JavaScript Schritt für Schritt auszubauen. Mein Fokus liegt auf sauberer Struktur, besserem UI-Verständnis und interaktiven Webprojekten.
+        </p>
 
         <div class="grid">
           <div class="card">
             <h3 data-i18n="skills_title">Skills</h3>
-              <ul>
-                <li data-i18n="skill_1"></li>
-                <li data-i18n="skill_2"></li>
-                <li data-i18n="skill_3"></li>
-                <li data-i18n="skill_4"></li>
-                <li data-i18n="skill_5"></li>
-                <li data-i18n="skill_6"></li>
+            <ul>
+              <li data-i18n="skill_1"></li>
+              <li data-i18n="skill_2"></li>
+              <li data-i18n="skill_3"></li>
+              <li data-i18n="skill_4"></li>
+              <li data-i18n="skill_5"></li>
+              <li data-i18n="skill_6"></li>
             </ul>
           </div>
 
           <div class="card">
             <h3 data-i18n="roadmap_title">Roadmap</h3>
-              <ol>
-                <li data-i18n="roadmap_1"></li>
-                <li data-i18n="roadmap_2"></li>
-                <li data-i18n="roadmap_3"></li>
-                <li data-i18n="roadmap_4"></li>
-                <li data-i18n="roadmap_5"></li>
-              </ol>
+            <ol>
+              <li data-i18n="roadmap_1"></li>
+              <li data-i18n="roadmap_2"></li>
+              <li data-i18n="roadmap_3"></li>
+              <li data-i18n="roadmap_4"></li>
+              <li data-i18n="roadmap_5"></li>
+            </ol>
           </div>
         </div>
       </div>
@@ -89,81 +91,107 @@
 
     <section id="projects" class="section">
       <div class="container">
-        <h2 class="section-title" data-i18n="projects_title">Projects</h2>
+        <h2 class="section-title" data-i18n="projects_title">Projekte</h2>
 
         <div class="grid">
-          <article class="card">
-            <h3 data-i18n="project1_title">Projekt 1: Mini Portfolio</h3>
-            <p data-i18n="project1_desc">Diese Seite. Fokus: Struktur, Layout, GitHub Pages.</p>
-            <div class="tags">
-              <span class="tag">HTML</span>
-              <span class="tag">CSS</span>
-              <span class="tag">GitHub Pages</span>
-            </div>
-            <div class="card-actions">
-              <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">Code</a>
-              <a class="btn small" data-i18n="btn_live" href="../portfolio/">Live</a>
-          </div>
+          <article class="card featured-card">
+  <div class="project-head">
+    <p class="project-kicker" data-i18n="project_featured">Featured Project</p>
+    <span class="badge featured" data-i18n="badge_in_progress">In Progress</span>
+  </div>
 
-          </article>
+  <h3 data-i18n="project4_title">Game Lab</h3>
 
-          <article class="card">
-            <h3 data-i18n="project2_title">Projekt 2: To-Do App</h3>
-            <p data-i18n="project2_desc">Demnächst: Interaktiv mit JavaScript (DOM + Events).</p>
-            <div class="tags">
-              <span class="tag">JavaScript</span>
-              <span class="tag">DOM</span>
-            </div>
-            <div class="card-actions">
-              <a class="btn small disabled" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/todo" target="_blank" rel="noopener noreferrer">Code</a>
-              <a class="btn small" data-i18n="btn_live" href="../todo/">Live</a>
-              </div>
-          </article>
+  <p class="project-lead" data-i18n="project4_desc">
+    Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.
+  </p>
 
-          <article class="card">
-            <h3 data-i18n="project3_title">Projekt 3: Quiz</h3>
-            <p data-i18n="project3_desc">Ein kleines Quiz mit Fragen, Score und Reset.</p>
-            <div class="tags">
-              <span class="tag">JavaScript</span>
-              <span class="tag">UI</span>              
-            </div>
-            
-               <div class="card-actions">
-              <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/quiz" target="_blank" rel="noopener noreferrer">Code</a>
-              <a class="btn small" data-i18n="btn_live" href="../quiz/">Live</a>
-          </div>
-          </article>
-           <article  class="card">
-            <h3 data-i18n="project4_title">Projekt 4: Game Lab</h3>
-            <p data-i18n="project4_desc">Ein kleines 2D-Game mit Canvas, Animation und Interaktion.</p>
-            <div class="tags">
-              <span class="tag">JavaScript</span>
-              <span class="tag">Canvas</span>
-              <span class="tag">Game Loop</span>
-              <span class="tag">Collision</span>
-              <span class="tag">UI</span>              
-            </div>
-           
-           <div class="card-actions">
-              <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/tree/feature/game-lab-integration" target="_blank" rel="noopener noreferrer">Code</a>
-              <a class="btn small" data-i18n="btn_live" href="../game-lab/">Live</a>
-          </div>
-          </article>
+  <ul class="project-highlights">
+    <li data-i18n="project4_highlight_1">Canvas Rendering & Animation</li>
+    <li data-i18n="project4_highlight_2">Combat, Projectiles & Collision</li>
+    <li data-i18n="project4_highlight_3">UI, HUD und Gameplay-Systeme</li>
+    <li data-i18n="project4_highlight_4">Modularer JavaScript-Aufbau</li>
+  </ul>
+
+  <div class="project-stats">
+    <span class="project-stat" data-i18n="project4_stat_1">Status: Aktiv in Entwicklung</span>
+    <span class="project-stat" data-i18n="project4_stat_2">Fokus: Gameplay & Progression</span>
+  </div>
+
+  <div class="tags">
+    <span class="tag">JavaScript</span>
+    <span class="tag">Canvas</span>
+    <span class="tag">Game Loop</span>
+    <span class="tag">Collision</span>
+    <span class="tag">UI</span>
+  </div>
+
+  <div class="card-actions">
+    <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/tree/feature/game-lab-integration" target="_blank" rel="noopener noreferrer">Code</a>
+    <a class="btn small primary" data-i18n="btn_live" href="../game-lab/">Live</a>
+  </div>
+</article>
+
+<article class="card">
+  <h3 data-i18n="project1_title">Mini Portfolio</h3>
+  <p data-i18n="project1_desc">
+    This portfolio website. Focused on structure, layout and GitHub Pages deployment.
+  </p>
+  <div class="tags">
+    <span class="tag">HTML</span>
+    <span class="tag">CSS</span>
+    <span class="tag">GitHub Pages</span>
+  </div>
+  <div class="card-actions">
+    <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">Code</a>
+    <a class="btn small" data-i18n="btn_live" href="../portfolio/">Live</a>
+  </div>
+</article>
+
+<article class="card">
+  <h3 data-i18n="project2_title">To-Do App</h3>
+  <p data-i18n="project2_desc">
+    Interactive JavaScript task app with DOM manipulation, events and local storage.
+  </p>
+  <div class="tags">
+    <span class="tag">JavaScript</span>
+    <span class="tag">DOM</span>
+    <span class="tag">LocalStorage</span>
+  </div>
+  <div class="card-actions">
+    <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/tree/main/apps/todo" target="_blank" rel="noopener noreferrer">Code</a>
+    <a class="btn small" data-i18n="btn_live" href="../todo/">Live</a>
+  </div>
+</article>
+
+<article class="card">
+  <h3 data-i18n="project3_title">Quiz</h3>
+  <p data-i18n="project3_desc">
+    Quiz app with categories, score tracking and an editor for adding custom questions.
+  </p>
+  <div class="tags">
+    <span class="tag">JavaScript</span>
+    <span class="tag">UI</span>
+    <span class="tag">State</span>
+  </div>
+  <div class="card-actions">
+    <a class="btn small" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/tree/main/apps/quiz" target="_blank" rel="noopener noreferrer">Code</a>
+    <a class="btn small" data-i18n="btn_live" href="../quiz/">Live</a>
+  </div>
+</article>
         </div>
       </div>
-    </section>
 
     <section id="contact" class="section">
       <div class="container">
         <h2 class="section-title" data-i18n="contact_title">Kontakt</h2>
         <p data-i18n="contact_text">
-          Wenn du Feedback hast oder du sehen willst, wie ich mich entwickle:
-          Schau auf GitHub vorbei.
+          Du möchtest meinen Fortschritt verfolgen oder dir meine Projekte ansehen? Dann schau gerne auf meinem GitHub vorbei.
         </p>
 
         <div class="hero-actions">
           <a class="btn primary" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a data-i18n="btn_top" href="#top">Nach oben</a>
+          <a class="btn secondary" data-i18n="btn_top" href="#top">Nach oben</a>
         </div>
       </div>
     </section>
@@ -171,22 +199,21 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p data-i18n="footer_left">© 2026 Void — Web Dev Journey</p>
-      <p data-i18n="footer_right">Built with HTML & CSS • Hosted on GitHub Pages</p>
+      <p data-i18n="footer_left">© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
+      <p data-i18n="footer_right">Built with HTML, CSS & JavaScript • Hosted on GitHub Pages</p>
     </div>
   </footer>
 
-  
-<script type="module">
-  import { initTheme } from "../../shared/theme.js";
-  import { initI18n } from "../../shared/i18n.js";
+  <script type="module">
+    import { initTheme } from "../../shared/theme.js";
+    import { initI18n } from "../../shared/i18n.js";
 
-  initTheme();
-  initI18n();
+    initTheme();
+    initI18n();
 
-  const yearEl = document.getElementById("year");
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
-</script>
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
 
   <a href="#top" class="back-to-top" aria-label="Nach oben">↑</a>
 </body>

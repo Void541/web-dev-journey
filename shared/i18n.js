@@ -49,8 +49,24 @@ const translations = {
     contact_text: "Wenn du Feedback hast oder sehen möchtest, wie ich mich entwickle, schau auf GitHub vorbei.",
     btn_github: "GitHub",
     btn_top: "Nach oben",
-    footer_left: "© 2026 Void — Web Dev Journey",
+    footer_left: "© 2026 Fabian Materna — Web Dev Journey",
     footer_right: "Gebaut mit HTML & CSS • Gehostet auf GitHub Pages",
+
+    //================= Game Lab =================
+
+    project_featured: "Featured Project",
+    badge_in_progress: "In Entwicklung",
+
+    project4_title: "Game Lab",
+    project4_desc: "Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.",
+
+    project4_highlight_1: "Canvas Rendering & Animation",
+    project4_highlight_2: "Combat, Projectiles & Collision",
+    project4_highlight_3: "UI, HUD und Gameplay-Systeme",
+    project4_highlight_4: "Modularer JavaScript-Aufbau",
+
+    project4_stat_1: "Status: Aktiv in Entwicklung",
+    project4_stat_2: "Fokus: Gameplay & Progression",
 
     //================= TODO =================
     todo_placeholder: "Neue Aufgabe eingeben...",
@@ -160,8 +176,24 @@ const translations = {
     contact_text: "If you have feedback or want to see how I'm progressing, check out my GitHub.",
     btn_github: "GitHub",
     btn_top: "Back to top",
-    footer_left: "© 2026 Void — Web Dev Journey",
+    footer_left: "© 2026 Fabian Materna — Web Dev Journey",
     footer_right: "Built with HTML & CSS • Hosted on GitHub Pages",
+
+    //================= Game Lab =================
+
+    project_featured: "Featured Project",
+    badge_in_progress: "In Progress",
+
+    project4_title: "Game Lab",
+    project4_desc: "A browser-based 2D game with a custom game loop, combat systems, enemy behavior and modular architecture.",
+
+    project4_highlight_1: "Canvas rendering & animation",
+    project4_highlight_2: "Combat, projectiles & collision",
+    project4_highlight_3: "UI, HUD and gameplay systems",
+    project4_highlight_4: "Modular JavaScript structure",
+
+    project4_stat_1: "Status: Actively in development",
+    project4_stat_2: "Focus: Gameplay & progression",
 
     //================= TODO =================
     todo_placeholder: "Enter new task...",
