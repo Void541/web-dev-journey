@@ -30,6 +30,7 @@ import { renderWorkshopUI } from "./src/ui/workshop.js";
 import { getEquippedCannon } from "./src/systems/cannons.js";
 import { getEquippedShip } from "./src/systems/ships.js";
 import { getEquippedCrew } from "./src/systems/crew.js";
+import { createLevelSystem } from "./src/systems/levels.js";
 
 const DEV_MODE = true;
 
@@ -81,6 +82,7 @@ const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
 const effect = [];
 const effects = [];
+const levelSystem = createLevelSystem();
 
 // --- Repair ---
 const repair = {
@@ -337,6 +339,12 @@ state.progress = state.progress ?? {
   admiralKills: 0,
 };
 
+state.progression = {
+  level: 1,
+  xp: 0,
+  xpToNext: 100,
+};
+
 state.ui = {
   shipyardOpen: false,
   workshopOpen: false,
@@ -437,6 +445,8 @@ if(enemy.isAdmiral) {
     }
   }
 }
+levelSystem.addXP?.(state, enemy.xp ?? 0);
+console.log(`Gained ${enemy.xp ?? 0} XP. Total XP: ${state.progression.xp}. Current Level: ${state.progression.level}`);
 
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };

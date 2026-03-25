@@ -137,18 +137,20 @@ if (x == null || y == null) {
     name: admiral ? `Admiral ${baseName}` : baseName,
     isAdmiral: admiral,
     goldBonus,
-    damageMul
+    damageMul,
+    xp: enemyTypes[type].xp,
   };
 
 
- // console.log("SPAWN ENEMY", {
-  //type,
-  //admiral,
-  //isAdmiral: enemy.isAdmiral,
-  //name: enemy.name,
-  //x: enemy.x,
-  //y: enemy.y,
-//});
+  console.log("SPAWN ENEMY", {
+  type,
+  admiral,
+  isAdmiral: enemy.isAdmiral,
+  name: enemy.name,
+  x: enemy.x,
+  y: enemy.y,
+  xp: enemy.xp,
+});
 
   enemies.push(enemy);
 
