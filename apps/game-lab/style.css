@@ -178,6 +178,10 @@ body {
   top: 96px;
 }
 
+.hud-bar-fill.xp-bar {
+  background: linear-gradient(90deg, rgb(60,60,220), rgb(120,120,255));
+}
+
 #target-panel {
   right: 12px;
   top: 96px;

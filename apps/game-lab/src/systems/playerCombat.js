@@ -1,5 +1,7 @@
 import { getEquippedCannons, getCannonStats } from "./cannons.js";
 import { getEquippedCrew } from "./crew.js";
+import { createTalentSystem } from "./talente.js";
+
 
 export function createPlayerCombat() {
   return {
@@ -29,17 +31,18 @@ export function fireCannonAtTarget(state, target, cannonId) {
 
   const equippedCrew = getEquippedCrew(state);
   const dmgMul = equippedCrew.gunner?.dmgMul ?? 1.0;
+  const talentsDmgBonus = state.progression?.talents?.dmg ?? 0;
  
   state.spawnProjectile({
     x: state.player.x,
     y: state.player.y,
     vx: dirX * cannon.projectileSpeed,
     vy: dirY * cannon.projectileSpeed,
-    dmg: cannon.damage * dmgMul,
+    dmg: cannon.damage * dmgMul + talentsDmgBonus ?? 0,
     ttl: 2,
     r: 3,
   });
-console.log(`Fired ${cannon.name} at target ${target.id} with damage ${cannon.damage * dmgMul}`);
+console.log(`Fired ${cannon.name} at target ${target.id} with damage ${cannon.damage * dmgMul + talentsDmgBonus ?? 0}`);
   return true;
 }
 

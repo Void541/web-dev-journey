@@ -94,6 +94,8 @@ export function createHudOverlay() {
 
     playerPanel: document.getElementById("player-panel"),
     playerName: document.getElementById("player-name"),
+    playerLevel: document.getElementById("player-level"),
+    playerXpFill: document.getElementById("player-xp-fill"),
     playerHpFill: document.getElementById("player-hp-fill"),
     playerHpText: document.getElementById("player-hp-text"),
 
@@ -195,6 +197,8 @@ export function createHudOverlay() {
     const pratio = Math.max(0, Math.min(1, php / pmax));
 
     if (els.playerName) els.playerName.textContent = "Your Ship";
+    if (els.playerLevel) els.playerLevel.textContent = `Level ${state.progression?.level ?? 1}`;
+    if (els.playerXpFill) els.playerXpFill.style.width = `${((state.progression?.xp ?? 0) / (state.progression?.xpToNext ?? 100)) * 100}%`;
     if (els.playerHpFill) els.playerHpFill.style.width = `${pratio * 100}%`;
     if (els.playerHpText) els.playerHpText.textContent = `${php} / ${pmax}`;
 

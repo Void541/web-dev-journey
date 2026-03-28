@@ -12,7 +12,7 @@ export const enemyTypes = {
     preferredRange: 200,
     spawnWeight: 70,
     gold: 4,
-    xp: 10,
+    xp: 100,
   },
 
   tank: {
@@ -27,7 +27,7 @@ export const enemyTypes = {
     preferredRange: 150,
     spawnWeight: 18,
     gold: 9,
-    xp: 25,
+    xp: 250,
   },
 
   sniper: {
@@ -43,7 +43,7 @@ export const enemyTypes = {
     rangeMul: 1.35,
     spawnWeight: 8,
     gold: 7,
-    xp: 20,
+    xp: 200,
   },
 
   disabler: {
@@ -61,6 +61,6 @@ export const enemyTypes = {
     slowDuration: 1.6,
     spawnWeight: 4,
     gold: 8,
-    xp: 22,
+    xp: 220,
   },
 };

@@ -142,15 +142,7 @@ if (x == null || y == null) {
   };
 
 
-  console.log("SPAWN ENEMY", {
-  type,
-  admiral,
-  isAdmiral: enemy.isAdmiral,
-  name: enemy.name,
-  x: enemy.x,
-  y: enemy.y,
-  xp: enemy.xp,
-});
+  //console.log("SPAWN ENEMY", {type,admiral,isAdmiral: enemy.isAdmiral,name: enemy.name,x: enemy.x,y: enemy.y, xp: enemy.xp,});
 
   enemies.push(enemy);
 

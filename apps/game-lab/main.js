@@ -31,6 +31,7 @@ import { getEquippedCannon } from "./src/systems/cannons.js";
 import { getEquippedShip } from "./src/systems/ships.js";
 import { getEquippedCrew } from "./src/systems/crew.js";
 import { createLevelSystem } from "./src/systems/levels.js";
+import { createTalentSystem } from "./src/systems/talente.js";
 
 const DEV_MODE = true;
 
@@ -73,7 +74,6 @@ function setMode(next, options = {}) {
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-const fpsEl = document.getElementById("fps");
 const input = createInput();
 const islands = createIslands();
 const water = createWater();
@@ -343,6 +343,12 @@ state.progression = {
   level: 1,
   xp: 0,
   xpToNext: 100,
+  talentPoints: 0,
+  talents: {
+    dmg: 0,
+    hp: 10,
+    speed: 0,
+  },
 };
 
 state.ui = {
@@ -413,6 +419,7 @@ state.onEnemyKilled = (enemy, drop) => {
   if (gold > 0) {
     state.pushLootNotice?.(`+${gold} Gold`);
   }
+    state.pushLootNotice?.(`+${enemy.xp ?? 0} XP`);
 
 if(enemy.isAdmiral) {
   state.progress.admiralKills += 1;
@@ -425,7 +432,7 @@ if(enemy.isAdmiral) {
     state.pushLootNotice?.(`${enemy.name} defeated`);
  } else {
   const countsForAdmiral =
-    enemy.type === "basic" || enemy.type === "raider";
+    enemy.type === "basic" || enemy.type === "basic";
 
   if (countsForAdmiral) {
     state.admirals.killCount += 1;
@@ -434,7 +441,7 @@ if(enemy.isAdmiral) {
   const adm = state.admirals;
   if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive) {
     const spawned = state.spawnEnemy?.({
-      type: "raider",
+      type: "basic",
       admiral: true,
     });
 
@@ -445,8 +452,9 @@ if(enemy.isAdmiral) {
     }
   }
 }
-levelSystem.addXP?.(state, enemy.xp ?? 0);
+levelSystem.addXP?.(state, enemy.xp ?? 0,);
 console.log(`Gained ${enemy.xp ?? 0} XP. Total XP: ${state.progression.xp}. Current Level: ${state.progression.level}`);
+console.log(`Talent Points: ${state.progression.talentPoints ?? 0 }`);
 
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
@@ -604,15 +612,15 @@ function update(dt) {
   time += dt;
 
 const equippedShip = getEquippedShip(state);
-const newMaxHp = Number(equippedShip.maxHp) || 10;
+const newMaxHp = Number(equippedShip.maxHp + (state.progression?.talents?.hp ?? 0)) || 10 ;
 
-const oldMaxHp = Number(player.maxHp) || newMaxHp;
+const oldMaxHp = Number(player.maxHp) || newMaxHp ;
 const oldHp = Number(player.hp) || oldMaxHp;
 
 if (oldMaxHp !== newMaxHp) {
   const hpRatio = oldMaxHp > 0 ? oldHp / oldMaxHp : 1;
 
-  player.maxHp = newMaxHp;
+  player.maxHp = newMaxHp ;
   player.hp = Math.max(1, Math.min(newMaxHp, Math.round(newMaxHp * hpRatio)));
 }
 
@@ -684,7 +692,8 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
 
   const ship = getEquippedShip(state);
   const speedMul = equippedCrew.navigator?.speed ?? 1.0;
-  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul * speedMul;
+  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul + (1 + state.progression?.talents?.speed ?? 0);
+  console.log(`Current Speed: ${moveSpeed.toFixed(2)}`);
 
   player.x += ax * moveSpeed * player.slowMul * dt;
   player.y += ay * moveSpeed * player.slowMul * dt;
@@ -1359,7 +1368,7 @@ const equippedShipHud = getEquippedShip(state);
 
 ctx.save();
 ctx.fillStyle = "rgba(0,0,0,0.45)";
-ctx.fillRect(16, 172, 220, 34);
+ctx.fillRect(16, 130, 220, 34);
 
 ctx.fillStyle = "#fff";
 ctx.font = "600 14px system-ui";
@@ -1368,7 +1377,7 @@ ctx.textBaseline = "middle";
 ctx.fillText(
   `Ship: ${equippedShipHud.name} (${equippedShipHud.cannonSlots} slots)`,
   28,
-  189
+  147,
 );
 ctx.restore();
 
@@ -1377,7 +1386,7 @@ ctx.restore();
     const n = lootNotices[i];
     const alpha = Math.min(1, n.t / 0.4);
 
-    const x = canvas.clientWidth - 300;
+    const x = canvas.clientWidth/2 - ctx.measureText(n.text).width / 2;
     const y = 110 + i * 24 - n.yOff;
 
     ctx.globalAlpha = alpha * 0.8;
