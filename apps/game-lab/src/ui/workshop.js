@@ -28,7 +28,7 @@ export function renderWorkshopUI(ctx, state) {
   ctx.font = "700 20px system-ui";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("Harbor Workshop", x + 18, y + 10);
+  ctx.fillText("Space Station", x + 18, y + 10);
 
   // Panels
   const col1X = x + 20;

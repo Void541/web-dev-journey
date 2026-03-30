@@ -5,7 +5,7 @@ import { updateEnemies } from "./src/enemies/updateEnemies.js";
 import { spawnEnemy } from "./src/enemies/spawnEnemy.js";
 import { updateProjectiles } from "./src/updateProjectiles.js";
 import { createDamageSystem } from "./src/damageNumbers.js";
-import { createWater } from "./src/water.js";
+import { createSpace } from "./src/space.js";
 import { createIslands } from "./src/islands.js";
 import { createOverworld } from "./src/modes/overworld.js";
 import { createPirateCove } from "./src/modes/pirateCove.js";
@@ -76,7 +76,7 @@ const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const input = createInput();
 const islands = createIslands();
-const water = createWater();
+const space = createSpace();
 const damage = createDamageSystem();
 const CW = () => canvas.clientWidth;
 const CH = () => canvas.clientHeight;
@@ -286,7 +286,7 @@ const state = {
   canvas, ctx, input,
   world, camera,
   player, enemies, projectiles, effects, trail,
-  combat, islands, water, damage,
+  combat, islands, space, damage,
   mode,
   overworldSpawnTimer,
   enemyTypes,
@@ -346,7 +346,7 @@ state.progression = {
   talentPoints: 0,
   talents: {
     dmg: 0,
-    hp: 10,
+    hp: 0,
     speed: 0,
   },
 };
@@ -668,7 +668,7 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
     if (!repair.active) repair.healAcc = 0;
   }
 
-  water.update(dt);
+  space.update(dt);
 
   let ax = 0;
   let ay = 0;
@@ -1142,7 +1142,7 @@ function render() {
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   ctx.clearRect(0, 0, CW(), CH());
 
-  water.render(ctx, canvas);
+  space.render(ctx, canvas);
 
   ctx.save();
   ctx.translate(-camera.x, -camera.y);
