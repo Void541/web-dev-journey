@@ -83,6 +83,7 @@ const CH = () => canvas.clientHeight;
 const effect = [];
 const effects = [];
 const levelSystem = createLevelSystem();
+const talentSystem = createTalentSystem();
 
 // --- Repair ---
 const repair = {
@@ -796,6 +797,24 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
     state.crafting?.craft?.(b.id);
   }
 
+  for (const b of state.ui.talentButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+      if (!inside) continue;
+      if (b.disabled) continue;
+
+      const spent = talentSystem.allocateTalentPoint(state, b.id);
+      console.log("Talent point spent:", spent, state.progression);
+
+      if (spent) {
+        state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
+      }
+  }
+
 //Crew selection buttons
 for (const b of state.ui.crewButtons ?? []) {
   const inside =
@@ -933,30 +952,45 @@ function screenToWorld(sx, sy) {
 }
 
 
-function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basic", color = "rgb(170,45,40)") {
+function renderFallbackShip(
+  ctx,
+  x,
+  y,
+  r,
+  angle,
+  isTarget,
+  isEnemy,
+  type = "basic",
+  color = "rgb(170,45,40)"
+) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(angle);
 
-  let hullFront = r + 10;
+  // --- Base shape values ---
+  let hullFront = r + 12;
   let hullBack1 = -r - 8;
   let hullBack2 = -r - 14;
   let hullHeight = r;
-  let mastH = r + 8;
-  let mastX = -2;
-  let sailW = r + 8;
-  let sailTop = -r - 6;
-  let sailBottom = r - 2;
-  let mastLineW = 2;
 
+  let wingSpan = r * 2;
+  let wingBack = r * 2 * 0.6;
+
+  let engineRadius = r * 0.25;
+  let engineCount = 2;
+
+  // --- Type tuning ---
   if (type === "tank") {
     hullFront = r + 8;
     hullBack1 = -r - 12;
     hullBack2 = -r - 18;
     hullHeight = r * 1.25;
-    mastH = r + 10;
-    mastLineW = 3;
-    sailW = r + 6;
+
+    wingSpan = r * 2;
+    wingBack = r * 2 * 0.8;
+
+    engineCount = 3;
+    engineRadius = r * 0.35;
   }
 
   if (type === "sniper") {
@@ -964,8 +998,12 @@ function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basi
     hullBack1 = -r - 6;
     hullBack2 = -r - 10;
     hullHeight = r * 0.85;
-    mastH = r + 14;
-    sailW = r + 14;
+
+    wingSpan = r * 2 * 0.75;
+    wingBack = r * 2 * 0.45;
+
+    engineCount = 1;
+    engineRadius = r * 0.22;
   }
 
   if (type === "disabler") {
@@ -973,10 +1011,18 @@ function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basi
     hullBack1 = -r - 9;
     hullBack2 = -r - 15;
     hullHeight = r * 1.05;
-    mastH = r + 12;
-    sailW = r + 10;
+
+    wingSpan = r * 2 * 0.8;
+    wingBack = r * 0.3;
+
+    engineCount = 2;
+    engineRadius = r * 0.28;
   }
 
+  // Engine position must be calculated AFTER type values are finalized
+  const engineOffset = hullBack2 - r * 0.2;
+
+  // --- Special disabler aura ---
   if (type === "disabler") {
     ctx.save();
     ctx.globalAlpha = 0.25;
@@ -987,8 +1033,51 @@ function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basi
     ctx.restore();
   }
 
+  // --- Engine glow (draw behind hull) ---
+  ctx.save();
+  for (let i = 0; i < engineCount; i++) {
+    const offset = (i - (engineCount - 1) / 2) * engineRadius * 2.2;
+
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "rgba(0,255,100,1)";
+    ctx.beginPath();
+    ctx.arc(engineOffset, offset, engineRadius * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = "rgba(140,255,190,1)";
+    ctx.beginPath();
+    ctx.arc(engineOffset, offset, engineRadius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // --- Side wings / armor fins ---
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = isEnemy ? color : "rgb(55, 62, 70)";
+
+  // Left wing
+  ctx.beginPath();
+  ctx.moveTo(-r * 0.2, -wingSpan * 0.3);
+  ctx.lineTo(-wingBack, -wingSpan);
+  ctx.lineTo(-wingBack * 0.55, -wingSpan * 0.18);
+  ctx.closePath();
+  ctx.fill();
+
+  // Right wing
+  ctx.beginPath();
+  ctx.moveTo(-r * 0.2, wingSpan * 0.3);
+  ctx.lineTo(-wingBack, wingSpan);
+  ctx.lineTo(-wingBack * 0.55, wingSpan * 0.18);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+
+  // --- Main hull ---
   ctx.globalAlpha = 0.95;
-  ctx.fillStyle = isEnemy ? color : "rgb(90, 60, 35)";
+  ctx.fillStyle = isEnemy ? color : "rgb(70, 78, 88)";
   ctx.beginPath();
   ctx.moveTo(hullFront, 0);
   ctx.lineTo(hullBack1, -hullHeight);
@@ -997,6 +1086,7 @@ function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basi
   ctx.closePath();
   ctx.fill();
 
+  // --- Hull highlight ---
   ctx.globalAlpha = 0.22;
   ctx.fillStyle = "#fff";
   ctx.beginPath();
@@ -1006,23 +1096,20 @@ function renderFallbackShip(ctx, x, y, r, angle, isTarget, isEnemy, type = "basi
   ctx.closePath();
   ctx.fill();
 
-  ctx.globalAlpha = 0.85;
-  ctx.strokeStyle = "rgba(255,255,255,0.75)";
-  ctx.lineWidth = mastLineW;
-  ctx.beginPath();
-  ctx.moveTo(mastX, -mastH);
-  ctx.lineTo(mastX, r + 6);
-  ctx.stroke();
+  // --- Small neon core line for player ship ---
+  if (!isEnemy) {
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.strokeStyle = "rgba(0,255,120,0.9)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(r * 0.25, 0);
+    ctx.lineTo(hullBack1 * 0.35, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
 
-  ctx.globalAlpha = 0.85;
-  ctx.fillStyle = isEnemy ? "rgba(255,220,220,0.75)" : "rgba(255,255,255,0.85)";
-  ctx.beginPath();
-  ctx.moveTo(mastX, sailTop);
-  ctx.lineTo(sailW, 0);
-  ctx.lineTo(mastX, sailBottom);
-  ctx.closePath();
-  ctx.fill();
-
+  // --- Target ring ---
   if (isTarget) {
     ctx.globalAlpha = 0.9;
     ctx.strokeStyle = "#fff";
@@ -1178,10 +1265,17 @@ function render() {
     );
 
     if (!drewProjectile) {
-      ctx.fillStyle = p.fromEnemy ? "rgba(255,120,120,0.95)" : "#fff";
+      ctx.fillStyle = p.fromEnemy ? "rgba(255,120,120,0.95)" : "rgb(13, 155, 48)";
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(angle);
+      ctx.moveTo(-p.r, -p.r * 0.5);
+      ctx.lineTo(p.r, 0);
+      ctx.lineTo(-p.r, p.r * 0.5);
+      ctx.closePath();
       ctx.fill();
+      ctx.restore();
     }
   }
   ctx.restore();

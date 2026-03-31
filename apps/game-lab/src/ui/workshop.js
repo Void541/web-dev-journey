@@ -1,4 +1,5 @@
 import { CrewSystem } from "../systems/crew.js";
+import { createTalentSystem } from "../systems/talente.js";
 
 export function renderWorkshopUI(ctx, state) {
   if (!state.ui?.workshopOpen) return;
@@ -91,6 +92,91 @@ export function renderWorkshopUI(ctx, state) {
     ctx.fillText(line, col1X + 12, invY);
     invY += 26;
   }
+
+  ctx.fillStyle = "#fff";
+  ctx.font = "700 16px system-ui";
+  ctx.fillText("Talente", col1X + 12, invY + 20);
+
+
+  const talentPoints = state.progression?.talentPoints ?? 0;
+  const talents = state.progression?.talents ?? {
+    dmg: 0,
+    hp: 0,
+    speed: 0,
+  };
+
+  ctx.font = "14px system-ui";
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.fillText(`Talent Points: ${talentPoints}`, col1X + 12, invY + 48);
+
+  const talentRows = [
+    { id: "dmg", label: "Damage", value: talents.dmg },
+    { id: "hp", label: "HP", value: talents.hp },
+    { id: "speed", label: "Speed", value: talents.speed },
+  ];
+
+  state.ui.talentButtons = [];
+
+  let talentY = invY + 86;
+
+  for (const row of talentRows) {
+    //Text links
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "14px system-ui";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(row.label, col1X + 12, talentY + 12);
+
+    //Wert mittig/rechts daneben
+
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.fillText(String(row.value), col1X + 125, talentY + 12);
+
+    //Button rechts
+
+    const button = {
+      id: row.id,
+      label: row.label,
+      x: col1X + 160,
+      y: talentY,
+      w: 28,
+      h: 22,
+      disabled: talentPoints <= 0,
+    };
+
+    state.ui.talentButtons.push(button);
+
+    const hover =
+      mx >= button.x &&
+      mx <= button.x + button.w &&
+      my >= button.y &&
+      my <= button.y + button.h;
+
+    ctx.fillStyle = button.disabled
+      ? "rgba(120,120,120,0.14)"
+      : hover
+        ? "rgba(255,255,255,0.20)"
+        : "rgba(255,255,255,0.08)";
+    ctx.fillRect(button.x, button.y, button.w, button.h);
+
+    ctx.strokeStyle = button.disabled
+      ? "rgba(120,120,120,0.28)"
+      : "rgba(255,255,255,0.28)";
+    ctx.strokeRect(button.x, button.y, button.w, button.h);
+
+    ctx.fillStyle = button.disabled ? "rgba(255,255,255,0.45)" : "#fff";
+    ctx.font = "14px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", button.x + button.w / 2, button.y + button.h / 2);
+
+    talentY += 32;
+  }
+
+  //reset text align 
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
 
   // =========================
   // Loadout (middle column)
@@ -226,6 +312,7 @@ export function renderWorkshopUI(ctx, state) {
       b.x + 10,
       b.y + 6
     );
+
   }
 
   // Ship Loadout
