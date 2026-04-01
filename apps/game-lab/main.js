@@ -35,6 +35,38 @@ import { createTalentSystem } from "./src/systems/talente.js";
 
 const DEV_MODE = true;
 
+const socket = io("http://localhost:3000");
+const remotePlayers = {};
+
+// --- Multiplayer Socket.IO setup ---
+socket.on("currentPlayers", (serverPlayers) => {
+  console.log("currentPlayers received:", serverPlayers);
+
+  for (const id in serverPlayers) {
+    if (id === socket.id) continue;
+    remotePlayers[id] = serverPlayers[id];
+  }
+
+  console.log("remotePlayers after sync:", remotePlayers);
+});
+
+socket.on("playerJoined", (player) => {
+  console.log("playerJoined:", player);
+  if (player.id === socket.id) return;
+  remotePlayers[player.id] = player;
+});
+
+socket.on("playerMoved", (player) => {
+  console.log("playerMoved client:", player);
+  if (player.id === socket.id) return;
+  remotePlayers[player.id] = player;
+});
+
+socket.on("playerLeft", (playerId) => {
+  console.log("playerLeft:", playerId);
+  delete remotePlayers[playerId];
+});
+
 const overworld = createOverworld();
 const pirateCove = createPirateCove();
 const sprites = createSpriteManager();
@@ -270,6 +302,7 @@ const player = {
   maxHp: PLAYER_MAX_HP,
   slowT: 0,
   slowMul: 1.0,
+  angle: 0,
 };
 
 const enemies = [];
@@ -674,15 +707,22 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
   let ax = 0;
   let ay = 0;
 
+ 
+
   if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
   if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
   if (input.isDown("w") || input.isDown("arrowup")) ay -= 1;
   if (input.isDown("s") || input.isDown("arrowdown")) ay += 1;
 
   if (ax !== 0 && ay !== 0) {
+
     const inv = 1 / Math.sqrt(2);
     ax *= inv;
     ay *= inv;
+  }
+
+   if ( ax !== 0 || ay !== 0) {
+        player.angle = Math.atan2(ay, ax);  
   }
 
   const islandColliders = islands.getColliders();
@@ -690,6 +730,8 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
   if (typeof islands.resolveCircle === "function") {
     islands.resolveCircle(player);
   }
+
+  
 
   const ship = getEquippedShip(state);
   const speedMul = equippedCrew.navigator?.speed ?? 1.0;
@@ -876,6 +918,7 @@ console.log("Equipped:", getEquippedCrew(state));
     });
   }
 
+
   // Ship buttons
   for (const b of state.ui.shipButtons ?? []) {
     const inside =
@@ -918,7 +961,11 @@ console.log("Equipped:", getEquippedCrew(state));
     state.pushLootNotice?.(`Equipped ship: ${b.label}`);
   }
 }
-
+    socket.emit("playerMove", {
+    x: player.x,
+    y: player.y,
+    angle: player.angle,
+});
 state.questTracker.update();
 input.endFrame();
 }
@@ -1238,6 +1285,11 @@ function render() {
   wrecks.render(ctx, state);
 
   currentMode.renderWorld?.(ctx, state);
+
+    for (const id in remotePlayers) {
+    const rp = remotePlayers[id];
+    renderFallbackShip(ctx, rp.x, rp.y, player.r, rp.angle ?? 0, false, false, "basic", "rgb(100,100,255)");
+  }
 
   ctx.save();
   ctx.fillStyle = "#fff";
