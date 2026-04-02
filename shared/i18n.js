@@ -16,6 +16,7 @@ const translations = {
     nav_projects: "Projekte",
     nav_contact: "Kontakt",
     nav_about: "Über mich",
+    about_title: "Über mich",
 
     about_text:"Ich entwickle strukturiert mein Fundament in moderner Webentwicklung mit dem langfristigen Ziel, eigene Software- und Spieleprojekte umzusetzen. Mein Fokus liegt auf sauberer Architektur, modularen Systemen und nachhaltigem Code – nicht nur auf funktionierenden Oberflächen. Aktuell arbeite ich an kleinen, eigenständigen Projekten, um Systemdenken, State-Management und saubere Code-Strukturen zu vertiefen. Langfristig möchte ich komplexere Anwendungen und spielähnliche Systeme mit Backend-Anbindung entwickeln.",
 
@@ -56,6 +57,8 @@ const translations = {
 
     project_featured: "Featured Project",
     badge_in_progress: "In Entwicklung",
+    project4_spotlight_label: "Herzensprojekt",
+    project4_spotlight_text: "Das Game Lab ist aktuell mein wichtigstes Projekt, weil ich dort Gameplay, Struktur und Systemdenken zusammenbringe.",
 
     project4_title: "Game Lab",
     project4_desc: "Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.",
@@ -67,6 +70,7 @@ const translations = {
 
     project4_stat_1: "Status: Aktiv in Entwicklung",
     project4_stat_2: "Fokus: Gameplay & Progression",
+    project4_stat_3: "Herzstück meines Portfolios",
 
     //================= TODO =================
     todo_placeholder: "Neue Aufgabe eingeben...",
@@ -143,6 +147,7 @@ const translations = {
     nav_projects: "Projects",
     nav_contact: "Contact",
     nav_about: "About",
+    about_title: "About",
 
     about_text:"I’m systematically building my foundation in modern web development with the long-term goal of creating my own software and game projects. My focus is on clean architecture, modular systems, and maintainable code — not just functional interfaces. I’m currently developing small standalone projects to strengthen my understanding of system design, state management, and structured code. Long-term, I aim to build more complex applications and game-like systems with backend integration.",
 
@@ -183,6 +188,8 @@ const translations = {
 
     project_featured: "Featured Project",
     badge_in_progress: "In Progress",
+    project4_spotlight_label: "Signature Project",
+    project4_spotlight_text: "Game Lab is my main project right now because it brings together gameplay, structure, and systems thinking in one place.",
 
     project4_title: "Game Lab",
     project4_desc: "A browser-based 2D game with a custom game loop, combat systems, enemy behavior and modular architecture.",
@@ -194,6 +201,7 @@ const translations = {
 
     project4_stat_1: "Status: Actively in development",
     project4_stat_2: "Focus: Gameplay & progression",
+    project4_stat_3: "Centerpiece of my portfolio",
 
     //================= TODO =================
     todo_placeholder: "Enter new task...",
@@ -289,6 +297,7 @@ export function initI18n() {
 
 export function setLang(lang) {
   const dict = translations[lang] || translations.de;
+  currentLang = lang;
 
   document.documentElement.setAttribute("data-lang", lang);
   localStorage.setItem(LANG_KEY, lang);
@@ -301,11 +310,11 @@ export function setLang(lang) {
     if (!key) return;
     const value = dict[key];
     if (typeof value === "string") el.textContent = value;
-
-    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-  const key = el.getAttribute("data-i18n-placeholder");
-  const value = dict[key];
-  if (typeof value === "string") el.setAttribute("placeholder", value);
   });
+
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    const value = dict[key];
+    if (typeof value === "string") el.setAttribute("placeholder", value);
   });
 }
