@@ -13,24 +13,27 @@
     <div class="container header-inner">
       <a class="brand" href="#top">Fabian Materna <span class="alias">aka Void</span> </a>
 
+      <div class="header-controls">
+        <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
+          ☰
+        </button>
 
-      <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
-        ☰
-      </button>
+        <nav class="nav" id="siteNav" aria-label="Hauptnavigation">
+          <a href="#projects" data-i18n="nav_projects">Projekte</a>
+          <a href="#about" data-i18n="nav_about">Über mich</a>
+          <a href="#contact" data-i18n="nav_contact">Kontakt</a>
+        </nav>
 
-      <nav class="nav" id="siteNav">
-        <a href="#projects" data-i18n="nav_projects">Projekte</a>
-        <a href="#about" data-i18n="nav_about">Über mich</a>
-        <a href="#contact" data-i18n="nav_contact">Kontakt</a>
-      </nav>
+        <div class="header-actions">
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
+            🌙
+          </button>
 
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
-        🌙
-      </button>
-
-      <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">
-        DE
-      </button>
+          <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">
+            DE
+          </button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -100,6 +103,13 @@
     <span class="badge featured" data-i18n="badge_in_progress">In Progress</span>
   </div>
 
+  <div class="project-spotlight">
+    <span class="spotlight-label" data-i18n="project4_spotlight_label">Herzensprojekt</span>
+    <p class="spotlight-copy" data-i18n="project4_spotlight_text">
+      Das Game Lab ist aktuell mein wichtigstes Projekt, weil ich dort Gameplay, Struktur und Systemdenken zusammenbringe.
+    </p>
+  </div>
+
   <h3 data-i18n="project4_title">Game Lab</h3>
 
   <p class="project-lead" data-i18n="project4_desc">
@@ -116,6 +126,7 @@
   <div class="project-stats">
     <span class="project-stat" data-i18n="project4_stat_1">Status: Aktiv in Entwicklung</span>
     <span class="project-stat" data-i18n="project4_stat_2">Fokus: Gameplay & Progression</span>
+    <span class="project-stat accent" data-i18n="project4_stat_3">Herzstück meines Portfolios</span>
   </div>
 
   <div class="tags">
@@ -210,6 +221,47 @@
 
     initTheme();
     initI18n();
+
+    const navToggle = document.getElementById("navToggle");
+    const siteNav = document.getElementById("siteNav");
+    const navLinks = siteNav ? siteNav.querySelectorAll("a") : [];
+
+    const closeNav = () => {
+      if (!navToggle || !siteNav) return;
+      siteNav.classList.remove("is-open");
+      navToggle.setAttribute("aria-expanded", "false");
+      navToggle.setAttribute("aria-label", "Menü öffnen");
+    };
+
+    const openNav = () => {
+      if (!navToggle || !siteNav) return;
+      siteNav.classList.add("is-open");
+      navToggle.setAttribute("aria-expanded", "true");
+      navToggle.setAttribute("aria-label", "Menü schließen");
+    };
+
+    if (navToggle && siteNav) {
+      navToggle.addEventListener("click", () => {
+        const isOpen = siteNav.classList.contains("is-open");
+        if (isOpen) {
+          closeNav();
+        } else {
+          openNav();
+        }
+      });
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", closeNav);
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeNav();
+      });
+
+      window.addEventListener("resize", () => {
+        if (window.innerWidth > 720) closeNav();
+      });
+    }
 
     const yearEl = document.getElementById("year");
     if (yearEl) yearEl.textContent = new Date().getFullYear();
