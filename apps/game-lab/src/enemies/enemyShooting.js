@@ -1,6 +1,5 @@
 export function updateEnemyShooting(e, dt, state, toPlayer) {
   const {
-    mode,
     ENEMY_FIRE_ENABLED,
     ENEMY_FIRE_COOLDOWN,
     ENEMY_BULLET_SPEED,
@@ -9,11 +8,9 @@ export function updateEnemyShooting(e, dt, state, toPlayer) {
     enemyTypes,
   } = state;
 
-  const inBonusmap = mode === "bonusmap";
   const isAggro = (e.aggroT ?? 0) > 0;
-  const canReturnFire = inBonusmap ? true : isAggro;
 
-  if (!ENEMY_FIRE_ENABLED || !canReturnFire || !e.fireEnabled) return;
+  if (!ENEMY_FIRE_ENABLED || !isAggro || !e.fireEnabled) return;
 
   const cd = e.fireCooldown ?? ENEMY_FIRE_COOLDOWN;
   e.fireT = (e.fireT ?? cd) - dt;

@@ -23,22 +23,16 @@ export function createTalentSystem() {
     }
 
     if ((state.progression.talentPoints ?? 0) <= 0) {
-      console.log("No talent points available!");
       return false;
     }
 
     const validTalents = ["dmg", "hp", "speed"];
     if (!validTalents.includes(talent)) {
-      console.log("Unknown talent:", talent);
       return false;
     }
 
     state.progression.talents[talent] += 1;
     state.progression.talentPoints -= 1;
-
-    console.log(
-      `Allocated 1 point to ${talent}. New value: ${state.progression.talents[talent]}`
-    );
 
     return true;
   }

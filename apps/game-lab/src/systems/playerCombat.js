@@ -1,6 +1,5 @@
 import { getEquippedCannons, getCannonStats } from "./cannons.js";
 import { getEquippedCrew } from "./crew.js";
-import { createTalentSystem } from "./talente.js";
 
 
 export function createPlayerCombat() {
@@ -42,7 +41,6 @@ export function fireCannonAtTarget(state, target, cannonId) {
     ttl: 2,
     r: 3,
   });
-console.log(`Fired ${cannon.name} at target ${target.id} with damage ${cannon.damage * dmgMul + talentsDmgBonus ?? 0}`);
   return true;
 }
 

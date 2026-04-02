@@ -34,11 +34,11 @@ export function createShipStats() {
       return baseSpeed + (sailLevel - 1) * 25;
     },
 
-    getFireRate() {
-    const ship = this.state.playerShip?.id;
+    getFireRate(shipId = "sloop") {
+    const ship = shipId;
 
-    if(ship === "frigate") return 1.2;
-    if(ship === "brig") return 1.0;
+    if (ship === "frigate") return 1.2;
+    if (ship === "brig") return 1.0;
 
     return 0.8;
   }

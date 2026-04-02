@@ -12,8 +12,8 @@ export function updateEnemyMovement(e, dt, state) {
   const speed = ENEMY_SPEED * (tcfg.speedMul ?? 1.0);
   const inCombat = (e.aggroT ?? 0) > 0;
 
-  // Gewolltes Verhalten:
-  // Gegner bewegen sich nur frei, solange sie nicht aggro sind.
+  // Intended behavior:
+  // Enemies roam freely only while they are not aggroed.
   if (!inCombat && (e.stunT ?? 0) <= 0) {
     e.x += e.vx * speed * dt;
     e.y += e.vy * speed * dt;

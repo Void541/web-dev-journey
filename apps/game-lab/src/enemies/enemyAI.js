@@ -160,7 +160,6 @@ export function getCombatDesiredDirection(e, state, toPlayer) {
 export function getDesiredDirection(e, state, toPlayer, dt) {
   const { mode, rand, norm } = state;
 
-  const inBonusmap = mode === "bonusmap";
   const inOverworld = mode === "overworld";
   const isAggro = (e.aggroT ?? 0) > 0;
 
@@ -174,7 +173,7 @@ export function getDesiredDirection(e, state, toPlayer, dt) {
     };
   }
 
-  return getCombatDesiredDirection(e, state, toPlayer, inBonusmap);
+  return getCombatDesiredDirection(e, state, toPlayer);
 }
 
 export function applySteering(e, desired, state) {

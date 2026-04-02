@@ -10,11 +10,10 @@ import { createIslands } from "./src/islands.js";
 import { createOverworld } from "./src/modes/overworld.js";
 import { createPirateCove } from "./src/modes/pirateCove.js";
 import { enemyTypes } from "./src/entities/enemyTypes.js";
-import { drawMinimap } from "./src/minimap.js";
 import { createWreckSystem } from "./src/systems/wrecks.js";
 import { createLootTable } from "./src/systems/lootTable.js";
-import * as CFG from "./src/config.js";
 import { createHudOverlay } from "./src/render/hudOverlay.js";
+import { renderGame } from "./src/render/renderWorld.js";
 import { createShipStats } from "./src/systems/shipStats.js";
 import { createCraftingRecipes } from "./src/crafting/craftingRecipes.js";
 import { createCraftingSystem } from "./src/crafting/craftingSystem.js";
@@ -26,52 +25,23 @@ import {
   updatePlayerCombat,
 } from "./src/systems/playerCombat.js";
 import { createQuestTracker } from "./src/ui/questTracker.js";
-import { renderWorkshopUI } from "./src/ui/workshop.js";
-import { getEquippedCannon } from "./src/systems/cannons.js";
 import { getEquippedShip } from "./src/systems/ships.js";
 import { getEquippedCrew } from "./src/systems/crew.js";
 import { createLevelSystem } from "./src/systems/levels.js";
 import { createTalentSystem } from "./src/systems/talente.js";
+import { createMultiplayerNetwork } from "./src/multiplayer-server/network.js";
 
 const DEV_MODE = true;
 
-const socket = io("http://localhost:3000");
-const remotePlayers = {};
+const multiplayerNetwork = createMultiplayerNetwork();
+const remotePlayers = multiplayerNetwork.remotePlayers;
 
-// --- Multiplayer Socket.IO setup ---
-socket.on("currentPlayers", (serverPlayers) => {
-  console.log("currentPlayers received:", serverPlayers);
-
-  for (const id in serverPlayers) {
-    if (id === socket.id) continue;
-    remotePlayers[id] = serverPlayers[id];
-  }
-
-  console.log("remotePlayers after sync:", remotePlayers);
-});
-
-socket.on("playerJoined", (player) => {
-  console.log("playerJoined:", player);
-  if (player.id === socket.id) return;
-  remotePlayers[player.id] = player;
-});
-
-socket.on("playerMoved", (player) => {
-  console.log("playerMoved client:", player);
-  if (player.id === socket.id) return;
-  remotePlayers[player.id] = player;
-});
-
-socket.on("playerLeft", (playerId) => {
-  console.log("playerLeft:", playerId);
-  delete remotePlayers[playerId];
-});
 
 const overworld = createOverworld();
 const pirateCove = createPirateCove();
 const sprites = createSpriteManager();
 
-// --- Sprites laden ---
+// --- Load sprites ---
 sprites.load("player", "assets/ships/player.png");
 sprites.load("enemy_tank", "assets/ships/enemy_tank.png");
 sprites.load("enemy_sniper", "assets/ships/enemy_sniper.png");
@@ -93,9 +63,7 @@ function setMode(next, options = {}) {
 
   applyWorld(WORLDS[next]);
 
-  if (next === "bonusmap") {
-    currentMode = bonusmap;
-  } else if (next === "pirateCove") {
+  if (next === "pirateCove") {
     currentMode = pirateCove;
   } else {
     currentMode = overworld;
@@ -130,7 +98,7 @@ const repair = {
 };
 
 
-// World/Camera
+// World/camera
 const world = {
   w: 4000,
   h: 1400,
@@ -207,25 +175,9 @@ function getMousePos(evt) {
   };
 }
 
-function getEnemySpriteKey(type) {
-  switch (type) {
-    case "tank":
-      return "enemy_tank";
-    case "sniper":
-      return "enemy_sniper";
-    case "disabler":
-      return "enemy_disabler";
-    case "raider":
-    case "basic":
-    default:
-      return "enemy_raider";
-  }
-}
-
 // ---- World presets ----
 const WORLDS = {
   overworld: { w: 4000, h: 1400 },
-  bonusmap: { w: 1200, h: 700 },
   pirateCove: { w: 1400, h: 800 },
 };
 
@@ -305,6 +257,30 @@ const player = {
   angle: 0,
 };
 
+let lastSent = {
+  x: player.x,
+  y:player.y,
+  angle: player.angle,
+};
+
+function shouldSendPlayerState(player) {
+  const moved =
+    Math.abs(player.x - lastSent.x) > 0.5 ||
+    Math.abs(player.y - lastSent.y) > 0.5;
+  const rotated = Math.abs((player.angle ?? 0) - (lastSent.angle ?? 0)) > 0.01;
+
+  if (!moved && !rotated) return false;
+
+  lastSent = {
+    x: player.x,
+    y: player.y,
+    angle: player.angle ?? 0,
+  };
+
+  return true;
+}
+
+
 const enemies = [];
 const projectiles = [];
 const trail = [];
@@ -342,13 +318,12 @@ state.pushLootNotice = pushLootNotice;
 
 const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
+state.getEquippedShip = getEquippedShip;
 
 
 state.playerShip = {
   id: "frigate",
 };
-
-const equippedShip = getEquippedShip(state);
 
 state.shipStats = shipStats;
 state.playerLoadout = {
@@ -401,8 +376,6 @@ state.crew = {
   firstMate:false,
   captain:true,
 };
-
-const equippedCrew = getEquippedCrew(state);
 
 state.ui.activeCannonSlot = state.ui.cannonSlot ?? 0;
 
@@ -487,9 +460,6 @@ if(enemy.isAdmiral) {
   }
 }
 levelSystem.addXP?.(state, enemy.xp ?? 0,);
-console.log(`Gained ${enemy.xp ?? 0} XP. Total XP: ${state.progression.xp}. Current Level: ${state.progression.level}`);
-console.log(`Talent Points: ${state.progression.talentPoints ?? 0 }`);
-
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
 
@@ -555,15 +525,12 @@ if (DEV_MODE) {
   window.addEventListener("keydown", (e) => {
     const k = e.key.toLowerCase();
 
-if (k === "m") {
-  state.spawnEnemy?.({
-    type: "basic",
-    admiral: true,
-  });
-
-    if (k === "k") killAllEnemies();
-    if (k === "l") giveLoot();
-}
+    if (k === "m") {
+      state.spawnEnemy?.({
+        type: "basic",
+        admiral: true,
+      });
+    }
   });
 }
 
@@ -707,7 +674,6 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
   let ax = 0;
   let ay = 0;
 
- 
 
   if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
   if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
@@ -725,6 +691,9 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
         player.angle = Math.atan2(ay, ax);  
   }
 
+multiplayerNetwork.updateRemotePlayers();
+
+
   const islandColliders = islands.getColliders();
 
   if (typeof islands.resolveCircle === "function") {
@@ -735,8 +704,11 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
 
   const ship = getEquippedShip(state);
   const speedMul = equippedCrew.navigator?.speed ?? 1.0;
-  const moveSpeed = shipStats.getSpeed(PLAYER_SPEED)* ship.speedMul + (1 + state.progression?.talents?.speed ?? 0);
-  console.log(`Current Speed: ${moveSpeed.toFixed(2)}`);
+  const moveSpeed =
+    shipStats.getSpeed(PLAYER_SPEED) *
+    ship.speedMul *
+    speedMul *
+    (1 + (state.progression?.talents?.speed ?? 0));
 
   player.x += ax * moveSpeed * player.slowMul * dt;
   player.y += ay * moveSpeed * player.slowMul * dt;
@@ -850,7 +822,6 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
       if (b.disabled) continue;
 
       const spent = talentSystem.allocateTalentPoint(state, b.id);
-      console.log("Talent point spent:", spent, state.progression);
 
       if (spent) {
         state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
@@ -873,9 +844,6 @@ for (const b of state.ui.crewButtons ?? []) {
 
     state.pushLootNotice?.(`${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`);
   }
-  console.log("Crew:", state.crew);
-console.log("Equipped:", getEquippedCrew(state));
-
   // Cannon slot selection
   for (const b of state.ui.cannonSlotButtons ?? []) {
     const inside =
@@ -961,11 +929,11 @@ console.log("Equipped:", getEquippedCrew(state));
     state.pushLootNotice?.(`Equipped ship: ${b.label}`);
   }
 }
-    socket.emit("playerMove", {
-    x: player.x,
-    y: player.y,
-    angle: player.angle,
-});
+
+  if (shouldSendPlayerState(player)) {
+    multiplayerNetwork.sendPlayerState(player);
+  }
+
 state.questTracker.update();
 input.endFrame();
 }
@@ -999,175 +967,6 @@ function screenToWorld(sx, sy) {
 }
 
 
-function renderFallbackShip(
-  ctx,
-  x,
-  y,
-  r,
-  angle,
-  isTarget,
-  isEnemy,
-  type = "basic",
-  color = "rgb(170,45,40)"
-) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-
-  // --- Base shape values ---
-  let hullFront = r + 12;
-  let hullBack1 = -r - 8;
-  let hullBack2 = -r - 14;
-  let hullHeight = r;
-
-  let wingSpan = r * 2;
-  let wingBack = r * 2 * 0.6;
-
-  let engineRadius = r * 0.25;
-  let engineCount = 2;
-
-  // --- Type tuning ---
-  if (type === "tank") {
-    hullFront = r + 8;
-    hullBack1 = -r - 12;
-    hullBack2 = -r - 18;
-    hullHeight = r * 1.25;
-
-    wingSpan = r * 2;
-    wingBack = r * 2 * 0.8;
-
-    engineCount = 3;
-    engineRadius = r * 0.35;
-  }
-
-  if (type === "sniper") {
-    hullFront = r + 16;
-    hullBack1 = -r - 6;
-    hullBack2 = -r - 10;
-    hullHeight = r * 0.85;
-
-    wingSpan = r * 2 * 0.75;
-    wingBack = r * 2 * 0.45;
-
-    engineCount = 1;
-    engineRadius = r * 0.22;
-  }
-
-  if (type === "disabler") {
-    hullFront = r + 12;
-    hullBack1 = -r - 9;
-    hullBack2 = -r - 15;
-    hullHeight = r * 1.05;
-
-    wingSpan = r * 2 * 0.8;
-    wingBack = r * 0.3;
-
-    engineCount = 2;
-    engineRadius = r * 0.28;
-  }
-
-  // Engine position must be calculated AFTER type values are finalized
-  const engineOffset = hullBack2 - r * 0.2;
-
-  // --- Special disabler aura ---
-  if (type === "disabler") {
-    ctx.save();
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = "rgba(160,60,200,1)";
-    ctx.beginPath();
-    ctx.arc(0, 0, r + 18, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // --- Engine glow (draw behind hull) ---
-  ctx.save();
-  for (let i = 0; i < engineCount; i++) {
-    const offset = (i - (engineCount - 1) / 2) * engineRadius * 2.2;
-
-    ctx.globalAlpha = 0.45;
-    ctx.fillStyle = "rgba(0,255,100,1)";
-    ctx.beginPath();
-    ctx.arc(engineOffset, offset, engineRadius * 1.4, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.9;
-    ctx.fillStyle = "rgba(140,255,190,1)";
-    ctx.beginPath();
-    ctx.arc(engineOffset, offset, engineRadius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-
-  // --- Side wings / armor fins ---
-  ctx.save();
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = isEnemy ? color : "rgb(55, 62, 70)";
-
-  // Left wing
-  ctx.beginPath();
-  ctx.moveTo(-r * 0.2, -wingSpan * 0.3);
-  ctx.lineTo(-wingBack, -wingSpan);
-  ctx.lineTo(-wingBack * 0.55, -wingSpan * 0.18);
-  ctx.closePath();
-  ctx.fill();
-
-  // Right wing
-  ctx.beginPath();
-  ctx.moveTo(-r * 0.2, wingSpan * 0.3);
-  ctx.lineTo(-wingBack, wingSpan);
-  ctx.lineTo(-wingBack * 0.55, wingSpan * 0.18);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.restore();
-
-  // --- Main hull ---
-  ctx.globalAlpha = 0.95;
-  ctx.fillStyle = isEnemy ? color : "rgb(70, 78, 88)";
-  ctx.beginPath();
-  ctx.moveTo(hullFront, 0);
-  ctx.lineTo(hullBack1, -hullHeight);
-  ctx.lineTo(hullBack2, 0);
-  ctx.lineTo(hullBack1, hullHeight);
-  ctx.closePath();
-  ctx.fill();
-
-  // --- Hull highlight ---
-  ctx.globalAlpha = 0.22;
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(r + 4, -2);
-  ctx.lineTo(hullBack1 + 2, -hullHeight + 4);
-  ctx.lineTo(hullBack2 + 2, 0);
-  ctx.closePath();
-  ctx.fill();
-
-  // --- Small neon core line for player ship ---
-  if (!isEnemy) {
-    ctx.save();
-    ctx.globalAlpha = 0.85;
-    ctx.strokeStyle = "rgba(0,255,120,0.9)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(r * 0.25, 0);
-    ctx.lineTo(hullBack1 * 0.35, 0);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  // --- Target ring ---
-  if (isTarget) {
-    ctx.globalAlpha = 0.9;
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(0, 0, r + 6, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-}
 
 function renderEnemy(e) {
   ctx.save();
@@ -1273,294 +1072,15 @@ ctx.strokeRect(bx, by, w, h);
 
 // ---------- Render ----------
 function render() {
-  ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
-  ctx.clearRect(0, 0, CW(), CH());
-
-  space.render(ctx, canvas);
-
-  ctx.save();
-  ctx.translate(-camera.x, -camera.y);
-
-  islands.render(ctx);
-  wrecks.render(ctx, state);
-
-  currentMode.renderWorld?.(ctx, state);
-
-    for (const id in remotePlayers) {
-    const rp = remotePlayers[id];
-    renderFallbackShip(ctx, rp.x, rp.y, player.r, rp.angle ?? 0, false, false, "basic", "rgb(100,100,255)");
-  }
-
-  ctx.save();
-  ctx.fillStyle = "#fff";
-  for (const p of trail) {
-    const a = Math.max(0, p.t / 0.6);
-    ctx.globalAlpha = 0.35 * a;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 6 * a, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-
-  // Projectiles
-  ctx.save();
-  for (const p of projectiles) {
-    const angle = Math.atan2(p.vy, p.vx);
-    const drewProjectile = state.sprites?.draw(
-      ctx,
-      "cannonball",
-      p.x,
-      p.y,
-      p.r * 5,
-      p.r * 5,
-      angle
-    );
-
-    if (!drewProjectile) {
-      ctx.fillStyle = p.fromEnemy ? "rgba(255,120,120,0.95)" : "rgb(13, 155, 48)";
-      ctx.beginPath();
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(angle);
-      ctx.moveTo(-p.r, -p.r * 0.5);
-      ctx.lineTo(p.r, 0);
-      ctx.lineTo(-p.r, p.r * 0.5);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
-  }
-  ctx.restore();
-
-  for (const e of enemies) renderEnemy(e);
-
-  if (showEnemyRanges) {
-    ctx.save();
-    ctx.globalAlpha = 0.18;
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 1;
-
-    for (const e of enemies) {
-      if (!e) continue;
-      if (!e.fireEnabled) continue;
-
-      const range =
-        state.enemyTypes?.[e.type]?.range ??
-        (e.type === "sniper" ? CFG.SNIPER_ATTACK_RANGE : CFG.ENEMY_ATTACK_RANGE);
-
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, range, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  // Player ship
-  const playerAngle = Math.atan2(
-    (input.isDown("s") || input.isDown("arrowdown")) - (input.isDown("w") || input.isDown("arrowup")),
-    (input.isDown("d") || input.isDown("arrowright")) - (input.isDown("a") || input.isDown("arrowleft"))
-  );
-
-  const hasDir =
-    input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
-    input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
-
-  const drewPlayer = state.sprites?.draw(
-    ctx,
-    "player",
-    player.x,
-    player.y,
-    player.r * 4.2,
-    player.r * 4.2,
-    hasDir ? playerAngle : 0
-  );
-
-  if (!drewPlayer) {
-    renderFallbackShip(ctx, player.x, player.y, player.r, hasDir ? playerAngle : 0, false, false, "player");
-  }
-
-  const cannon = getEquippedCannon(state);
-  const equippedCrew = getEquippedCrew(state);
-
-  // Muzzle flash
-  ctx.save();
-  ctx.fillStyle = "#fff";
-
-  for (const e of effects) {
-    const life = Math.max(0, e.t / 0.12);
-    ctx.globalAlpha = 0.55 * life;
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, 14, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.9 * life;
-    ctx.beginPath();
-    ctx.moveTo(e.x - 2, e.y);
-    ctx.lineTo(e.x + 18, e.y - 8);
-    ctx.lineTo(e.x + 18, e.y + 8);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
-
-  if (repair.active) {
-    ctx.save();
-
-    const pulse = 0.6 + Math.sin(repair.fxT * 4) * 0.4;
-
-    ctx.globalAlpha = 0.25 * pulse;
-    ctx.fillStyle = "rgba(120,255,120,1)";
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r + 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = "rgba(180,255,180,1)";
-
-    for (let i = 0; i < 6; i++) {
-      const angle = repair.fxT * 2 + i;
-      const dist = 18 + (Math.sin(repair.fxT * 3 + i) * 6);
-      const px = player.x + Math.cos(angle) * dist;
-      const py = player.y + Math.sin(angle) * dist;
-
-      ctx.beginPath();
-      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.restore();
-  }
-
-  if (repair.breakFlash > 0) {
-    ctx.save();
-
-    ctx.globalAlpha = repair.breakFlash * 0.8;
-    ctx.fillStyle = "rgba(255,80,80,1)";
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r + 18, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  damage.render(ctx);
-
-  const ic = getIslandColliders();
-  ctx.save();
-  ctx.fillStyle = "rgba(255,0,0,0.25)";
-  for (const c of ic) {
-    ctx.beginPath();
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.restore();
-
-  ctx.restore();
-
-  currentMode.renderUI?.(ctx, state);
-
-  const t = getTargetEnemy(state);
-
-  hudOverlay.update(state, t);
-  wrecks.renderHud(ctx, canvas, state);
-
-  ctx.save();
-  ctx.fillStyle = repair.active ? "rgba(120,255,120,0.95)" : "rgba(255,255,255,0.75)";
-  ctx.font = "600 14px system-ui";
-  ctx.textAlign = "left";
-  ctx.restore();
-
-  if (showMinimap) {
-    drawMinimap(ctx, state, {
-      width: 240,
-      height: 135,
-      pad: 16,
-    });
-  }
-
-  ctx.save();
-  ctx.fillStyle = "#fff";
-  ctx.font = "600 16px system-ui";
-  ctx.textAlign = "center";
-  ctx.restore();
-
-  // Loot notifications
-  ctx.save();
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-   // Admiral progress
-if (state.admirals) {
-  const remaining = Math.max(0, state.admirals.killsNeeded - state.admirals.killCount);
-  const text =
-    state.admirals.active > 0
-      ? "Admiral active"
-      : `Next Admiral in: ${remaining} Raider kills`;
-
-  ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
-  ctx.fillRect(16, 92, 220, 34);
-
-  ctx.fillStyle = state.admirals.active > 0 ? "rgb(255,215,90)" : "#fff";
-  ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, 28, 109);
-  ctx.restore();
-}
-
-const equippedShipHud = getEquippedShip(state);
-
-ctx.save();
-ctx.fillStyle = "rgba(0,0,0,0.45)";
-ctx.fillRect(16, 130, 220, 34);
-
-ctx.fillStyle = "#fff";
-ctx.font = "600 14px system-ui";
-ctx.textAlign = "left";
-ctx.textBaseline = "middle";
-ctx.fillText(
-  `Ship: ${equippedShipHud.name} (${equippedShipHud.cannonSlots} slots)`,
-  28,
-  147,
-);
-ctx.restore();
-
-
-  for (let i = 0; i < lootNotices.length; i++) {
-    const n = lootNotices[i];
-    const alpha = Math.min(1, n.t / 0.4);
-
-    const x = canvas.clientWidth/2 - ctx.measureText(n.text).width / 2;
-    const y = 110 + i * 24 - n.yOff;
-
-    ctx.globalAlpha = alpha * 0.8;
-    ctx.fillStyle = "rgba(0,0,0,0.65)";
-    ctx.fillText(n.text, x + 1, y + 1);
-
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = "#fff";
-    ctx.fillText(n.text, x, y);
-  }
-  ctx.restore();
-
-  renderWorkshopUI(ctx, state);
-
-  if (paused) {
-    ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    ctx.fillRect(0, 0, CW(), CH());
-
-    ctx.fillStyle = "#fff";
-    ctx.font = "700 28px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("PAUSED", CW() / 2, CH() / 2 - 12);
-
-    ctx.globalAlpha = 0.85;
-    ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-    ctx.fillText("Press P to resume", CW() / 2, CH() / 2 + 18);
-    ctx.restore();
-  }
+  renderGame(ctx, state, {
+    currentMode,
+    remotePlayers,
+    showEnemyRanges,
+    showMinimap,
+    paused,
+    repair,
+    lootNotices,
+    getTargetEnemy,
+    getIslandColliders,
+  });
 }
