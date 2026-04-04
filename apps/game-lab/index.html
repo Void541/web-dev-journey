@@ -21,6 +21,36 @@
   </header>
 
   <main class="game-main">
+
+    <div id="auth">
+      <div id="auth-container">
+        <div id="login-view" class="auth-view">
+          <h2>Login</h2>
+          <input type="text" id="login-username" placeholder="Username" />
+          <input type="password" id="login-password" placeholder="Password" />
+          <button id="loginBtn">Login</button>
+          <p class="auth-switch">
+            New here?
+            <button type="button" id="show-register-btn" class="auth-link-btn">Create account</button>
+          </p>
+        </div>
+
+        <div id="register-view" class="auth-view auth-view-hidden">
+          <h2>Register</h2>
+          <input type="email" id="register-email" placeholder="Email" />
+          <input type="text" id="register-username" placeholder="Username" />
+          <input type="password" id="register-password" placeholder="Password" />
+          <button id="registerBtn">Register</button>
+          <p class="auth-switch">
+            Already have an account?
+            <button type="button" id="show-login-btn" class="auth-link-btn">Back to login</button>
+          </p>
+        </div>
+
+        <p id="auth-status"></p>
+      </div>
+    </div>
+    
     <!-- Global HUD (not attached to the canvas) -->
     <div id="hud-global">
       <div id="hud-header">
@@ -105,7 +135,7 @@
   </div>
 </div>
 
-    <!-- ZENTRIERTE GAME STAGE -->
+    <!-- CENTERED GAME STAGE -->
     <div class="game-stage-wrap">
       <div class="game-stage">
         <canvas id="game" aria-label="Game Canvas"></canvas>
@@ -117,5 +147,6 @@
   </main>
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script type="module" src="./main.js"></script>
+  <script src="src/multiplayer-server/auth.js"></script>
 </body>
 </html>

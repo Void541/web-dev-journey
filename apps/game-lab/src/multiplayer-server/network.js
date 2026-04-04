@@ -87,5 +87,3 @@ export function createNetworkSystem() {
     updateRemotePlayers,
   };
 }
-
-export const createMultiplayerNetwork = createNetworkSystem;

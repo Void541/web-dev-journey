@@ -29,11 +29,11 @@ import { getEquippedShip } from "./src/systems/ships.js";
 import { getEquippedCrew } from "./src/systems/crew.js";
 import { createLevelSystem } from "./src/systems/levels.js";
 import { createTalentSystem } from "./src/systems/talente.js";
-import { createMultiplayerNetwork } from "./src/multiplayer-server/network.js";
+import { createNetworkSystem } from "./src/multiplayer-server/network.js";
 
 const DEV_MODE = true;
 
-const multiplayerNetwork = createMultiplayerNetwork();
+const multiplayerNetwork = createNetworkSystem();
 const remotePlayers = multiplayerNetwork.remotePlayers;
 
 
