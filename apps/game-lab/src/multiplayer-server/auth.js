@@ -14,6 +14,12 @@ const authStatusEL = document.getElementById("auth-status");
 
 console.log("[AUTH] auth.js loaded");
 
+const authQuery = new URLSearchParams(window.location.search).get("auth");
+const isLocalAuthHost =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+const shouldEnableAuth = isLocalAuthHost || authQuery === "1";
+
 const hasAuthUi =
   authRootEL &&
   loginViewEL &&
@@ -46,7 +52,11 @@ function hideAuthOverlay() {
 
 if (!hasAuthUi) {
   console.warn("Auth UI is incomplete. auth.js was loaded, but required elements are missing.");
+} else if (!shouldEnableAuth) {
+  authRootEL.hidden = true;
+  console.log("[AUTH] Auth UI disabled for this host.");
 } else {
+  authRootEL.hidden = false;
   showView("login");
 
   showRegisterBtn.addEventListener("click", () => {
