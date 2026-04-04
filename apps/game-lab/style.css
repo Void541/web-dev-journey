@@ -83,6 +83,10 @@ body {
   pointer-events: auto;
 }
 
+#auth[hidden] {
+  display: none !important;
+}
+
 #auth-container {
   width: min(360px, calc(100vw - 32px));
   display: flex;
