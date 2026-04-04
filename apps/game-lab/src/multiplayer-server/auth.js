@@ -54,6 +54,7 @@ if (!hasAuthUi) {
   console.warn("Auth UI is incomplete. auth.js was loaded, but required elements are missing.");
 } else if (!shouldEnableAuth) {
   authRootEL.hidden = true;
+  authRootEL.remove();
   console.log("[AUTH] Auth UI disabled for this host.");
 } else {
   authRootEL.hidden = false;
