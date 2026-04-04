@@ -17,7 +17,7 @@ function clamp(v, min, max) {
 
 export function spawnEnemy(state, options = {}) {
 
-  if (state.mode === "pirateCove") return null; // Pirate Cove spawnt keine normalen Gegner
+  if (state.mode === "pirateCove") return null; // Pirate Cove does not spawn standard enemies.
 
   const { enemies, enemyTypes, islands, world } = state;
 

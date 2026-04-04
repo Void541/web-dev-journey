@@ -19,9 +19,7 @@ export function createLevelSystem() {
     let talentPoints = progression.talentPoints;
 
 while (xp >= xpToNext) {
-
-  // Level up the player
-  console.log('Level Up!');
+  // Level up the player.
   xp -= xpToNext;
   level++;
   talentPoints++; // Increase the player's talent points on level up

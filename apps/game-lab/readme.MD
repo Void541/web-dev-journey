@@ -1,52 +1,52 @@
-# 🚀 Web Dev Journey – Fabian Materna
+# Web Dev Journey - Fabian Materna
 
-Hi, ich bin Fabian 👋  
-Ich bin angehender Webentwickler und beschäftige mich aktuell intensiv mit HTML, CSS und JavaScript.
+Hi, I'm Fabian.
+I'm an aspiring web developer currently focused on improving my HTML, CSS, and JavaScript skills.
 
-Dieses Repository dokumentiert meinen Weg in die Webentwicklung – mit eigenen Projekten und kontinuierlicher Weiterentwicklung.
+This repository documents my learning journey through personal projects and continuous iteration.
 
 ---
 
-## 🎮 Game Lab – Browser Game
+## Game Lab - Browser Game
 
-Ein selbst entwickeltes Browser-Spiel mit Fokus auf Spiellogik und Systemdesign.
+A self-built browser game focused on gameplay systems, combat logic, and modular game structure.
 
 ### Features
-- Bewegungssystem (Player Movement)
-- Gegner & Combat-System
-- Kollisionssystem
+- Player movement
+- Enemies and combat
+- Collision handling
 - UI / HUD
-- Ressourcen-System
-- Crafting & Upgrades
+- Resource systems
+- Crafting and upgrades
 
-👉 Live Demo:  
+Live demo:
 https://void541.github.io/web-dev-journey/apps/game-lab/
 
-👉 Code:  
+Code:
 https://github.com/Void541/web-dev-journey
 
 ---
 
-## 🌐 Portfolio
+## Portfolio
 
-Meine persönliche Portfolio-Seite:
+Personal portfolio page:
 
-👉 https://void541.github.io/web-dev-journey/apps/portfolio/
-
----
-
-## 🛠️ Technologien
-
-- HTML  
-- CSS  
-- JavaScript (Vanilla)  
-- Git / GitHub  
+https://void541.github.io/web-dev-journey/apps/portfolio/
 
 ---
 
-## 📈 Ziel
+## Technologies
 
-Mein Ziel ist es, meine Fähigkeiten in der Webentwicklung kontinuierlich auszubauen und erste praktische Erfahrungen in einem professionellen Umfeld zu sammeln.
+- HTML
+- CSS
+- JavaScript (Vanilla)
+- Git / GitHub
+
+---
+
+## Goal
+
+My goal is to keep improving as a web developer and gain practical experience through increasingly structured projects.
 
 ---
 

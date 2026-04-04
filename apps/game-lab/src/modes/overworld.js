@@ -14,7 +14,7 @@ export function createOverworld() {
     state.overworldSpawnTimer = 0;
     state.enemies.length = 0;
 
-    // optional: andere island layout für overworld
+    // Optional: use a different island layout for the overworld.
     if (state.islands?.generateDefault) {
       state.islands.generateDefault(state.world);
     }
@@ -33,7 +33,7 @@ export function createOverworld() {
       state.overworldSpawnTimer = state.cfg.OVERWORLD_SPAWN_EVERY;
     }
 
-    // Übergang zur Pirate Cove über den nördlichen Rand
+    // Transition to Pirate Cove through the northern edge.
     if (state.player.y <= state.player.r + 4) {
       state.transitions = state.transitions ?? {};
       state.transitions.overworldReturn = {

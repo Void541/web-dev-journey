@@ -1,0 +1,11 @@
+# Node dependencies
+node_modules/
+apps/game-lab/src/multiplayer-server/node_modules/
+
+# Environment secrets
+.env
+*.env
+apps/game-lab/src/multiplayer-server/.env
+
+# Editor files
+.vscode/
