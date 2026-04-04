@@ -156,7 +156,7 @@ export function createWreckSystem(cfg = {}) {
         state.ui.salvage.p = 0;
       }
     } else {
-      // nicht gehalten -> progress langsam zurück (fühlt sich seafight-ish an)
+      // Releasing the key slowly drains progress so salvaging still feels deliberate.
       w.salvageT = Math.max(0, w.salvageT - dt * 0.9);
       state.ui.salvage.active = false;
       state.ui.salvage.p = Math.min(1, w.salvageT / SALVAGE_TIME);

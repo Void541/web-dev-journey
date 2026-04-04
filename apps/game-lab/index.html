@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,10 +12,10 @@
 <body>
   <header class="game-header">
     <div class="game-header-inner">
-      <a class="game-back" href="../portfolio/index.html">← Back</a>
+      <a class="game-back" href="../portfolio/index.html">&larr; Back</a>
       <h1 class="game-title">Game Lab</h1>
       <div class="game-header-controls">
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme">🌙</button>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme">Moon</button>
       </div>
     </div>
   </header>
@@ -100,52 +100,53 @@
         <div class="hud-value" id="target-hp-text">-</div>
       </div>
       
-<div id="hotbar-panel" class="hud-floating hud-hotbar-panel">
+      <div id="hotbar-panel" class="hud-floating hud-hotbar-panel">
         <div class="hud-drag-handle">Action</div>
 
-      <div id="hud-hotbar" class="hud-hotbar">
-        <button class="hotbar-btn" id="hotbar-shoot">
-          <span class="hotbar-key">LMB</span>
-          <span class="hotbar-label">Shoot</span>
-        </button>
+        <div id="hud-hotbar" class="hud-hotbar">
+          <button class="hotbar-btn" id="hotbar-shoot">
+            <span class="hotbar-key">LMB</span>
+            <span class="hotbar-label">Shoot</span>
+          </button>
 
-        <button class="hotbar-btn" id="hotbar-repair">
-          <span class="hotbar-key">R</span>
-          <span class="hotbar-label">Repair</span>
-        </button>
+          <button class="hotbar-btn" id="hotbar-repair">
+            <span class="hotbar-key">R</span>
+            <span class="hotbar-label">Repair</span>
+          </button>
 
-        <button class="hotbar-btn" id="hotbar-salvage">
-          <span class="hotbar-key">F</span>
-          <span class="hotbar-label">Salvage</span>
-        </button>
+          <button class="hotbar-btn" id="hotbar-salvage">
+            <span class="hotbar-key">F</span>
+            <span class="hotbar-label">Salvage</span>
+          </button>
+        </div>
       </div>
-    </div>
   
-    <div id="questTracker" class="quest-tracker hidden">
-  <div class="quest-header" id="questDrag">
-    <span>Quest</span>
-    <button id="questClose">✕</button>
-  </div>
+      <div id="questTracker" class="quest-tracker hidden">
+        <div class="quest-header" id="questDrag">
+          <span>Quest</span>
+          <button id="questClose">&times;</button>
+        </div>
 
-  <div class="quest-body">
-    <div id="questTitle"></div>
-    <div id="questDesc"></div>
-    <div id="questProgress"></div>
-    <div id="questReward"></div>
-  </div>
-</div>
+        <div class="quest-body">
+          <div id="questTitle"></div>
+          <div id="questDesc"></div>
+          <div id="questProgress"></div>
+          <div id="questReward"></div>
+        </div>
+      </div>
 
-    <!-- CENTERED GAME STAGE -->
-    <div class="game-stage-wrap">
-      <div class="game-stage">
-        <canvas id="game" aria-label="Game Canvas"></canvas>
+      <!-- CENTERED GAME STAGE -->
+      <div class="game-stage-wrap">
+        <div class="game-stage">
+          <canvas id="game" aria-label="Game Canvas"></canvas>
 
-        <!-- Stage HUD (visually tied to the canvas) -->
-        <div id="hud-stage"></div>
+          <!-- Stage HUD (visually tied to the canvas) -->
+          <div id="hud-stage"></div>
+        </div>
       </div>
     </div>
   </main>
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script type="module" src="./main.js"></script>
   <script src="src/multiplayer-server/auth.js"></script>
 </body>

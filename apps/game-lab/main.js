@@ -305,8 +305,9 @@ const state = {
   randomEnemyName,
   ENEMY_SPEED,
   transitions: {
-  overworldReturn: null, // placeholder für Übergang von Pirate Cove zurück zur Overworld
-},
+    // Stores where the player should return after leaving Pirate Cove.
+    overworldReturn: null,
+  },
 };
 
 state.questTracker = createQuestTracker(state);
@@ -999,7 +1000,7 @@ function renderEnemy(e) {
     ctx.arc(e.x, e.y, e.r + 22, 0, Math.PI * 2);
     ctx.fill();
 
-    // Admiral-Symbol über dem Schiff
+    // Draw a simple rank marker above admiral ships so they stand out in combat.
     const iconY = e.y - e.r - 20;
 
     ctx.globalAlpha = 0.95;
@@ -1084,3 +1085,4 @@ function render() {
     getIslandColliders,
   });
 }
+
