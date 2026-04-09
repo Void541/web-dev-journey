@@ -1,5 +1,6 @@
 import { drawMinimap } from "../minimap.js";
 import { renderWorkshopUI } from "../ui/workshop.js";
+import { renderPilotSkillsUI } from "../ui/pilotSkills.js";
 import {
   renderEnemies,
   renderPlayer,
@@ -16,7 +17,7 @@ import {
 import { renderEnemyRanges, renderIslandColliders } from "./renderDebug.js";
 
 function renderStatusPanels(ctx, state) {
-  if (state.admirals) {
+  if (state.admirals && state.mode !== "pirateCove") {
     const remaining = Math.max(0, state.admirals.killsNeeded - state.admirals.killCount);
     const admiralText =
       state.admirals.active > 0
@@ -116,6 +117,7 @@ export function renderGame(ctx, state, options) {
   renderStatusPanels(ctx, state);
   renderLootNotifications(ctx, state.canvas, lootNotices);
   renderWorkshopUI(ctx, state);
+  renderPilotSkillsUI(ctx, state);
 
   if (paused) {
     renderPauseOverlay(ctx, viewWidth, viewHeight);

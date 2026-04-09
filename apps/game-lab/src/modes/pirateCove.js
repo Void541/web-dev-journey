@@ -68,6 +68,21 @@ export function createPirateCove() {
     state.ui.navigatorHint = false;
     state.ui.navigatorButtons = [];
 
+    // Keep the internal mode name stable while giving the hub a stronger
+    // world-facing identity everywhere the player can actually see it.
+    state.locationName = "Mercenary Hangar";
+    state.locationSubtitle = "Safe operations hub";
+
+    if (!state.worldFlags?.mercenaryHangarIntroSeen) {
+      state.worldFlags = state.worldFlags ?? {};
+      state.worldFlags.mercenaryHangarIntroSeen = true;
+
+      // A short first-visit briefing helps the hub feel like a real base
+      // instead of just a technical safe room.
+      state.pushLootNotice?.("Mercenary Hangar: safe hub for contracts, repairs, and salvage.");
+      state.pushLootNotice?.("Contract Officer for missions. Ship Technician for upgrades. Salvage Broker for trade.");
+    }
+
     state.islands.islands = [
       { x: 400, y: 200, r: 120 },
       { x: 1000, y: 200, r: 140 },
@@ -120,6 +135,39 @@ export function createPirateCove() {
   }
 
   function renderUI(ctx, state) {
+    ctx.save();
+
+    const bannerW = 260;
+    const bannerH = 62;
+    const bannerX = state.canvas.clientWidth * 0.5 - bannerW * 0.5;
+    const bannerY = 18;
+
+    ctx.fillStyle = "rgba(0,0,0,0.68)";
+    ctx.fillRect(bannerX, bannerY, bannerW, bannerH);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.16)";
+    ctx.strokeRect(bannerX, bannerY, bannerW, bannerH);
+
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 18px system-ui";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(
+      state.locationName ?? "Mercenary Hangar",
+      bannerX + bannerW * 0.5,
+      bannerY + 14
+    );
+
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    ctx.font = "14px system-ui";
+    ctx.fillText(
+      state.locationSubtitle ?? "Safe operations hub",
+      bannerX + bannerW * 0.5,
+      bannerY + 38
+    );
+
+    ctx.restore();
+
     renderDockmasterUI(ctx, state);
 
     renderMerchantUI(ctx, state);

@@ -1,6 +1,7 @@
 import { getEquippedCannons, getCannonStats } from "./cannons.js";
 import { getEquippedCrew } from "./crew.js";
 
+const DAMAGE_TALENT_BONUS = 2;
 
 export function createPlayerCombat() {
   return {
@@ -30,7 +31,8 @@ export function fireCannonAtTarget(state, target, cannonId) {
 
   const equippedCrew = getEquippedCrew(state);
   const dmgMul = equippedCrew.gunner?.dmgMul ?? 1.0;
-  const talentsDmgBonus = state.progression?.talents?.dmg ?? 0;
+  const talentsDmgBonus =
+    (state.progression?.talents?.dmg ?? 0) * DAMAGE_TALENT_BONUS;
  
   state.spawnProjectile({
     x: state.player.x,

@@ -1,29 +1,40 @@
 export const CANNON_TYPES = {
   light: {
     id: "light",
-    name: "Light Cannon",
-    damage: 1,
+    name: "Pulse Laser",
+    damage: 10,
     fireRate: 1.0,
     range: 480,
     projectileSpeed: 720,
+    cost: null,
   },
 
   heavy: {
     id: "heavy",
-    name: "Heavy Cannon",
-    damage: 3,
+    name: "Heavy Laser",
+    damage: 24,
     fireRate: 0.45,
     range: 560,
     projectileSpeed: 680,
+    cost: {
+      gold: 120,
+      scrap: 12,
+      tech: 3,
+    },
   },
 
   rapid: {
     id: "rapid",
-    name: "Rapid Cannon",
-    damage: 1,
-    fireRate: 3.0,
+    name: "Burst Laser",
+    damage: 6,
+    fireRate: 2.4,
     range: 420,
     projectileSpeed: 760,
+    cost: {
+      gold: 120,
+      scrap: 10,
+      tech: 2,
+    },
   },
 };
 

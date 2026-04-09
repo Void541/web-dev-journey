@@ -85,11 +85,8 @@ export function createHudOverlay() {
     silver: document.getElementById("hud-silver"),
     tokens: document.getElementById("hud-tokens"),
 
-    wood: document.getElementById("hud-wood"),
     scrap: document.getElementById("hud-scrap"),
-    cloth: document.getElementById("hud-cloth"),
     tech: document.getElementById("hud-tech"),
-    powder: document.getElementById("hud-powder"),
     gear: document.getElementById("hud-gear"),
 
     playerPanel: document.getElementById("player-panel"),
@@ -109,6 +106,7 @@ export function createHudOverlay() {
     shootBtn: document.getElementById("hotbar-shoot"),
     repairBtn: document.getElementById("hotbar-repair"),
     salvageBtn: document.getElementById("hotbar-salvage"),
+    skillsBtn: document.getElementById("hotbar-skills"),
     craftBtn: document.getElementById("hotbar-craft"),
 
     shipyardPanel: document.getElementById("shipyard-panel"),
@@ -152,6 +150,12 @@ export function createHudOverlay() {
     });
   }
 
+  if (els.skillsBtn) {
+    els.skillsBtn.addEventListener("click", () => {
+      window.__gameActions?.toggleSkills?.();
+    });
+  }
+
   if (els.craftBtn) {
     els.craftBtn.classList.remove("hotbar-disabled");
     els.craftBtn.addEventListener("click", () => {
@@ -181,15 +185,12 @@ export function createHudOverlay() {
     const inv = state.inventory ?? {};
     const gold = state.gold ?? 0;
 
-    if (els.gold) els.gold.textContent = `Gold: ${gold}`;
+    if (els.gold) els.gold.textContent = `Credits: ${gold}`;
     if (els.silver) els.silver.textContent = `Silver: ${state.silver ?? 0}`;
     if (els.tokens) els.tokens.textContent = `Tokens: ${state.tokens ?? 0}`;
 
-    if (els.wood) els.wood.textContent = `Wood: ${inv.wood ?? 0}`;
     if (els.scrap) els.scrap.textContent = `Scrap: ${inv.scrap ?? 0}`;
-    if (els.cloth) els.cloth.textContent = `Cloth: ${inv.cloth ?? 0}`;
     if (els.tech) els.tech.textContent = `Tech: ${inv.tech ?? 0}`;
-    if (els.powder) els.powder.textContent = `Powder: ${inv.powder ?? 0}`;
     if (els.gear) els.gear.textContent = `Gear: ${inv.gear ?? 0}`;
 
     const php = Math.max(0, Math.ceil(state.player?.hp ?? 0));

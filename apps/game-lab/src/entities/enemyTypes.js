@@ -3,7 +3,7 @@ export const enemyTypes = {
   basic: {
     name: "Basic",
     ai: "orbit",
-    hp: 5,
+    hp: 24,
     r: 16,
     speedMul: 1.0,
     color: "rgb(170,45,40)",
@@ -18,7 +18,7 @@ export const enemyTypes = {
   tank: {
     name: "Tank",
     ai: "tank",
-    hp: 16,
+    hp: 40,
     r: 22,
     speedMul: 0.65,
     color: "rgb(120,40,40)",
@@ -33,7 +33,7 @@ export const enemyTypes = {
   sniper: {
     name: "Sniper",
     ai: "sniper",
-    hp: 6,
+    hp: 18,
     r: 16,
     speedMul: 0.9,
     color: "rgb(200,200,255)",
@@ -49,7 +49,7 @@ export const enemyTypes = {
   disabler: {
     name: "Disabler",
     ai: "kite",
-    hp: 8,
+    hp: 28,
     r: 17,
     speedMul: 0.95,
     color: "rgb(140,220,160)",

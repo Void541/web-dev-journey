@@ -28,7 +28,7 @@ export function updateEnemyShooting(e, dt, state, toPlayer) {
       vy: toPlayer.uy * bulletSpeed,
       fromEnemy: true,
       isAdmiralShot: !!e.isAdmiral,
-      dmg: Math.max(1, Math.round(1 * (e.damageMul ?? 1))),
+      dmg: Math.max(10, Math.round(1 * (e.damageMul ?? 1))),
       ttl: ENEMY_BULLET_TTL,
       r: 3,
       effect: isDisabler

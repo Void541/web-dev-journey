@@ -16,14 +16,47 @@ const playerSchema = new mongoose.Schema({
             hp: Number,
             speed: Number,
         },
+        unlocked: {
+            ships: {
+                sloop: Boolean,
+                brig: Boolean,
+                frigate: Boolean,
+            },
+            weapons: {
+                light: Boolean,
+                heavy: Boolean,
+                rapid: Boolean,
+            },
+            crew: {
+                captain: Boolean,
+                firstMate: Boolean,
+                navigator: Boolean,
+                gunner: Boolean,
+            },
+        },
     },
     ship: {
         id: String,
+    },
+    loadout: {
+        cannons: [String],
+        activeCannonSlot: Number,
+    },
+    crew: {
+        gunner: Boolean,
+        navigator: Boolean,
+        firstMate: Boolean,
+        captain: Boolean,
     },
     inventory: {
         gold: Number,
         wood: Number,
         metal: Number,
+        scrap: Number,
+        cloth: Number,
+        tech: Number,
+        powder: Number,
+        gear: Number,
     },
 });
 

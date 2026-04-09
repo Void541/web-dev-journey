@@ -38,11 +38,11 @@ export function renderDockmasterWorld(ctx) {
   ctx.arc(dockmasterNpc.x, dockmasterNpc.y, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = "#fff";
   ctx.font = "700 12px system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText("Dockmaster", dockmasterNpc.x, dockmasterNpc.y - 20);
+  ctx.fillText("Ship Technician", dockmasterNpc.x, dockmasterNpc.y - 20);
 
   ctx.restore();
 }
@@ -62,7 +62,7 @@ export function renderDockmasterUI(ctx, state) {
     ctx.font = "600 16px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Press F - Dockmaster", state.canvas.clientWidth / 2, 42);
+    ctx.fillText("Press F - Ship Technician", state.canvas.clientWidth / 2, 42);
     ctx.restore();
   }
 }

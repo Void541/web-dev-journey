@@ -60,33 +60,27 @@ export function createLootTable(cfg = {}) {
       { id: "epic", w: 2 },
     ],
 
-    // Early game: die 4 Basisressourcen sollen regelmäßig vorkommen
+    // Early progression stays easier to read with a smaller material pool.
     baseMats: cfg.baseMats ?? [
-      { id: "wood",  min: 1, max: 3, p: 0.95 },
-      { id: "scrap", min: 1, max: 2, p: 0.82 },
-      { id: "cloth", min: 0, max: 1, p: 0.42 },
-      { id: "tech",  min: 0, max: 1, p: 0.12 },
+      { id: "scrap", min: 1, max: 3, p: 0.94 },
+      { id: "tech", min: 0, max: 1, p: 0.18 },
     ],
 
     specialPools: cfg.specialPools ?? {
       common: [
-        { id: "wood",  min: 1, max: 2, p: 0.55 },
-        { id: "scrap", min: 1, max: 2, p: 0.45 },
-        { id: "cloth", min: 1, max: 1, p: 0.35 },
+        { id: "scrap", min: 1, max: 2, p: 0.75 },
       ],
       uncommon: [
-        { id: "cloth", min: 1, max: 2, p: 0.70 },
-        { id: "tech",  min: 1, max: 1, p: 0.30 },
-        { id: "powder", min: 0, max: 1, p: 0.35 },
+        { id: "scrap", min: 1, max: 3, p: 0.7 },
+        { id: "tech", min: 1, max: 1, p: 0.45 },
       ],
       rare: [
-        { id: "cloth", min: 1, max: 2, p: 0.65 },
-        { id: "tech",  min: 1, max: 2, p: 0.65 },
-        { id: "gear",  min: 0, max: 1, p: 0.45 },
+        { id: "tech", min: 1, max: 2, p: 0.75 },
+        { id: "gear", min: 0, max: 1, p: 0.45 },
       ],
       epic: [
         { id: "tech", min: 2, max: 3, p: 0.85 },
-        { id: "gear", min: 1, max: 2, p: 0.70 },
+        { id: "gear", min: 1, max: 2, p: 0.7 },
         { id: "blueprint", min: 1, max: 1, p: 0.35 },
       ],
     },
@@ -122,7 +116,7 @@ export function createLootTable(cfg = {}) {
         specialChance: 0.24,
         gold: 3,
         bonusLoot: [
-          { id: "tech", min: 0, max: 1, p: 0.30 },
+          { id: "tech", min: 0, max: 1, p: 0.3 },
         ],
       },
 
@@ -132,7 +126,7 @@ export function createLootTable(cfg = {}) {
         specialChance: 0.28,
         gold: 3,
         bonusLoot: [
-          { id: "cloth", min: 1, max: 2, p: 0.55 },
+          { id: "scrap", min: 1, max: 2, p: 0.55 },
         ],
       },
     },
@@ -141,11 +135,11 @@ export function createLootTable(cfg = {}) {
       matMul: 2.2,
       extraRolls: 2,
       guaranteed: [
-        { id: "cloth", min: 1, max: 2, p: 1.0 },
         { id: "tech", min: 1, max: 2, p: 1.0 },
+        { id: "gear", min: 1, max: 1, p: 1.0 },
       ],
       extraGold: 10,
-      specialChanceBonus: 0.30,
+      specialChanceBonus: 0.3,
     },
   };
 
@@ -178,10 +172,8 @@ export function createLootTable(cfg = {}) {
 
     for (let i = 0; i < totalRolls; i++) {
       const extra = rollEntries([
-        { id: "wood",  min: 0, max: 2, p: 0.60 },
-        { id: "scrap", min: 0, max: 2, p: 0.50 },
-        { id: "cloth", min: 0, max: 1, p: 0.30 },
-        { id: "tech",  min: 0, max: 1, p: 0.10 },
+        { id: "scrap", min: 0, max: 2, p: 0.65 },
+        { id: "tech", min: 0, max: 1, p: 0.18 },
       ]);
 
       loot = mergeLoot(loot, extra);

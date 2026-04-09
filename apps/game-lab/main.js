@@ -25,13 +25,19 @@ import {
   updatePlayerCombat,
 } from "./src/systems/playerCombat.js";
 import { createQuestTracker } from "./src/ui/questTracker.js";
-import { getEquippedShip } from "./src/systems/ships.js";
-import { getEquippedCrew } from "./src/systems/crew.js";
+import { SHIP_TYPES, getEquippedShip } from "./src/systems/ships.js";
+import { CrewSystem, getEquippedCrew } from "./src/systems/crew.js";
+import { CANNON_TYPES } from "./src/systems/cannons.js";
 import { createLevelSystem } from "./src/systems/levels.js";
 import { createTalentSystem } from "./src/systems/talente.js";
 import { createNetworkSystem } from "./src/multiplayer-server/network.js";
+import { isQuestComplete, giveQuestReward } from "./src/quests/questLogic.js";
+import { QUESTS } from "./src/quests/quests.js";
 
 const DEV_MODE = true;
+const PLAYER_API_BASE = "http://127.0.0.1:3000";
+const HP_TALENT_BONUS = 15;
+const SPEED_TALENT_STEP = 0.08;
 
 const multiplayerNetwork = createNetworkSystem();
 const remotePlayers = multiplayerNetwork.remotePlayers;
@@ -53,9 +59,9 @@ const shipStats = createShipStats();
 const craftingRecipes = createCraftingRecipes();
 const craftingSystem = createCraftingSystem(craftingRecipes);
 
-let currentMode = overworld;
+let currentMode = pirateCove;
 let overworldSpawnTimer = 0;
-let mode = "overworld";
+let mode = "pirateCove";
 
 function setMode(next, options = {}) {
   mode = next;
@@ -305,10 +311,129 @@ const state = {
   randomEnemyName,
   ENEMY_SPEED,
   transitions: {
-    // Stores where the player should return after leaving Pirate Cove.
+    // Stores where the player should return after leaving the home hub.
     overworldReturn: null,
   },
 };
+
+async function saveLoadoutState() {
+  if (!state.account?.playerId) return;
+
+  try {
+    await fetch(`${PLAYER_API_BASE}/save-loadout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        playerId: state.account.playerId,
+        ship: state.playerShip,
+        loadout: {
+          cannons: state.playerLoadout?.cannons ?? ["light", null, null],
+          activeCannonSlot: state.ui?.activeCannonSlot ?? 0,
+        },
+        crew: state.crew,
+        inventory: {
+          ...state.inventory,
+          gold: state.gold,
+        },
+        progression: {
+          unlocked: state.progression?.unlocked,
+        },
+      }),
+    });
+  } catch (error) {
+    console.error("Loadout save failed:", error);
+  }
+}
+
+function applyAuthenticatedPlayer(playerData) {
+  if (!playerData) return;
+
+  // Keep account identity in local state so gameplay changes can be persisted.
+  state.account = {
+    playerId: playerData.id,
+    username: playerData.username,
+  };
+
+  if (playerData.progression) {
+    state.progression = {
+      ...state.progression,
+      ...playerData.progression,
+    };
+  }
+
+  if (playerData.ship?.id) {
+    state.playerShip = { id: playerData.ship.id };
+  }
+
+  if (playerData.loadout) {
+    state.playerLoadout = {
+      ...state.playerLoadout,
+      cannons: Array.isArray(playerData.loadout.cannons)
+        ? [...playerData.loadout.cannons]
+        : state.playerLoadout.cannons,
+      cooldowns: [0, 0, 0],
+    };
+    state.ui.activeCannonSlot = Number(playerData.loadout.activeCannonSlot ?? 0);
+  }
+
+  if (playerData.crew) {
+    state.crew = {
+      ...state.crew,
+      ...playerData.crew,
+    };
+  }
+
+  if (playerData.inventory) {
+    state.gold = Number(playerData.inventory.gold ?? state.gold ?? 0);
+    state.inventory = {
+      ...state.inventory,
+      ...playerData.inventory,
+    };
+  }
+}
+
+function getResourceAmount(key) {
+  if (key === "gold") return state.gold ?? 0;
+  if (key === "scrap") return state.inventory?.scrap ?? state.inventory?.metal ?? 0;
+  return state.inventory?.[key] ?? 0;
+}
+
+function canAffordCost(cost) {
+  if (!cost) return true;
+  return Object.entries(cost).every(([key, amount]) => getResourceAmount(key) >= amount);
+}
+
+function spendCost(cost) {
+  if (!cost) return true;
+  if (!canAffordCost(cost)) return false;
+
+  for (const [key, amount] of Object.entries(cost)) {
+    if (key === "gold") {
+      state.gold = Math.max(0, (state.gold ?? 0) - amount);
+      continue;
+    }
+
+    if (key === "scrap") {
+      if ((state.inventory?.scrap ?? 0) > 0) {
+        state.inventory.scrap = Math.max(0, (state.inventory.scrap ?? 0) - amount);
+      } else {
+        state.inventory.metal = Math.max(0, (state.inventory?.metal ?? 0) - amount);
+      }
+      continue;
+    }
+
+    state.inventory[key] = Math.max(0, (state.inventory?.[key] ?? 0) - amount);
+  }
+
+  return true;
+}
+
+function formatCostText(cost) {
+  if (!cost) return "starter issue";
+  return Object.entries(cost)
+    .map(([key, value]) => `${value} ${key}`)
+    .join(", ");
+}
 
 state.questTracker = createQuestTracker(state);
 state.mode = mode;
@@ -333,8 +458,9 @@ state.playerLoadout = {
 };
 
 state.admirals = {
+  naturalSpawn: false,
   killCount: 0,
-  killsNeeded: 5,
+  killsNeeded: 99999,
   active: 0,
   maxActive: 1,
 };
@@ -349,6 +475,10 @@ state.progress = state.progress ?? {
   admiralKills: 0,
 };
 
+state.questEvents = state.questEvents ?? {
+  firstAdmiralTriggered:false,
+};
+
 state.progression = {
   level: 1,
   xp: 0,
@@ -359,11 +489,17 @@ state.progression = {
     hp: 0,
     speed: 0,
   },
+  unlocked: {
+    ships: { sloop: true, brig: false, frigate: false },
+    weapons: { light: true, heavy: false, rapid: false },
+    crew: { captain: true, firstMate: false, navigator: false, gunner: false },
+  },
 };
 
 state.ui = {
   shipyardOpen: false,
   workshopOpen: false,
+  skillsOpen: false,
   dockmasterOpen: false,
   craftingOpen: false,
   activeCannonSlot: 0,
@@ -380,11 +516,15 @@ state.crew = {
 
 state.ui.activeCannonSlot = state.ui.cannonSlot ?? 0;
 
+window.addEventListener("auth:login-success", (event) => {
+  applyAuthenticatedPlayer(event.detail?.player);
+});
+
 state.crafting = {
   recipes: craftingRecipes,
   craft: (id) => {
     if (state.mode !== "pirateCove") {
-      state.pushLootNotice?.("Crafting only available in Pirate Cove");
+      state.pushLootNotice?.("Crafting is only available in the Mercenary Hangar");
       return false;
     }
     return craftingSystem.craft(state, id);
@@ -408,7 +548,7 @@ const wrecks = createWreckSystem({
 const lootTable = createLootTable();
 state.lootTable = lootTable;
 
-state.inventory = state.inventory ?? { wood: 0, metal: 0, cloth: 0, tech: 0 };
+state.inventory = state.inventory ?? { gold: 0, wood: 0, metal: 0, scrap: 0, cloth: 0, tech: 0, powder: 0, gear: 0 };
 state.gold = state.gold ?? 0;
 
 state.onEnemyKilled = (enemy, drop) => {
@@ -435,6 +575,23 @@ if(enemy.isAdmiral) {
   state.progress.kills += 1;
 }
 
+const activeQuest = state.quests?.active;
+
+if(activeQuest?.id === "kill5" && 
+  isQuestComplete(state, activeQuest) &&
+  !state.questEvents.firstAdmiralTriggered) {
+    giveQuestReward(state, activeQuest);
+    state.quests.completed.push(activeQuest.id);
+    state.pushLootNotice?.(`Completed quest: ${activeQuest.title}`);
+    state.quests.active = QUESTS.find(q => q.id === activeQuest.nextQuestID) ?? null;
+  state.questEvents.firstAdmiralTriggered = true;
+    console.log("First admiral kill triggered");
+  state.spawnEnemy?.({
+    type: "basic",
+    admiral: true,
+  });
+  }
+
   if (enemy.isAdmiral) {
     state.admirals.active = Math.max(0, state.admirals.active - 1);
     state.pushLootNotice?.(`${enemy.name} defeated`);
@@ -447,7 +604,7 @@ if(enemy.isAdmiral) {
   }
 
   const adm = state.admirals;
-  if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive) {
+  if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive && adm.naturalSpawn) {
     const spawned = state.spawnEnemy?.({
       type: "basic",
       admiral: true,
@@ -475,6 +632,10 @@ const lootNotices = [];
 function pushLootNotice(text) {
   lootNotices.push({ text, t: 2.5, yOff: 0 });
 }
+
+// Run the same mode setup path on first load that we use for later
+// transitions so the initial world size and hub state stay in sync.
+setMode(mode);
 
 // Debug helpers
 window.__dbg = { state };
@@ -515,6 +676,16 @@ shootTarget: () => {
 
   toggleWorkshop: () => {
     state.ui.workshopOpen = !state.ui.workshopOpen;
+    if (state.ui.workshopOpen) {
+      state.ui.skillsOpen = false;
+    }
+  },
+
+  toggleSkills: () => {
+    state.ui.skillsOpen = !state.ui.skillsOpen;
+    if (state.ui.skillsOpen) {
+      state.ui.workshopOpen = false;
+    }
   },
 
   craft: (id) => {
@@ -545,6 +716,7 @@ window.addEventListener("keydown", (e) => {
     state.ui.merchantOpen = false;
     state.ui.navigatorOpen = false;
     state.ui.workshopOpen = false;
+    state.ui.skillsOpen = false;
   }
 
   if (k === "r") {
@@ -555,6 +727,12 @@ window.addEventListener("keydown", (e) => {
   if (k === "g") showEnemyRanges = !showEnemyRanges;
   if (k === "n") showMinimap = !showMinimap;
   if (k === "c") state.ui.workshopOpen = !state.ui.workshopOpen;
+  if (k === "k") {
+    state.ui.skillsOpen = !state.ui.skillsOpen;
+    if (state.ui.skillsOpen) {
+      state.ui.workshopOpen = false;
+    }
+  }
 });
 
 let showEnemyRanges = false;
@@ -614,7 +792,11 @@ function update(dt) {
   time += dt;
 
 const equippedShip = getEquippedShip(state);
-const newMaxHp = Number(equippedShip.maxHp + (state.progression?.talents?.hp ?? 0)) || 10 ;
+const newMaxHp =
+  Number(
+    equippedShip.maxHp +
+      (state.progression?.talents?.hp ?? 0) * HP_TALENT_BONUS
+  ) || 10 ;
 
 const oldMaxHp = Number(player.maxHp) || newMaxHp ;
 const oldHp = Number(player.hp) || oldMaxHp;
@@ -709,7 +891,7 @@ multiplayerNetwork.updateRemotePlayers();
     shipStats.getSpeed(PLAYER_SPEED) *
     ship.speedMul *
     speedMul *
-    (1 + (state.progression?.talents?.speed ?? 0));
+    (1 + (state.progression?.talents?.speed ?? 0) * SPEED_TALENT_STEP);
 
   player.x += ax * moveSpeed * player.slowMul * dt;
   player.y += ay * moveSpeed * player.slowMul * dt;
@@ -798,6 +980,17 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
   const mx = state.input.mouse.x - rect.left;
   const my = state.input.mouse.y - rect.top;
 
+  for (const b of state.ui.workshopTabButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+    if (!inside) continue;
+    state.ui.workshopTab = b.id;
+  }
+
   // Crafting buttons
   for (const b of state.ui.workshopButtons ?? []) {
     const inside =
@@ -811,24 +1004,6 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
 
     state.crafting?.craft?.(b.id);
   }
-
-  for (const b of state.ui.talentButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
-
-      if (!inside) continue;
-      if (b.disabled) continue;
-
-      const spent = talentSystem.allocateTalentPoint(state, b.id);
-
-      if (spent) {
-        state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
-      }
-  }
-
 //Crew selection buttons
 for (const b of state.ui.crewButtons ?? []) {
   const inside =
@@ -840,10 +1015,35 @@ for (const b of state.ui.crewButtons ?? []) {
     if(!inside) continue;
     if(b.disabled) continue;
 
+    state.progression = state.progression ?? {};
+    state.progression.unlocked = state.progression.unlocked ?? {};
+    state.progression.unlocked.crew = state.progression.unlocked.crew ?? {
+      captain: true,
+      firstMate: false,
+      navigator: false,
+      gunner: false,
+    };
+
+    const crewData = CrewSystem[b.id];
+    const isUnlocked = Boolean(state.progression.unlocked.crew[b.id]);
+
+    if (!isUnlocked) {
+      if (!spendCost(crewData?.cost)) {
+        state.pushLootNotice?.(`Need ${formatCostText(crewData?.cost)} to hire ${b.label}`);
+        continue;
+      }
+
+      state.progression.unlocked.crew[b.id] = true;
+      state.pushLootNotice?.(`Hired ${b.label}`);
+      saveLoadoutState();
+      continue;
+    }
+
     state.crew = state.crew ?? {};
     state.crew[b.id] = !(state.crew?.[b.id] ?? false);
 
     state.pushLootNotice?.(`${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`);
+    saveLoadoutState();
   }
   // Cannon slot selection
   for (const b of state.ui.cannonSlotButtons ?? []) {
@@ -858,6 +1058,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
     state.ui.activeCannonSlot = b.index;
     state.pushLootNotice?.(`Selected Slot ${b.index + 1}`);
+    saveLoadoutState();
   }
 
   // Cannon equip buttons
@@ -870,6 +1071,29 @@ for (const b of state.ui.crewButtons ?? []) {
 
     if (!inside) continue;
 
+    state.progression = state.progression ?? {};
+    state.progression.unlocked = state.progression.unlocked ?? {};
+    state.progression.unlocked.weapons = state.progression.unlocked.weapons ?? {
+      light: true,
+      heavy: false,
+      rapid: false,
+    };
+
+    const cannonData = CANNON_TYPES[b.id];
+    const isUnlocked = Boolean(state.progression.unlocked.weapons[b.id]);
+
+    if (!isUnlocked) {
+      if (!spendCost(cannonData?.cost)) {
+        state.pushLootNotice?.(`Need ${formatCostText(cannonData?.cost)} to unlock ${b.label}`);
+        continue;
+      }
+
+      state.progression.unlocked.weapons[b.id] = true;
+      state.pushLootNotice?.(`Unlocked ${b.label}`);
+      saveLoadoutState();
+      continue;
+    }
+
     state.playerLoadout = state.playerLoadout ?? {};
     state.playerLoadout.cannons = state.playerLoadout.cannons ?? ["light", null, null];
 
@@ -877,6 +1101,7 @@ for (const b of state.ui.crewButtons ?? []) {
     state.playerLoadout.cannons[slot] = b.id;
 
     state.pushLootNotice?.(`Equipped ${b.label} to Slot ${slot + 1}`);
+    saveLoadoutState();
 
     state.effects.push({
       x: player.x,
@@ -897,6 +1122,29 @@ for (const b of state.ui.crewButtons ?? []) {
       my <= b.y + b.h;
 
     if (!inside) continue;
+
+    state.progression = state.progression ?? {};
+    state.progression.unlocked = state.progression.unlocked ?? {};
+    state.progression.unlocked.ships = state.progression.unlocked.ships ?? {
+      sloop: true,
+      brig: false,
+      frigate: false,
+    };
+
+    const shipData = SHIP_TYPES[b.id];
+    const isUnlocked = Boolean(state.progression.unlocked.ships[b.id]);
+
+    if (!isUnlocked) {
+      if (!spendCost(shipData?.cost)) {
+        state.pushLootNotice?.(`Need ${formatCostText(shipData?.cost)} to unlock ${b.label}`);
+        continue;
+      }
+
+      state.progression.unlocked.ships[b.id] = true;
+      state.pushLootNotice?.(`Unlocked ship: ${b.label}`);
+      saveLoadoutState();
+      continue;
+    }
 
     state.playerShip = state.playerShip ?? {};
     state.playerShip.id = b.id;
@@ -928,6 +1176,30 @@ for (const b of state.ui.crewButtons ?? []) {
     }
 
     state.pushLootNotice?.(`Equipped ship: ${b.label}`);
+    saveLoadoutState();
+  }
+}
+
+if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
+  const rect = state.canvas.getBoundingClientRect();
+  const mx = state.input.mouse.x - rect.left;
+  const my = state.input.mouse.y - rect.top;
+
+  for (const b of state.ui.skillButtons ?? []) {
+    const inside =
+      mx >= b.x &&
+      mx <= b.x + b.w &&
+      my >= b.y &&
+      my <= b.y + b.h;
+
+    if (!inside) continue;
+    if (b.disabled) continue;
+
+    const spent = talentSystem.allocateTalentPoint(state, b.id);
+    if (spent) {
+      state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
+      saveLoadoutState();
+    }
   }
 }
 

@@ -134,7 +134,6 @@ export function createWreckSystem(cfg = {}) {
         const inv = state.inventory;
 
         // simple mats (später ersetzen durch loot-table)
-        inv.wood = (inv.wood ?? 0);
         
         inv.scrap = (inv.scrap ?? 0);
 
@@ -270,3 +269,4 @@ export function createWreckSystem(cfg = {}) {
     renderHud,
   };
 }
+

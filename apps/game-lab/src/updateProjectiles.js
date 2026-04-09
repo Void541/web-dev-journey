@@ -65,7 +65,7 @@ export function updateProjectiles(dt, state) {
             }
 
             const drop = state.lootTable?.rollForEnemy?.(e) ?? {
-              loot: { wood: 2, metal: 1 },
+              loot: { scrap: 2, tech: 1 },
               gold: state.enemyTypes?.[e.type]?.gold ?? 1,
             };
 

@@ -158,11 +158,11 @@ export function renderNavigatorWorld(ctx) {
   ctx.arc(navigatorNpc.x, navigatorNpc.y, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = "#fff";
   ctx.font = "700 12px system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText("Navigator", navigatorNpc.x, navigatorNpc.y - 20);
+  ctx.fillText("Contract Officer", navigatorNpc.x, navigatorNpc.y - 20);
 
   ctx.restore();
 }
@@ -182,7 +182,7 @@ export function renderNavigatorUI(ctx, state) {
     ctx.font = "600 16px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Press F - Navigator", state.canvas.clientWidth / 2, 42);
+    ctx.fillText("Press F - Contract Officer", state.canvas.clientWidth / 2, 42);
     ctx.restore();
   }
 
@@ -191,7 +191,7 @@ export function renderNavigatorUI(ctx, state) {
   ctx.save();
 
   const w = 420;
-  const h = 250;
+  const h = 320;
 
   state.ui.navigatorWindow = state.ui.navigatorWindow ?? {
     x: state.canvas.clientWidth / 2 - w / 2,
@@ -224,7 +224,11 @@ export function renderNavigatorUI(ctx, state) {
   ctx.font = "700 18px system-ui";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("Navigator", x + 20, y + 10);
+  ctx.fillText("Contract Officer", x + 20, y + 10);
+
+  ctx.font = "13px system-ui";
+  ctx.fillStyle = "rgba(255,255,255,0.68)";
+  ctx.fillText("Sector assignments and mission escalation", x + 20, y + 34);
 
   const { x: mx, y: my } = getMouseInCanvas(state);
 
@@ -236,18 +240,22 @@ export function renderNavigatorUI(ctx, state) {
 
     ctx.font = "16px system-ui";
     ctx.fillStyle = "#fff";
-    ctx.fillText("Active quest tracked on HUD", x + 20, y + 60);
+    ctx.fillText(active.title, x + 20, y + 60);
+
+    ctx.font = "14px system-ui";
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    wrapText(ctx, active.desc, x + 20, y + 88, w - 40, 18);
 
     if (done) {
       ctx.font = "14px system-ui";
       ctx.fillStyle = "rgba(120,255,120,0.9)";
-      ctx.fillText("Status: Ready to claim", x + 20, y + 95);
+      ctx.fillText("Status: Ready to claim", x + 20, y + 162);
 
       buttons.push({
         id: "claim",
         label: "Claim Reward",
         x: x + 20,
-        y: y + 145,
+        y: y + 212,
         w: 180,
         h: 32,
         disabled: false,
@@ -255,14 +263,14 @@ export function renderNavigatorUI(ctx, state) {
     } else {
       ctx.font = "14px system-ui";
       ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.fillText("Status: In progress", x + 20, y + 95);
+      ctx.fillText("Status: In progress", x + 20, y + 162);
     }
 
     buttons.push({
       id: "abandon",
       label: "Abandon Quest",
       x: x + 220,
-      y: y + 145,
+      y: y + 212,
       w: 180,
       h: 32,
       disabled: false,
@@ -270,16 +278,24 @@ export function renderNavigatorUI(ctx, state) {
   } else {
     ctx.font = "16px system-ui";
     ctx.fillStyle = "#fff";
-    ctx.fillText("Available Quests", x + 20, y + 55);
+    ctx.fillText("Available Contracts", x + 20, y + 55);
 
     let by = y + 85;
     for (const q of QUESTS) {
       const alreadyDone = state.quests?.completed?.includes(q.id);
       if (alreadyDone) continue;
 
+      const requirementMet = !q.requiresQuestID || state.quests?.completed?.includes(q.requiresQuestID);
+      
+      if (!requirementMet) continue;
+
       ctx.font = "15px system-ui";
       ctx.fillStyle = "#fff";
       ctx.fillText(q.title, x + 20, by);
+
+      ctx.font = "13px system-ui";
+      ctx.fillStyle = "rgba(255,255,255,0.72)";
+      wrapText(ctx, q.desc, x + 20, by + 20, 240, 16);
 
       buttons.push({
         id: `accept:${q.id}`,
@@ -291,7 +307,7 @@ export function renderNavigatorUI(ctx, state) {
         disabled: false,
       });
 
-      by += 60;
+      by += 78;
     }
   }
 
@@ -316,4 +332,29 @@ export function renderNavigatorUI(ctx, state) {
   }
 
   ctx.restore();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  if (!text) return;
+
+  const words = text.split(" ");
+  let line = "";
+  let lineY = y;
+
+  for (const word of words) {
+    const testLine = line ? `${line} ${word}` : word;
+    const width = ctx.measureText(testLine).width;
+
+    if (width > maxWidth && line) {
+      ctx.fillText(line, x, lineY);
+      line = word;
+      lineY += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line) {
+    ctx.fillText(line, x, lineY);
+  }
 }

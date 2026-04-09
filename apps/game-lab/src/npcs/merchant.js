@@ -66,31 +66,21 @@ export function updateMerchant(state) {
     for (const b of state.ui.merchantButtons ?? []) {
       if (!isInside(mx, my, b)) continue;
 
-      if (b.id === "sellWood") {
-        if (removeItem(state, "wood", 5)) {
-          state.gold += 2;
-          state.pushLootNotice?.("Sold 5 wood for 2 gold");
-        } else {
-          state.pushLootNotice?.("Not enough wood to sell");
-        }
-      }
-
       if (b.id === "sellScrap") {
         if (removeItem(state, scrapKey, 10)) {
-          state.gold += 3;
-          state.pushLootNotice?.(`Sold 10 ${scrapKey} for 3 gold`);
+          state.gold += 4;
+          state.pushLootNotice?.(`Sold 10 ${scrapKey} for 4 credits`);
         } else {
           state.pushLootNotice?.(`Not enough ${scrapKey} to sell`);
         }
       }
 
-      if (b.id === "buyCloth") {
-        if (canAfford(state, 6)) {
-          state.gold -= 6;
-          addItem(state, "cloth", 1);
-          state.pushLootNotice?.("Bought 1 cloth for 6 gold");
+      if (b.id === "sellTech") {
+        if (removeItem(state, "tech", 2)) {
+          state.gold += 10;
+          state.pushLootNotice?.("Sold 2 tech for 10 credits");
         } else {
-          state.pushLootNotice?.("Not enough gold to buy cloth");
+          state.pushLootNotice?.("Not enough tech to sell");
         }
       }
 
@@ -98,9 +88,19 @@ export function updateMerchant(state) {
         if (canAfford(state, 12)) {
           state.gold -= 12;
           addItem(state, "tech", 1);
-          state.pushLootNotice?.("Bought 1 tech for 12 gold");
+          state.pushLootNotice?.("Bought 1 tech for 12 credits");
         } else {
-          state.pushLootNotice?.("Not enough gold to buy tech");
+          state.pushLootNotice?.("Not enough credits to buy tech");
+        }
+      }
+
+      if (b.id === "buyGear") {
+        if (canAfford(state, 28)) {
+          state.gold -= 28;
+          addItem(state, "gear", 1);
+          state.pushLootNotice?.("Bought 1 gear for 28 credits");
+        } else {
+          state.pushLootNotice?.("Not enough credits to buy gear");
         }
       }
     }
@@ -115,11 +115,11 @@ export function renderMerchantWorld(ctx) {
   ctx.arc(merchantNpc.x, merchantNpc.y, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = "#fff";
   ctx.font = "700 12px system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText("Merchant", merchantNpc.x, merchantNpc.y - 20);
+  ctx.fillText("Salvage Broker", merchantNpc.x, merchantNpc.y - 20);
 
   ctx.restore();
 }
@@ -134,7 +134,7 @@ export function renderMerchantUI(ctx, state) {
     ctx.font = "600 16px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Press F - Merchant", state.canvas.clientWidth / 2, 42);
+    ctx.fillText("Press F - Salvage Broker", state.canvas.clientWidth / 2, 42);
     ctx.restore();
   }
 
@@ -158,19 +158,23 @@ export function renderMerchantUI(ctx, state) {
   ctx.font = "700 18px system-ui";
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("Merchant", x + 20, y + 20);
+  ctx.fillText("Salvage Broker", x + 20, y + 20);
+
+  ctx.font = "13px system-ui";
+  ctx.fillStyle = "rgba(255,255,255,0.68)";
+  ctx.fillText("Trade recovered materials and support supplies", x + 20, y + 44);
 
   ctx.font = "14px system-ui";
   ctx.fillStyle = "rgba(255,255,255,0.75)";
-  ctx.fillText(`Gold: ${state.gold ?? 0}`, x + 20, y + 60);
+  ctx.fillText(`Credits: ${state.gold ?? 0}`, x + 20, y + 74);
 
   const { x: mx, y: my } = getMouseInCanvas(state);
 
   const buttons = [
-    { id: "sellWood", label: "Sell 5 wood for 2 gold", x: x + 20, y: y + 100, w: 300, h: 28 },
-    { id: "sellScrap", label: `Sell 10 ${scrapKey} for 3 gold`, x: x + 20, y: y + 140, w: 300, h: 28 },
-    { id: "buyCloth", label: "Buy 1 cloth for 6 gold", x: x + 20, y: y + 180, w: 300, h: 28 },
-    { id: "buyTech", label: "Buy 1 tech for 12 gold", x: x + 20, y: y + 220, w: 300, h: 28 },
+    { id: "sellScrap", label: `Sell 10 ${scrapKey} for 4 credits`, x: x + 20, y: y + 112, w: 300, h: 28 },
+    { id: "sellTech", label: "Sell 2 tech for 10 credits", x: x + 20, y: y + 152, w: 300, h: 28 },
+    { id: "buyTech", label: "Buy 1 tech for 12 credits", x: x + 20, y: y + 192, w: 300, h: 28 },
+    { id: "buyGear", label: "Buy 1 gear for 28 credits", x: x + 20, y: y + 232, w: 300, h: 28 },
   ];
 
   state.ui.merchantButtons = buttons;

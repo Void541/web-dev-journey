@@ -5,6 +5,7 @@ export const CrewSystem = {
         name: "Captain",
         description: "The captain is the leader of the crew and is responsible for making important decisions. They are skilled in navigation and strategy.",
         speed: 1.0,
+        cost: null,
     },
 
     firstMate: {
@@ -12,6 +13,11 @@ export const CrewSystem = {
         name: "First Mate",
         description: "The first mate assists the captain and is responsible for managing the ship's operations and crew.",
         repairMul: 1.5,
+        cost: {
+            gold: 90,
+            scrap: 8,
+            tech: 1,
+        },
     },
 
     navigator: {
@@ -19,14 +25,24 @@ export const CrewSystem = {
         name: "Navigator",
         description: "The navigator is responsible for charting the ship's course and ensuring it stays on track.",
         speed: 1.5,
+        cost: {
+            gold: 80,
+            scrap: 6,
+            tech: 1,
+        },
     },
 
     gunner: {
         id: "gunner",
         name: "Gunner",
         description: "The gunner is responsible for operating the ship's cannons and defending against enemy attacks.",
-        dmgMul: 1.5,
+        dmgMul: 2,
         reloadCooldownMul: 0.8,
+        cost: {
+            gold: 110,
+            scrap: 10,
+            tech: 2,
+        },
     },
 
 };
