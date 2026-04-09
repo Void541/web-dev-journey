@@ -10,13 +10,26 @@ export function createInput() {
   };
 
   function onKeyDown(e) {
+    if (isTypingTarget(e.target)) return;
     const key = e.key.toLowerCase();
     if (!down.has(key)) pressed.add(key);
     down.add(key);
   }
 
   function onKeyUp(e) {
+    if (isTypingTarget(e.target)) return;
     down.delete(e.key.toLowerCase());
+  }
+
+  function isTypingTarget(target) {
+    if (!target) return false;
+    const tag = target.tagName?.toLowerCase();
+    return (
+      tag === "input" ||
+      tag === "textarea" ||
+      tag === "select" ||
+      target.isContentEditable === true
+    );
   }
 
   function onMouseMove(e) {

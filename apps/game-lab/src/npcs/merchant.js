@@ -43,6 +43,13 @@ export const merchantNpc = {
   r: 40,
 };
 
+export function openMerchant(state) {
+  state.ui = state.ui ?? {};
+  state.ui.merchantOpen = true;
+  state.ui.dockmasterOpen = false;
+  state.ui.navigatorOpen = false;
+}
+
 export function updateMerchant(state) {
   const dx = state.player.x - merchantNpc.x;
   const dy = state.player.y - merchantNpc.y;
@@ -53,10 +60,7 @@ export function updateMerchant(state) {
 
   if (nearMerchant && state.input?.wasPressed?.("f")) {
     state.ui.merchantOpen = !state.ui.merchantOpen;
-    if (state.ui.merchantOpen) {
-      state.ui.dockmasterOpen = false;
-      state.ui.navigatorOpen = false;
-    }
+    if (state.ui.merchantOpen) openMerchant(state);
   }
 
   if (state.ui?.merchantOpen && state.input?.mousePressed?.()) {

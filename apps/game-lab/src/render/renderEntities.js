@@ -300,16 +300,8 @@ export function renderEnemies(ctx, enemies, state) {
 }
 
 export function renderPlayer(ctx, state) {
-  const { input, player } = state;
-
-  const playerAngle = Math.atan2(
-    (input.isDown("s") || input.isDown("arrowdown")) - (input.isDown("w") || input.isDown("arrowup")),
-    (input.isDown("d") || input.isDown("arrowright")) - (input.isDown("a") || input.isDown("arrowleft"))
-  );
-
-  const hasDirection =
-    input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
-    input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
+  const { player } = state;
+  const playerAngle = player.angle ?? 0;
 
   const drewPlayer = state.sprites?.draw(
     ctx,
@@ -318,7 +310,7 @@ export function renderPlayer(ctx, state) {
     player.y,
     player.r * 4.2,
     player.r * 4.2,
-    hasDirection ? playerAngle : 0
+    playerAngle
   );
 
   if (!drewPlayer) {
@@ -327,7 +319,7 @@ export function renderPlayer(ctx, state) {
       player.x,
       player.y,
       player.r,
-      hasDirection ? playerAngle : 0,
+      playerAngle,
       false,
       false,
       "player"

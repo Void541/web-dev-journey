@@ -12,6 +12,14 @@ const showRegisterBtn = document.getElementById("show-register-btn");
 const showLoginBtn = document.getElementById("show-login-btn");
 const authStatusEL = document.getElementById("auth-status");
 
+const authInputEls = [
+  loginUsernameEL,
+  loginPasswordEL,
+  registerEmailEL,
+  registerUsernameEL,
+  registerPasswordEL,
+].filter(Boolean);
+
 console.log("[AUTH] auth.js loaded");
 
 const authQuery = new URLSearchParams(window.location.search).get("auth");
@@ -59,6 +67,16 @@ if (!hasAuthUi) {
 } else {
   authRootEL.hidden = false;
   showView("login");
+
+  for (const inputEl of authInputEls) {
+    inputEl.addEventListener("keydown", (event) => {
+      event.stopPropagation();
+    });
+
+    inputEl.addEventListener("keyup", (event) => {
+      event.stopPropagation();
+    });
+  }
 
   showRegisterBtn.addEventListener("click", () => {
     showView("register");

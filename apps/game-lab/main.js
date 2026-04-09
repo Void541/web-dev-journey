@@ -33,6 +33,9 @@ import { createTalentSystem } from "./src/systems/talente.js";
 import { createNetworkSystem } from "./src/multiplayer-server/network.js";
 import { isQuestComplete, giveQuestReward } from "./src/quests/questLogic.js";
 import { QUESTS } from "./src/quests/quests.js";
+import { merchantNpc, openMerchant } from "./src/npcs/merchant.js";
+import { dockmasterNpc, openDockmaster } from "./src/npcs/dockmaster.js";
+import { navigatorNpc, openNavigator } from "./src/npcs/navigator.js";
 
 const DEV_MODE = true;
 const PLAYER_API_BASE = "http://127.0.0.1:3000";
@@ -505,6 +508,8 @@ state.ui = {
   activeCannonSlot: 0,
 };
 
+state.moveTarget = null;
+
 state.crew = state.crew ?? {};
 
 state.crew = {
@@ -695,6 +700,7 @@ shootTarget: () => {
 
 if (DEV_MODE) {
   window.addEventListener("keydown", (e) => {
+    if (isTypingIntoUi()) return;
     const k = e.key.toLowerCase();
 
     if (k === "m") {
@@ -707,6 +713,7 @@ if (DEV_MODE) {
 }
 
 window.addEventListener("keydown", (e) => {
+  if (isTypingIntoUi()) return;
   const k = e.key.toLowerCase();
 
   if (k === "p") togglePause();
@@ -758,11 +765,96 @@ function findEnemyAt(x, y) {
   return null;
 }
 
+function getEnemyApproachRange() {
+  const cannons = state.playerLoadout?.cannons ?? [];
+  const ranges = cannons
+    .filter(Boolean)
+    .map((id) => CANNON_TYPES[id]?.range ?? 0)
+    .filter((range) => range > 0);
+
+  if (ranges.length === 0) return 280;
+
+  const shortestRange = Math.min(...ranges);
+  return Math.max(120, shortestRange - 36);
+}
+
+function findHangarInteractableAt(x, y) {
+  if (state.mode !== "pirateCove") return null;
+
+  const interactables = [
+    {
+      id: "merchant",
+      x: merchantNpc.x,
+      y: merchantNpc.y,
+      hitRadius: merchantNpc.r + 12,
+      stopRange: merchantNpc.r + 24,
+    },
+    {
+      id: "dockmaster",
+      x: dockmasterNpc.x,
+      y: dockmasterNpc.y,
+      hitRadius: dockmasterNpc.r + 12,
+      stopRange: dockmasterNpc.r + 60,
+    },
+    {
+      id: "navigator",
+      x: navigatorNpc.x,
+      y: navigatorNpc.y,
+      hitRadius: navigatorNpc.r + 12,
+      stopRange: navigatorNpc.r + 60,
+    },
+  ];
+
+  for (const npc of interactables) {
+    const dx = x - npc.x;
+    const dy = y - npc.y;
+
+    if (dx * dx + dy * dy <= npc.hitRadius * npc.hitRadius) {
+      return npc;
+    }
+  }
+
+  return null;
+}
+
 canvas.addEventListener("click", (ev) => {
   const m = getMousePos(ev);
   const wpos = screenToWorld(m.x, m.y);
+  const interactable = findHangarInteractableAt(wpos.x, wpos.y);
+
+  if (interactable) {
+    state.moveTarget = {
+      kind: "interact",
+      targetId: interactable.id,
+      x: interactable.x,
+      y: interactable.y,
+      stopRange: interactable.stopRange,
+    };
+
+    combat.targetId = null;
+    const npcLabel =
+      interactable.id === "dockmaster"
+        ? "Ship Technician"
+        : interactable.id === "navigator"
+          ? "Contract Officer"
+          : "Salvage Broker";
+    state.pushLootNotice?.(`Autopilot engaged: ${npcLabel}`);
+    return;
+  }
+
   const e = findEnemyAt(wpos.x, wpos.y);
   combat.targetId = e ? e.id : null;
+
+  if (e) {
+    state.moveTarget = {
+      kind: "enemy",
+      enemyId: e.id,
+      stopRange: getEnemyApproachRange(),
+    };
+    return;
+  }
+
+  state.moveTarget = null;
 });
 
 // ---------- Spawning ----------
@@ -825,6 +917,10 @@ if (oldMaxHp !== newMaxHp) {
     input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
     input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
 
+  if (wantsMove && state.moveTarget) {
+    state.moveTarget = null;
+  }
+
 const equippedCrew = getEquippedCrew(state);
 const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
 
@@ -868,6 +964,47 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
     const inv = 1 / Math.sqrt(2);
     ax *= inv;
     ay *= inv;
+  }
+
+  if (!wantsMove && state.moveTarget) {
+    let targetX = state.moveTarget.x;
+    let targetY = state.moveTarget.y;
+
+    if (state.moveTarget.kind === "enemy") {
+      const targetEnemy = enemies.find((enemy) => enemy?.id === state.moveTarget.enemyId);
+
+      if (!targetEnemy || targetEnemy.hp <= 0) {
+        state.moveTarget = null;
+      } else {
+        targetX = targetEnemy.x;
+        targetY = targetEnemy.y;
+      }
+    }
+
+    if (state.moveTarget) {
+      const dx = targetX - player.x;
+      const dy = targetY - player.y;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance <= (state.moveTarget.stopRange ?? player.r + 8)) {
+        if (state.moveTarget.kind === "interact") {
+          if (state.moveTarget.targetId === "merchant") {
+            openMerchant(state);
+          } else if (state.moveTarget.targetId === "dockmaster") {
+            openDockmaster(state);
+          } else if (state.moveTarget.targetId === "navigator") {
+            openNavigator(state);
+          }
+
+          state.moveTarget = null;
+        }
+      } else {
+        const dir = norm(dx, dy);
+        ax = dir.x;
+        ay = dir.y;
+        player.angle = Math.atan2(dir.y, dir.x);
+      }
+    }
   }
 
    if ( ax !== 0 || ay !== 0) {
@@ -1237,6 +1374,19 @@ function screenToWorld(sx, sy) {
     x: sx + camera.x,
     y: sy + camera.y,
   };
+}
+
+function isTypingIntoUi() {
+  const el = document.activeElement;
+  if (!el) return false;
+
+  const tag = el.tagName?.toLowerCase();
+  return (
+    tag === "input" ||
+    tag === "textarea" ||
+    tag === "select" ||
+    el.isContentEditable === true
+  );
 }
 
 

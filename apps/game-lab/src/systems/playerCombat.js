@@ -92,8 +92,13 @@ export function updatePlayerCombat(dt, state) {
     }
   }
 
-  if (!anyInRange || target.hp <= 0) {
+  if (target.hp <= 0) {
     combat.targetId = null;
+    return;
+  }
+
+  if (!anyInRange) {
+    // Keep the selected target while the ship is still closing the distance.
     return;
   }
 

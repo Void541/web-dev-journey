@@ -4,6 +4,14 @@ export const dockmasterNpc = {
   r: 40,
 };
 
+export function openDockmaster(state) {
+  state.ui = state.ui ?? {};
+  state.ui.workshopOpen = true;
+  state.ui.merchantOpen = false;
+  state.ui.navigatorOpen = false;
+  state.ui.dockmasterOpen = false;
+}
+
 export function updateDockmaster(state) {
   const dx = state.player.x - dockmasterNpc.x;
   const dy = state.player.y - dockmasterNpc.y;
@@ -23,9 +31,7 @@ export function updateDockmaster(state) {
     state.ui.workshopOpen = !state.ui.workshopOpen;
 
     if (state.ui.workshopOpen) {
-      state.ui.merchantOpen = false;
-      state.ui.navigatorOpen = false;
-      state.ui.dockmasterOpen = false;
+      openDockmaster(state);
     }
   }
 }

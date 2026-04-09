@@ -30,6 +30,7 @@ export function createPirateCove() {
   function enter(state, options = {}) {
     state.enemies.length = 0;
     state.projectiles.length = 0;
+    state.moveTarget = null;
 
     state.combat.targetId = null;
     state.combat.cooldown = 0;

@@ -10,6 +10,13 @@ export const navigatorNpc = {
   r: 40,
 };
 
+export function openNavigator(state) {
+  state.ui = state.ui ?? {};
+  state.ui.navigatorOpen = true;
+  state.ui.dockmasterOpen = false;
+  state.ui.merchantOpen = false;
+}
+
 function getMouseInCanvas(state) {
   const rect = state.canvas.getBoundingClientRect();
   return {
@@ -56,8 +63,7 @@ export function updateNavigator(state) {
   if (nearNavigator && state.input?.wasPressed?.("f")) {
     state.ui.navigatorOpen = !state.ui.navigatorOpen;
     if (state.ui.navigatorOpen) {
-      state.ui.dockmasterOpen = false;
-      state.ui.merchantOpen = false;
+      openNavigator(state);
     }
   }
 
