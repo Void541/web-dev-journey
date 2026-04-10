@@ -81,7 +81,7 @@ function makeDraggable(panel, storageKey) {
 
 export function createHudOverlay() {
   const els = {
-    gold: document.getElementById("hud-gold"),
+    credits: document.getElementById("hud-credits"),
     silver: document.getElementById("hud-silver"),
     tokens: document.getElementById("hud-tokens"),
 
@@ -183,9 +183,9 @@ export function createHudOverlay() {
 
   function update(state, target) {
     const inv = state.inventory ?? {};
-    const gold = state.gold ?? 0;
+    const credits = state.credits ?? 0;
 
-    if (els.gold) els.gold.textContent = `Credits: ${gold}`;
+    if (els.credits) els.credits.textContent = `Credits: ${credits}`;
     if (els.silver) els.silver.textContent = `Silver: ${state.silver ?? 0}`;
     if (els.tokens) els.tokens.textContent = `Tokens: ${state.tokens ?? 0}`;
 

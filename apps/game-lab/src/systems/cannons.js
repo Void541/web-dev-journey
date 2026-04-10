@@ -17,7 +17,7 @@ export const CANNON_TYPES = {
     range: 560,
     projectileSpeed: 680,
     cost: {
-      gold: 120,
+      credits: 120,
       scrap: 12,
       tech: 3,
     },
@@ -31,7 +31,7 @@ export const CANNON_TYPES = {
     range: 420,
     projectileSpeed: 760,
     cost: {
-      gold: 120,
+      credits: 120,
       scrap: 10,
       tech: 2,
     },

@@ -86,7 +86,9 @@ export function renderGame(ctx, state, options) {
   renderRemotePlayers(ctx, remotePlayers, state.player.r);
   renderTrail(ctx, state.trail);
   renderProjectiles(ctx, state.projectiles, state.sprites);
-  renderEnemies(ctx, state.enemies, state);
+  if (state.mode !== "pirateCove") {
+    renderEnemies(ctx, state.enemies, state);
+  }
 
   if (showEnemyRanges) {
     renderEnemyRanges(ctx, state.enemies, state.enemyTypes);

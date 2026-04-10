@@ -14,7 +14,7 @@ export const CrewSystem = {
         description: "The first mate assists the captain and is responsible for managing the ship's operations and crew.",
         repairMul: 1.5,
         cost: {
-            gold: 90,
+            credits: 90,
             scrap: 8,
             tech: 1,
         },
@@ -26,7 +26,7 @@ export const CrewSystem = {
         description: "The navigator is responsible for charting the ship's course and ensuring it stays on track.",
         speed: 1.5,
         cost: {
-            gold: 80,
+            credits: 80,
             scrap: 6,
             tech: 1,
         },
@@ -39,7 +39,7 @@ export const CrewSystem = {
         dmgMul: 2,
         reloadCooldownMul: 0.8,
         cost: {
-            gold: 110,
+            credits: 110,
             scrap: 10,
             tech: 2,
         },

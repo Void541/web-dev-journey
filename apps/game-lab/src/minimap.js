@@ -54,36 +54,38 @@ export function drawMinimap(ctx, state, opts = {}) {
   ctx.strokeRect(vx, vy, vwMm, vhMm);
 
   // ---- Enemies ----
-  for (const e of enemies) {
-    if (!e) continue;
+  if (state.mode !== "pirateCove") {
+    for (const e of enemies) {
+      if (!e) continue;
 
-    const mx = mapX(e.x);
-    const my = mapY(e.y);
+      const mx = mapX(e.x);
+      const my = mapY(e.y);
 
-    if (e.isAdmiral) {
-      ctx.save();
-      ctx.globalAlpha = 0.95;
-      ctx.fillStyle = "rgb(255,215,90)";
-      ctx.strokeStyle = "rgba(0,0,0,0.55)";
-      ctx.lineWidth = 1.5;
+      if (e.isAdmiral) {
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = "rgb(255,215,90)";
+        ctx.strokeStyle = "rgba(0,0,0,0.55)";
+        ctx.lineWidth = 1.5;
 
-      ctx.beginPath();
-      ctx.moveTo(mx, my - 5);
-      ctx.lineTo(mx + 5, my);
-      ctx.lineTo(mx, my + 5);
-      ctx.lineTo(mx - 5, my);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    } else {
-      ctx.save();
-      ctx.globalAlpha = 0.9;
-      ctx.fillStyle = "rgb(220,70,70)";
-      ctx.beginPath();
-      ctx.arc(mx, my, 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+        ctx.beginPath();
+        ctx.moveTo(mx, my - 5);
+        ctx.lineTo(mx + 5, my);
+        ctx.lineTo(mx, my + 5);
+        ctx.lineTo(mx - 5, my);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = "rgb(220,70,70)";
+        ctx.beginPath();
+        ctx.arc(mx, my, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
   }
 

@@ -319,6 +319,9 @@ const state = {
   },
 };
 
+state.multiplayerNetwork = multiplayerNetwork;
+multiplayerNetwork.attachSharedEnemiesStore(enemies);
+
 async function saveLoadoutState() {
   if (!state.account?.playerId) return;
 
@@ -336,7 +339,7 @@ async function saveLoadoutState() {
         crew: state.crew,
         inventory: {
           ...state.inventory,
-          gold: state.gold,
+          credits: state.credits,
         },
         progression: {
           unlocked: state.progression?.unlocked,
@@ -387,7 +390,7 @@ function applyAuthenticatedPlayer(playerData) {
   }
 
   if (playerData.inventory) {
-    state.gold = Number(playerData.inventory.gold ?? state.gold ?? 0);
+    state.credits = Number(playerData.inventory.credits ?? playerData.inventory.gold ?? state.credits ?? 0);
     state.inventory = {
       ...state.inventory,
       ...playerData.inventory,
@@ -396,7 +399,7 @@ function applyAuthenticatedPlayer(playerData) {
 }
 
 function getResourceAmount(key) {
-  if (key === "gold") return state.gold ?? 0;
+  if (key === "credits") return state.credits ?? 0;
   if (key === "scrap") return state.inventory?.scrap ?? state.inventory?.metal ?? 0;
   return state.inventory?.[key] ?? 0;
 }
@@ -411,8 +414,8 @@ function spendCost(cost) {
   if (!canAffordCost(cost)) return false;
 
   for (const [key, amount] of Object.entries(cost)) {
-    if (key === "gold") {
-      state.gold = Math.max(0, (state.gold ?? 0) - amount);
+    if (key === "credits") {
+      state.credits = Math.max(0, (state.credits ?? 0) - amount);
       continue;
     }
 
@@ -451,7 +454,7 @@ state.getEquippedShip = getEquippedShip;
 
 
 state.playerShip = {
-  id: "frigate",
+  id: "sloop",
 };
 
 state.shipStats = shipStats;
@@ -553,24 +556,55 @@ const wrecks = createWreckSystem({
 const lootTable = createLootTable();
 state.lootTable = lootTable;
 
-state.inventory = state.inventory ?? { gold: 0, wood: 0, metal: 0, scrap: 0, cloth: 0, tech: 0, powder: 0, gear: 0 };
-state.gold = state.gold ?? 0;
+state.inventory = state.inventory ?? { credits: 0, wood: 0, metal: 0, scrap: 0, cloth: 0, tech: 0, powder: 0, gear: 0 };
+state.credits = state.credits ?? 0;
+
+function advanceQuestFlow() {
+  const activeQuest = state.quests?.active;
+  if (!activeQuest || !isQuestComplete(state, activeQuest)) return;
+
+  const nextQuestId = activeQuest.nextQuestID;
+  if (!nextQuestId) return;
+
+  giveQuestReward(state, activeQuest);
+  state.quests.completed.push(activeQuest.id);
+  state.pushLootNotice?.(`Completed quest: ${activeQuest.title}`);
+
+  const nextQuest = QUESTS.find((quest) => quest.id === nextQuestId) ?? null;
+  state.quests.active = nextQuest;
+
+  if (nextQuest?.id === "admiral1" && !state.questEvents.firstAdmiralTriggered) {
+    state.questEvents.firstAdmiralTriggered = true;
+    state.pushLootNotice?.("Admiral contact detected near the West Relay!");
+    if (multiplayerNetwork.isSharedWorldActive() && state.mode === "overworld") {
+      multiplayerNetwork.requestQuestAdmiral({
+        x: state.player.x,
+        y: state.player.y,
+      });
+    } else {
+      state.spawnEnemy?.({
+        type: "basic",
+        admiral: true,
+      });
+    }
+  }
+}
 
 state.onEnemyKilled = (enemy, drop) => {
-  const gold =
-    (drop?.gold ?? state.enemyTypes?.[enemy.type]?.gold ?? 0) +
-    (enemy.goldBonus ?? 0);
+  const credits =
+    (drop?.credits ?? state.enemyTypes?.[enemy.type]?.credits ?? 0) +
+    (enemy.creditsBonus ?? 0);
 
   const loot = drop?.loot ?? null;
 
-  state.gold += gold;
+  state.credits += credits;
 
   if (loot) {
     state.wrecks?.spawn(enemy.x, enemy.y, { loot });
   }
 
-  if (gold > 0) {
-    state.pushLootNotice?.(`+${gold} Gold`);
+  if (credits > 0) {
+    state.pushLootNotice?.(`+${credits} Credits`);
   }
     state.pushLootNotice?.(`+${enemy.xp ?? 0} XP`);
 
@@ -580,22 +614,7 @@ if(enemy.isAdmiral) {
   state.progress.kills += 1;
 }
 
-const activeQuest = state.quests?.active;
-
-if(activeQuest?.id === "kill5" && 
-  isQuestComplete(state, activeQuest) &&
-  !state.questEvents.firstAdmiralTriggered) {
-    giveQuestReward(state, activeQuest);
-    state.quests.completed.push(activeQuest.id);
-    state.pushLootNotice?.(`Completed quest: ${activeQuest.title}`);
-    state.quests.active = QUESTS.find(q => q.id === activeQuest.nextQuestID) ?? null;
-  state.questEvents.firstAdmiralTriggered = true;
-    console.log("First admiral kill triggered");
-  state.spawnEnemy?.({
-    type: "basic",
-    admiral: true,
-  });
-  }
+advanceQuestFlow();
 
   if (enemy.isAdmiral) {
     state.admirals.active = Math.max(0, state.admirals.active - 1);
@@ -625,6 +644,21 @@ if(activeQuest?.id === "kill5" &&
 levelSystem.addXP?.(state, enemy.xp ?? 0,);
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
+
+state.onSalvageLoot = () => {
+  advanceQuestFlow();
+};
+
+multiplayerNetwork.setEnemyKilledHandler(({ enemy }) => {
+  if (!enemy) return;
+
+  const drop = state.lootTable?.rollForEnemy?.(enemy) ?? {
+    loot: { scrap: 2, tech: 1 },
+    credits: state.enemyTypes?.[enemy.type]?.credits ?? 1,
+  };
+
+  state.onEnemyKilled?.(enemy, drop);
+});
 
 state.onSpawnWreck = (e) => {
   wrecks.spawnWreck(e.x, e.y, e.type);
@@ -873,8 +907,6 @@ function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
   });
 }
 
-
-
 player.maxHp = state.shipStats.getMaxHp();
 player.hp = player.maxHp;
 
@@ -1051,22 +1083,27 @@ multiplayerNetwork.updateRemotePlayers();
     if (trail[i].t <= 0) trail.splice(i, 1);
   }
 
-  updateEnemies(dt, {
-    enemies, player, canvas,
-    world,
-    ENEMY_SPEED,
-    ENEMY_FIRE_ENABLED,
-    ENEMY_FIRE_COOLDOWN,
-    ENEMY_BULLET_SPEED,
-    ENEMY_BULLET_TTL,
-    ENEMY_AGGRO_TIME,
-    norm, rand,
-    spawnProjectile,
-    islandColliders,
-    islands,
-    mode: state.mode,
-    enemyTypes: state.enemyTypes,
-  });
+  const sharedWorldEnemiesActive =
+    multiplayerNetwork.isSharedWorldActive() && state.mode === "overworld";
+
+  if (!sharedWorldEnemiesActive) {
+    updateEnemies(dt, {
+      enemies, player, canvas,
+      world,
+      ENEMY_SPEED,
+      ENEMY_FIRE_ENABLED,
+      ENEMY_FIRE_COOLDOWN,
+      ENEMY_BULLET_SPEED,
+      ENEMY_BULLET_TTL,
+      ENEMY_AGGRO_TIME,
+      norm, rand,
+      spawnProjectile,
+      islandColliders,
+      islands,
+      mode: state.mode,
+      enemyTypes: state.enemyTypes,
+    });
+  }
 
   updatePlayerCombat(dt, state);
 
@@ -1341,7 +1378,7 @@ if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
 }
 
   if (shouldSendPlayerState(player)) {
-    multiplayerNetwork.sendPlayerState(player);
+    multiplayerNetwork.sendPlayerState(player, state.mode);
   }
 
 state.questTracker.update();
@@ -1507,4 +1544,5 @@ function render() {
     getIslandColliders,
   });
 }
+
 

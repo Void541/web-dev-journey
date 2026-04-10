@@ -36,8 +36,8 @@ export function giveQuestReward(state, quest) {
   const scrapKey = getScrapKey(state);
 
   for (const [key, amount] of Object.entries(quest.reward)) {
-    if (key === "gold") {
-      state.gold = (state.gold ?? 0) + amount;
+    if (key === "credits") {
+      state.credits = (state.credits ?? 0) + amount;
     } else if (key === "scrap") {
       addItem(state, scrapKey, amount);
     } else {

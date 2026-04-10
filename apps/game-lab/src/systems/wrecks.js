@@ -128,8 +128,8 @@ export function createWreckSystem(cfg = {}) {
       state.ui.salvage.p = p;
 
       if (w.salvageT >= SALVAGE_TIME) {
-        // ✅ REWARD: Materialien + (optional) extra gold
-        // Gold gibst du ja "on kill" — hier nur mats.
+        // ✅ REWARD: Materialien + optional extra credits if needed later.
+        // Credits come from kills for now, so wrecks only hand out materials.
         state.inventory = state.inventory || {};
         const inv = state.inventory;
 
@@ -144,6 +144,7 @@ export function createWreckSystem(cfg = {}) {
             inv[k] = (inv[k] ?? 0) + v;
             state.pushLootNotice(`+${v} ${k}`); 
           }
+          state.onSalvageLoot?.(w.loot);
         }
 
         // FX burst + remove wreck

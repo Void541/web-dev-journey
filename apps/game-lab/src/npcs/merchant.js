@@ -4,7 +4,7 @@ function getScrapKey(state) {
 }
 
 function canAfford(state, amount) {
-  return (state.gold ?? 0) >= amount;
+  return (state.credits ?? 0) >= amount;
 }
 
 function addItem(state, key, amount) {
@@ -72,7 +72,7 @@ export function updateMerchant(state) {
 
       if (b.id === "sellScrap") {
         if (removeItem(state, scrapKey, 10)) {
-          state.gold += 4;
+          state.credits += 4;
           state.pushLootNotice?.(`Sold 10 ${scrapKey} for 4 credits`);
         } else {
           state.pushLootNotice?.(`Not enough ${scrapKey} to sell`);
@@ -81,7 +81,7 @@ export function updateMerchant(state) {
 
       if (b.id === "sellTech") {
         if (removeItem(state, "tech", 2)) {
-          state.gold += 10;
+          state.credits += 10;
           state.pushLootNotice?.("Sold 2 tech for 10 credits");
         } else {
           state.pushLootNotice?.("Not enough tech to sell");
@@ -90,7 +90,7 @@ export function updateMerchant(state) {
 
       if (b.id === "buyTech") {
         if (canAfford(state, 12)) {
-          state.gold -= 12;
+          state.credits -= 12;
           addItem(state, "tech", 1);
           state.pushLootNotice?.("Bought 1 tech for 12 credits");
         } else {
@@ -100,7 +100,7 @@ export function updateMerchant(state) {
 
       if (b.id === "buyGear") {
         if (canAfford(state, 28)) {
-          state.gold -= 28;
+          state.credits -= 28;
           addItem(state, "gear", 1);
           state.pushLootNotice?.("Bought 1 gear for 28 credits");
         } else {
@@ -170,7 +170,7 @@ export function renderMerchantUI(ctx, state) {
 
   ctx.font = "14px system-ui";
   ctx.fillStyle = "rgba(255,255,255,0.75)";
-  ctx.fillText(`Credits: ${state.gold ?? 0}`, x + 20, y + 74);
+  ctx.fillText(`Credits: ${state.credits ?? 0}`, x + 20, y + 74);
 
   const { x: mx, y: my } = getMouseInCanvas(state);
 

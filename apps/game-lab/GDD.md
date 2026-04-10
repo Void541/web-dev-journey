@@ -295,7 +295,7 @@ The first playable loop should be:
 2. Accept first mission
 3. Enter the nearby beginner zone
 4. Fight basic enemies
-5. Explore or collect one objective
+5. Salvage the wreck field
 6. Trigger the first admiral
 7. Defeat the admiral
 8. Return to Pirate Cove for reward and next direction
@@ -306,6 +306,8 @@ This loop is the current best target for turning the prototype into the first tr
 The current prototype already supports a first version of this loop:
 - accept the first quest from the Navigator
 - defeat the required basic enemies
+- automatically trigger the salvage follow-up quest
+- recover scrap from the wreck field near the West Relay
 - automatically trigger the admiral follow-up quest
 - spawn the first admiral as a quest escalation event
 - defeat the admiral

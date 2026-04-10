@@ -90,21 +90,21 @@ export function createLootTable(cfg = {}) {
         rolls: 1,
         matMul: 1.0,
         specialChance: 0.22,
-        gold: 2,
+        credits: 2,
       },
 
       rammer: {
         rolls: 1,
         matMul: 1.05,
         specialChance: 0.18,
-        gold: 2,
+        credits: 2,
       },
 
       tank: {
         rolls: 2,
         matMul: 1.35,
         specialChance: 0.24,
-        gold: 4,
+        credits: 4,
         bonusLoot: [
           { id: "scrap", min: 1, max: 2, p: 0.75 },
         ],
@@ -114,7 +114,7 @@ export function createLootTable(cfg = {}) {
         rolls: 1,
         matMul: 1.0,
         specialChance: 0.24,
-        gold: 3,
+        credits: 3,
         bonusLoot: [
           { id: "tech", min: 0, max: 1, p: 0.3 },
         ],
@@ -124,7 +124,7 @@ export function createLootTable(cfg = {}) {
         rolls: 1,
         matMul: 1.05,
         specialChance: 0.28,
-        gold: 3,
+        credits: 3,
         bonusLoot: [
           { id: "scrap", min: 1, max: 2, p: 0.55 },
         ],
@@ -138,7 +138,7 @@ export function createLootTable(cfg = {}) {
         { id: "tech", min: 1, max: 2, p: 1.0 },
         { id: "gear", min: 1, max: 1, p: 1.0 },
       ],
-      extraGold: 10,
+      extraCredits: 10,
       specialChanceBonus: 0.3,
     },
   };
@@ -199,11 +199,11 @@ export function createLootTable(cfg = {}) {
 
     loot = scaleLoot(loot, totalMul);
 
-    const gold =
-      (tcfg.gold ?? 1) +
-      (enemy?.isAdmiral ? C.admiral.extraGold : 0);
+    const credits =
+      (tcfg.credits ?? 1) +
+      (enemy?.isAdmiral ? C.admiral.extraCredits : 0);
 
-    return { loot, gold, rarity };
+    return { loot, credits, rarity };
   }
 
   return { rollForEnemy };

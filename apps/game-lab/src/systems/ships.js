@@ -15,7 +15,7 @@ export const SHIP_TYPES = {
     speedMul: 1.0,
     cannonSlots: 2,
     cost: {
-      gold: 250,
+      credits: 250,
       scrap: 20,
       tech: 3,
     },
@@ -28,7 +28,7 @@ export const SHIP_TYPES = {
     speedMul: 0.88,
     cannonSlots: 3,
     cost: {
-      gold: 700,
+      credits: 700,
       scrap: 60,
       tech: 10,
       gear: 1,

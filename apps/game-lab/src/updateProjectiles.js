@@ -50,6 +50,21 @@ export function updateProjectiles(dt, state) {
         const rr = p.r + e.r;
 
         if (dist2(p.x, p.y, e.x, e.y) <= rr * rr) {
+          const sharedWorldEnemiesActive =
+            state.multiplayerNetwork?.isSharedWorldActive?.() &&
+            state.mode === "overworld";
+
+          if (sharedWorldEnemiesActive) {
+            e.hitT = 0.12;
+            state.damage?.spawnEnemyHit?.(e.x, e.y - e.r - 10, p.dmg);
+            state.multiplayerNetwork?.sendEnemyHit?.({
+              targetId: e.id,
+              damage: p.dmg,
+            });
+            projectiles.splice(i, 1);
+            break;
+          }
+
           e.hp -= p.dmg;
           e.hitT = 0.12;
           e.aggroT = state.ENEMY_AGGRO_TIME;
@@ -66,7 +81,7 @@ export function updateProjectiles(dt, state) {
 
             const drop = state.lootTable?.rollForEnemy?.(e) ?? {
               loot: { scrap: 2, tech: 1 },
-              gold: state.enemyTypes?.[e.type]?.gold ?? 1,
+              credits: state.enemyTypes?.[e.type]?.credits ?? 1,
             };
 
             state.onEnemyKilled?.(e, drop);

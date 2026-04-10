@@ -5,7 +5,7 @@ import { CANNON_TYPES } from "../systems/cannons.js";
 function formatCost(cost) {
   if (!cost) return "Starter issue";
   return Object.entries(cost)
-    .map(([key, value]) => `${value} ${key === "gold" ? "credits" : key}`)
+    .map(([key, value]) => `${value} ${key}`)
     .join(", ");
 }
 
@@ -144,7 +144,7 @@ function renderSidebar(ctx, state, { x, y, w, inventory, mx, my }) {
   ctx.fillStyle = "rgba(255,255,255,0.78)";
   ctx.fillText(`Ship: ${equippedShip.name}`, x + 14, y + 260);
   ctx.fillText(`Slots: ${equippedShip.cannonSlots}`, x + 14, y + 282);
-  ctx.fillText(`Credits: ${state.gold ?? 0}`, x + 14, y + 304);
+  ctx.fillText(`Credits: ${state.credits ?? 0}`, x + 14, y + 304);
 
   ctx.fillStyle = "#fff";
   ctx.font = "700 15px system-ui";

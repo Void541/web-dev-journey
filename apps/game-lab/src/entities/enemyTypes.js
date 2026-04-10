@@ -11,7 +11,7 @@ export const enemyTypes = {
     fireCooldown: 1.2,
     preferredRange: 200,
     spawnWeight: 70,
-    gold: 4,
+    credits: 4,
     xp: 100,
   },
 
@@ -26,7 +26,7 @@ export const enemyTypes = {
     fireCooldown: 2.0,
     preferredRange: 150,
     spawnWeight: 18,
-    gold: 9,
+    credits: 9,
     xp: 250,
   },
 
@@ -42,7 +42,7 @@ export const enemyTypes = {
     preferredRange: 420,
     rangeMul: 1.35,
     spawnWeight: 8,
-    gold: 7,
+    credits: 7,
     xp: 200,
   },
 
@@ -60,7 +60,7 @@ export const enemyTypes = {
     slowAmount: 0.45,
     slowDuration: 1.6,
     spawnWeight: 4,
-    gold: 8,
+    credits: 8,
     xp: 220,
   },
 };

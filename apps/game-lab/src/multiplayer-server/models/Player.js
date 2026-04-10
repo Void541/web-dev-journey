@@ -49,7 +49,7 @@ const playerSchema = new mongoose.Schema({
         captain: Boolean,
     },
     inventory: {
-        gold: Number,
+        credits: Number,
         wood: Number,
         metal: Number,
         scrap: Number,
