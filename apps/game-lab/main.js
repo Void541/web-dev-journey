@@ -649,15 +649,55 @@ state.onSalvageLoot = () => {
   advanceQuestFlow();
 };
 
-multiplayerNetwork.setEnemyKilledHandler(({ enemy }) => {
+multiplayerNetwork.setEnemyKilledHandler(({ enemy, drop }) => {
   if (!enemy) return;
 
-  const drop = state.lootTable?.rollForEnemy?.(enemy) ?? {
+  const resolvedDrop = drop ?? state.lootTable?.rollForEnemy?.(enemy) ?? {
     loot: { scrap: 2, tech: 1 },
     credits: state.enemyTypes?.[enemy.type]?.credits ?? 1,
   };
 
-  state.onEnemyKilled?.(enemy, drop);
+  state.onEnemyKilled?.(enemy, resolvedDrop);
+});
+
+multiplayerNetwork.setPlayerDamagedHandler((payload) => {
+  const damageAmount = Number(payload?.damage ?? 0);
+  if (damageAmount <= 0) return;
+
+  player.hp -= damageAmount;
+
+  if (state.damage) {
+    if (payload?.isAdmiralShot) {
+      state.damage.spawnAdmiralHit(player.x, player.y - player.r - 12, damageAmount);
+    } else {
+      state.damage.spawnPlayerHit(player.x, player.y - player.r - 12, damageAmount);
+    }
+  }
+
+  if (payload?.effect?.kind === "slow") {
+    player.slowT = Math.max(player.slowT ?? 0, payload.effect.t ?? 1.2);
+    player.slowMul = payload.effect.mul ?? 0.6;
+  }
+
+  state.onPlayerHit?.(payload);
+});
+
+multiplayerNetwork.setEnemyShotHandler((payload) => {
+  if (state.mode !== "overworld") return;
+
+  spawnProjectile({
+    x: payload?.x,
+    y: payload?.y,
+    vx: payload?.vx,
+    vy: payload?.vy,
+    fromEnemy: true,
+    dmg: payload?.damage,
+    ttl: payload?.ttl,
+    r: payload?.r,
+    effect: payload?.effect ?? null,
+    isAdmiralShot: Boolean(payload?.isAdmiralShot),
+    visualOnly: true,
+  });
 });
 
 state.onSpawnWreck = (e) => {
@@ -893,7 +933,7 @@ canvas.addEventListener("click", (ev) => {
 
 // ---------- Spawning ----------
 
-function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
+function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r, effect = null, isAdmiralShot = false, visualOnly = false }) {
   projectiles.push({
     x,
     y,
@@ -903,7 +943,9 @@ function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r }) {
     dmg: dmg ?? 1,
     ttl: ttl ?? 2.0,
     r: r ?? 3,
-    effect: null,
+    effect,
+    isAdmiralShot,
+    visualOnly,
   });
 }
 

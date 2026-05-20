@@ -241,10 +241,10 @@ const SHARED_WORLD = {
 };
 
 const ENEMY_TYPES = {
-  basic: { hp: 24, r: 16, speed: 90, color: "rgb(170,45,40)", spawnWeight: 70 },
-  tank: { hp: 40, r: 22, speed: 58, color: "rgb(120,40,40)", spawnWeight: 18 },
-  sniper: { hp: 18, r: 16, speed: 80, color: "rgb(200,200,255)", spawnWeight: 8 },
-  disabler: { hp: 28, r: 17, speed: 86, color: "rgb(140,220,160)", spawnWeight: 4 },
+  basic: { hp: 24, r: 16, speed: 90, color: "rgb(170,45,40)", spawnWeight: 70, fireCooldown: 1.2, attackRange: 520, damage: 10, credits: 2 },
+  tank: { hp: 40, r: 22, speed: 58, color: "rgb(120,40,40)", spawnWeight: 18, fireCooldown: 2.0, attackRange: 520, damage: 12, credits: 4 },
+  sniper: { hp: 18, r: 16, speed: 80, color: "rgb(200,200,255)", spawnWeight: 8, fireCooldown: 2.4, attackRange: 720, damage: 11, credits: 3 },
+  disabler: { hp: 28, r: 17, speed: 86, color: "rgb(140,220,160)", spawnWeight: 4, fireCooldown: 1.7, attackRange: 520, damage: 10, credits: 3, appliesSlow: true, slowAmount: 0.6, slowDuration: 1.2 },
 };
 
 function rand(min, max) {
@@ -266,6 +266,36 @@ function pickSharedEnemyType() {
   }
 
   return "basic";
+}
+
+function rollSharedEnemyReward(enemy) {
+  const reward = { loot: {}, credits: 0 };
+  const type = enemy?.type ?? "basic";
+
+  const addLoot = (key, amount) => {
+    if (amount <= 0) return;
+    reward.loot[key] = (reward.loot[key] ?? 0) + amount;
+  };
+
+  addLoot("scrap", 1 + Math.floor(Math.random() * 3));
+  if (Math.random() < 0.18) addLoot("tech", 1);
+
+  if (type === "tank" && Math.random() < 0.75) addLoot("scrap", 1 + Math.floor(Math.random() * 2));
+  if (type === "sniper" && Math.random() < 0.3) addLoot("tech", 1);
+  if (type === "disabler" && Math.random() < 0.55) addLoot("scrap", 1 + Math.floor(Math.random() * 2));
+
+  reward.credits =
+    (ENEMY_TYPES[type]?.credits ?? 1) +
+    (enemy?.isAdmiral ? 10 : 0);
+
+  if (enemy?.isAdmiral) {
+    addLoot("tech", 1 + Math.floor(Math.random() * 2));
+    addLoot("gear", 1);
+  } else if (Math.random() < 0.08) {
+    addLoot("gear", 1);
+  }
+
+  return reward;
 }
 
 function getOverworldPlayers() {
@@ -325,6 +355,13 @@ function spawnSharedEnemy(options = {}) {
     name: options.admiral ? "Admiral Raider Command" : "Raider Patrol",
     aggroT: 0,
     turnT: rand(0.8, 1.8),
+    fireT: config.fireCooldown ?? 1.2,
+    fireCooldown: config.fireCooldown ?? 1.2,
+    attackRange: config.attackRange ?? 520,
+    damage: config.damage ?? 10,
+    appliesSlow: Boolean(config.appliesSlow),
+    slowAmount: config.slowAmount ?? 0.6,
+    slowDuration: config.slowDuration ?? 1.2,
   };
 
   sharedEnemies.push(enemy);
@@ -349,6 +386,7 @@ function updateSharedEnemies(dt) {
 
   for (const enemy of sharedEnemies) {
     enemy.aggroT = Math.max(0, (enemy.aggroT ?? 0) - dt);
+    enemy.fireT = Math.max(0, (enemy.fireT ?? enemy.fireCooldown ?? 1.2) - dt);
 
     const target = overworldPlayers.reduce((best, player) => {
       if (!best) return player;
@@ -422,6 +460,42 @@ function updateSharedEnemies(dt) {
       enemy.y = SHARED_WORLD.height - enemy.r;
       enemy.vy *= -1;
     }
+
+    if (target && (enemy.aggroT ?? 0) > 0) {
+      const dx = target.x - enemy.x;
+      const dy = target.y - enemy.y;
+      const distance = Math.hypot(dx, dy) || 1;
+
+      if (distance <= (enemy.attackRange ?? 520) && (enemy.fireT ?? 0) <= 0) {
+        const ux = dx / distance;
+        const uy = dy / distance;
+
+        io.emit("enemyShot", {
+          x: enemy.x + ux * (enemy.r + 4),
+          y: enemy.y + uy * (enemy.r + 4),
+          vx: ux * 320,
+          vy: uy * 320,
+          ttl: 2.6,
+          r: 3,
+          damage: enemy.damage ?? 10,
+          isAdmiralShot: Boolean(enemy.isAdmiral),
+          effect: enemy.appliesSlow
+            ? { kind: "slow", t: enemy.slowDuration ?? 1.2, mul: enemy.slowAmount ?? 0.6 }
+            : null,
+        });
+
+        io.to(target.id).emit("playerDamaged", {
+          damage: enemy.damage ?? 10,
+          isAdmiralShot: Boolean(enemy.isAdmiral),
+          enemyId: enemy.id,
+          effect: enemy.appliesSlow
+            ? { kind: "slow", t: enemy.slowDuration ?? 1.2, mul: enemy.slowAmount ?? 0.6 }
+            : null,
+        });
+
+        enemy.fireT = enemy.fireCooldown ?? 1.2;
+      }
+    }
   }
 }
 
@@ -477,9 +551,13 @@ io.on("connection", (socket) => {
 
     if (enemy.hp <= 0) {
       const defeated = { ...enemy };
+      const reward = rollSharedEnemyReward(defeated);
       const index = sharedEnemies.findIndex((entry) => entry.id === enemy.id);
       if (index >= 0) sharedEnemies.splice(index, 1);
-      socket.emit("enemyKilled", { enemy: toClientEnemy(defeated) });
+      socket.emit("enemyKilled", {
+        enemy: toClientEnemy(defeated),
+        drop: reward,
+      });
     }
   });
 

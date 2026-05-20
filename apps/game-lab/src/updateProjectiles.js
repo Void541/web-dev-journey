@@ -23,6 +23,11 @@ export function updateProjectiles(dt, state) {
       const rr = p.r + player.r;
 
       if (dist2(p.x, p.y, player.x, player.y) <= rr * rr) {
+        if (p.visualOnly) {
+          projectiles.splice(i, 1);
+          continue;
+        }
+
         player.hp -= p.dmg;
 
        if (state.damage) {

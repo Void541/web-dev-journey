@@ -10,6 +10,8 @@ export function createNetworkSystem() {
   const remotePlayers = {};
   let sharedEnemiesStore = null;
   let enemyKilledHandler = null;
+  let playerDamagedHandler = null;
+  let enemyShotHandler = null;
   const ENEMY_PREDICTION_SECONDS = 0.05;
 
   function syncEnemySnapshots(serverEnemies = []) {
@@ -104,6 +106,14 @@ export function createNetworkSystem() {
     enemyKilledHandler?.(payload);
   });
 
+  socket.on("playerDamaged", (payload) => {
+    playerDamagedHandler?.(payload);
+  });
+
+  socket.on("enemyShot", (payload) => {
+    enemyShotHandler?.(payload);
+  });
+
   function sendPlayerState(player, mode) {
     if (!socket.connected) return;
 
@@ -151,6 +161,12 @@ export function createNetworkSystem() {
     },
     setEnemyKilledHandler(handler) {
       enemyKilledHandler = handler;
+    },
+    setPlayerDamagedHandler(handler) {
+      playerDamagedHandler = handler;
+    },
+    setEnemyShotHandler(handler) {
+      enemyShotHandler = handler;
     },
     isSharedWorldActive() {
       return socket.connected;

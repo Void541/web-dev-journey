@@ -16,6 +16,7 @@ const translations = {
     nav_projects: "Projekte",
     nav_contact: "Kontakt",
     nav_about: "Über mich",
+    nav_faq: "FAQ",
     about_title: "Über mich",
 
     about_text:"Ich entwickle strukturiert mein Fundament in moderner Webentwicklung mit dem langfristigen Ziel, eigene Software- und Spieleprojekte umzusetzen. Mein Fokus liegt auf sauberer Architektur, modularen Systemen und nachhaltigem Code – nicht nur auf funktionierenden Oberflächen. Aktuell arbeite ich an kleinen, eigenständigen Projekten, um Systemdenken, State-Management und saubere Code-Strukturen zu vertiefen. Langfristig möchte ich komplexere Anwendungen und spielähnliche Systeme mit Backend-Anbindung entwickeln.",
@@ -36,6 +37,8 @@ const translations = {
     roadmap_5: "Fullstack-Projekte mit eigener Serverlogik",
 
     projects_title: "Projekte",
+    faq_title: "FAQ",
+    faq_intro: "Fragen, die ich mir auf meinem Weg in die Webentwicklung selbst stelle und die auch in Gesprächen über moderne Softwareentwicklung immer wieder auftauchen.",
     contact_title: "Kontakt",
 
     project1_title: "Projekt 1: Mini Portfolio",
@@ -71,6 +74,18 @@ const translations = {
     project4_stat_1: "Status: Aktiv in Entwicklung",
     project4_stat_2: "Fokus: Gameplay & Progression",
     project4_stat_3: "Herzstück meines Portfolios",
+    faq_q1: "Warum will ich eigentlich Webentwickler werden?",
+    faq_a1: "Mich reizt, dass Webentwicklung Kreativität, Struktur und Problemlösen verbindet. Ich kann sichtbare Produkte bauen und gleichzeitig lernen, wie gute Software systematisch entsteht.",
+    faq_q2: "Wie lerne ich Programmieren gerade am effektivsten?",
+    faq_a2: "Ich lerne über echte Projekte. Statt nur Theorie zu lesen, baue ich kleine Anwendungen und ein größeres Herzensprojekt, damit ich UI, Logik, Debugging und Architektur praktisch trainiere.",
+    faq_q3: "Was sind aktuell meine größten Stärken?",
+    faq_a3: "Ich arbeite konstant, dokumentiere meinen Fortschritt über Projekte und denke gerne in Systemen. Besonders wichtig ist mir, nicht nur etwas irgendwie zum Laufen zu bringen, sondern den Code Schritt für Schritt sauberer zu strukturieren.",
+    faq_q4: "Ersetzt KI Programmierer oder verändert sie nur die Arbeit?",
+    faq_a4: "Ich sehe KI eher als Werkzeug als als Ersatz. Sie kann beim Recherchieren, Strukturieren oder Debuggen helfen, aber Verständnis, Verantwortung, Priorisierung und gute Entscheidungen im Produkt bleiben menschlich sehr wichtig.",
+    faq_q5: "Wie will ich KI sinnvoll beim Lernen und Entwickeln nutzen?",
+    faq_a5: "Ich nutze KI, um schneller Feedback zu bekommen, Konzepte besser zu verstehen und verschiedene Lösungswege zu vergleichen. Wichtig ist mir dabei, die Antworten nicht blind zu übernehmen, sondern sie nachzuvollziehen und selbst umzusetzen.",
+    faq_q6: "Was bedeutet modernes Programmieren für mich überhaupt?",
+    faq_a6: "Modernes Programmieren bedeutet für mich nicht nur neue Tools zu kennen, sondern sauber zu kommunizieren, wartbaren Code zu schreiben, mit Hilfsmitteln wie KI sinnvoll umzugehen und kontinuierlich dazuzulernen.",
 
     //================= TODO =================
     todo_placeholder: "Neue Aufgabe eingeben...",
@@ -147,6 +162,7 @@ const translations = {
     nav_projects: "Projects",
     nav_contact: "Contact",
     nav_about: "About",
+    nav_faq: "FAQ",
     about_title: "About",
 
     about_text:"I’m systematically building my foundation in modern web development with the long-term goal of creating my own software and game projects. My focus is on clean architecture, modular systems, and maintainable code — not just functional interfaces. I’m currently developing small standalone projects to strengthen my understanding of system design, state management, and structured code. Long-term, I aim to build more complex applications and game-like systems with backend integration.",
@@ -167,6 +183,8 @@ const translations = {
     roadmap_5: "Fullstack projects with custom server logic",
     
     projects_title: "Projects",
+    faq_title: "FAQ",
+    faq_intro: "Questions I ask myself on my path into web development and that also come up often in conversations about modern software development.",
     contact_title: "Contact",
 
     project1_title: "Project 1: Mini Portfolio",
@@ -202,6 +220,18 @@ const translations = {
     project4_stat_1: "Status: Actively in development",
     project4_stat_2: "Focus: Gameplay & progression",
     project4_stat_3: "Centerpiece of my portfolio",
+    faq_q1: "Why do I actually want to become a web developer?",
+    faq_a1: "I’m drawn to how web development combines creativity, structure, and problem-solving. I can build visible products while also learning how good software is created systematically.",
+    faq_q2: "How am I currently learning programming most effectively?",
+    faq_a2: "I learn through real projects. Instead of only reading theory, I build small applications and one larger passion project so I can practice UI, logic, debugging, and architecture in a practical way.",
+    faq_q3: "What are my biggest strengths right now?",
+    faq_a3: "I work consistently, document my progress through projects, and enjoy thinking in systems. It matters to me not just to make something work somehow, but to structure the code more cleanly step by step.",
+    faq_q4: "Will AI replace programmers, or mainly change the work?",
+    faq_a4: "I see AI more as a tool than a replacement. It can help with research, structuring, and debugging, but understanding, responsibility, prioritization, and good product decisions are still very human tasks.",
+    faq_q5: "How do I want to use AI while learning and building?",
+    faq_a5: "I use AI to get feedback faster, understand concepts better, and compare different solution paths. What matters to me is not copying answers blindly, but understanding them and implementing them myself.",
+    faq_q6: "What does modern programming actually mean to me?",
+    faq_a6: "To me, modern programming is not only about knowing new tools. It also means communicating clearly, writing maintainable code, using tools like AI responsibly, and continuing to learn.",
 
     //================= TODO =================
     todo_placeholder: "Enter new task...",
