@@ -5,14 +5,15 @@ const LANG_KEY = "lang";
 const translations = {
   de: {
     // ================= PORTFOLIO =================
-    hero_title: "Web Dev Journey",
-    hero_subtitle: "Ich baue gerade mein Fundament in HTML, CSS & JavaScript – Schritt für Schritt, jeden Tag.",
+    hero_kicker: "Portfolio von Fabian Materna",
+    hero_title: "Ich baue interaktive Webprojekte mit Fokus auf Struktur, Systeme und Gameplay.",
+    hero_subtitle: "Ich entwickle praxisnah moderne Frontend-Projekte, um saubere Architektur, UI-Verständnis und produktnahes Denken aufzubauen. Mein stärkstes Projekt ist aktuell das Game Lab.",
     btn_projects: "Projekte ansehen",
     btn_about: "Mehr über mich",
 
-    meta_focus: "Fokus: Webentwicklung",
-    meta_rhythm: "Rhythmus: 30 Min/Tag",
-    meta_goal: "Ziel: Junior / Werkstudent",
+    meta_focus: "Fokus: Interaktive Frontends & Systemdenken",
+    meta_rhythm: "Lernen durch echte Projekte",
+    meta_goal: "Ziel: Junior Frontend / Werkstudent",
     nav_projects: "Projekte",
     nav_contact: "Kontakt",
     nav_about: "Über mich",
@@ -150,14 +151,15 @@ const translations = {
   },
   en: {
     // ================= PORTFOLIO ================= 
-    hero_title: "Web Dev Journey",
-    hero_subtitle: "I’m building my foundation in HTML, CSS & JavaScript — step by step, every day.",
+    hero_kicker: "Portfolio of Fabian Materna",
+    hero_title: "I build interactive web projects with a focus on structure, systems, and gameplay.",
+    hero_subtitle: "I’m developing practical frontend projects to build stronger architecture, UI thinking, and product-oriented problem solving. My strongest project right now is Game Lab.",
     btn_projects: "View Projects",
     btn_about: "Learn More",
 
-    meta_focus: "Focus: Web Development",
-    meta_rhythm: "Daily practice: 30 minutes",
-    meta_goal: "Career goal: Junior Developer / Working Student",
+    meta_focus: "Focus: Interactive frontends & systems thinking",
+    meta_rhythm: "Learning through real projects",
+    meta_goal: "Goal: Junior Frontend / Working Student",
     btn_projects: "View Projects",
     nav_projects: "Projects",
     nav_contact: "Contact",
