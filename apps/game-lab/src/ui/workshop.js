@@ -255,9 +255,9 @@ function renderWeaponsTab(ctx, state, { x, y, w, unlockedWeapons, mx, my }) {
   ctx.fillText(`Equip to Slot ${activeSlot + 1}`, x + 18, y + 196);
 
   const cannonButtons = [
-    { id: "light", label: "Pulse Laser", x: x + 18, y: y + 222, w: w - 36, h: 58 },
-    { id: "heavy", label: "Heavy Laser", x: x + 18, y: y + 290, w: w - 36, h: 58 },
-    { id: "rapid", label: "Burst Laser", x: x + 18, y: y + 358, w: w - 36, h: 58 },
+    { id: "light", label: "Pulse", x: x + 18, y: y + 222, w: w - 36, h: 58 },
+    { id: "heavy", label: "Heavy", x: x + 18, y: y + 290, w: w - 36, h: 58 },
+    { id: "rapid", label: "Burst", x: x + 18, y: y + 358, w: w - 36, h: 58 },
   ];
   state.ui.cannonButtons = cannonButtons;
 

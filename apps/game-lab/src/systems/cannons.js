@@ -1,7 +1,7 @@
 export const CANNON_TYPES = {
   light: {
     id: "light",
-    name: "Pulse Laser",
+    name: "Pulse",
     damage: 10,
     fireRate: 1.0,
     range: 480,
@@ -11,7 +11,7 @@ export const CANNON_TYPES = {
 
   heavy: {
     id: "heavy",
-    name: "Heavy Laser",
+    name: "Heavy",
     damage: 24,
     fireRate: 0.45,
     range: 560,
@@ -25,7 +25,7 @@ export const CANNON_TYPES = {
 
   rapid: {
     id: "rapid",
-    name: "Burst Laser",
+    name: "Burst",
     damage: 6,
     fireRate: 2.4,
     range: 420,
