@@ -20,9 +20,9 @@ const translations = {
     nav_faq: "FAQ",
     about_title: "Über mich",
 
-    about_text:"Ich entwickle strukturiert mein Fundament in moderner Webentwicklung mit dem langfristigen Ziel, eigene Software- und Spieleprojekte umzusetzen. Mein Fokus liegt auf sauberer Architektur, modularen Systemen und nachhaltigem Code – nicht nur auf funktionierenden Oberflächen. Aktuell arbeite ich an kleinen, eigenständigen Projekten, um Systemdenken, State-Management und saubere Code-Strukturen zu vertiefen. Langfristig möchte ich komplexere Anwendungen und spielähnliche Systeme mit Backend-Anbindung entwickeln.",
+    about_text:"Ich entwickle mir gerade ein solides Fundament in moderner Frontend-Entwicklung, indem ich echte Projekte plane, baue und weiter verbessere. Besonders wichtig sind mir saubere Struktur, verständliche UI-Entscheidungen und ein systematischer Umgang mit wachsender Komplexität. Mit Projekten wie dem Game Lab trainiere ich nicht nur Oberflächen, sondern auch Architektur, State-Logik und produktnahes Denken.",
 
-    skills_title: "Skills (aktuell)",
+    skills_title: "Woran ich arbeite",
     skill_1: "HTML5 & semantische Struktur",
     skill_2: "CSS (Layout, Flexbox, Grid, Responsive Design)",
     skill_3: "JavaScript (DOM, State, Events, localStorage)",
@@ -30,12 +30,12 @@ const translations = {
     skill_5: "Git & GitHub Workflow",
     skill_6: "Grundlagen API-Integration",
 
-    roadmap_title: "Roadmap",
-    roadmap_1: "Frontend-Architektur & UI-Systeme",
-    roadmap_2: "API-Integration & Backend-Grundlagen",
-    roadmap_3: "Datenpersistenz & Serverkommunikation",
-    roadmap_4: "Spielähnliche Systemlogiken (Score, State, Game Loops)",
-    roadmap_5: "Fullstack-Projekte mit eigener Serverlogik",
+    roadmap_title: "Worauf ich als Nächstes hinarbeite",
+    roadmap_1: "Stärkere Frontend-Architektur & sauberere Komponenten",
+    roadmap_2: "Sichereres Web Design & bessere UI-Entscheidungen",
+    roadmap_3: "API-Integration & Backend-Grundlagen",
+    roadmap_4: "Komplexere Systemlogiken für interaktive Projekte",
+    roadmap_5: "Der Schritt in Frameworks wie Vue",
 
     projects_title: "Projekte",
     faq_title: "FAQ",
@@ -167,9 +167,9 @@ const translations = {
     nav_faq: "FAQ",
     about_title: "About",
 
-    about_text:"I’m systematically building my foundation in modern web development with the long-term goal of creating my own software and game projects. My focus is on clean architecture, modular systems, and maintainable code — not just functional interfaces. I’m currently developing small standalone projects to strengthen my understanding of system design, state management, and structured code. Long-term, I aim to build more complex applications and game-like systems with backend integration.",
+    about_text:"I’m building a solid foundation in modern frontend development by planning, building, and improving real projects. What matters most to me is clean structure, thoughtful UI decisions, and a systematic approach to growing complexity. With projects like Game Lab, I’m not only practicing interfaces, but also architecture, state logic, and product-oriented thinking.",
 
-    skills_title: "Skills (current)",
+    skills_title: "What I’m actively building",
     skill_1: "HTML5 & semantic structure",
     skill_2: "CSS (layout, Flexbox, Grid, responsive design)",
     skill_3: "JavaScript (DOM, state, events, localStorage)",
@@ -177,12 +177,12 @@ const translations = {
     skill_5: "Git & GitHub workflow",
     skill_6: "API integration fundamentals",
 
-    roadmap_title: "Roadmap",
-    roadmap_1: "Frontend architecture & UI systems",
-    roadmap_2: "API integration & backend fundamentals",
-    roadmap_3: "Data persistence & server communication",
-    roadmap_4: "Game-like system logic (score, state, game loops)",
-    roadmap_5: "Fullstack projects with custom server logic",
+    roadmap_title: "What I’m moving toward next",
+    roadmap_1: "Stronger frontend architecture & cleaner components",
+    roadmap_2: "More confident web design & better UI decisions",
+    roadmap_3: "API integration & backend fundamentals",
+    roadmap_4: "More complex systems for interactive projects",
+    roadmap_5: "The transition into frameworks like Vue",
     
     projects_title: "Projects",
     faq_title: "FAQ",
