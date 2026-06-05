@@ -541,6 +541,14 @@ body::after{
   background: var(--primary-hover);
 }
 
+.btn.primary.cta-strong{
+  box-shadow: 0 12px 30px rgba(35,134,54,0.24);
+}
+
+.btn.primary.cta-strong:hover{
+  box-shadow: 0 16px 34px rgba(35,134,54,0.3);
+}
+
 .btn.secondary{
   background: transparent;
   border: 1px solid var(--hud-line);
@@ -548,6 +556,19 @@ body::after{
 
 .btn.secondary:hover{
   background: var(--btn-bg);
+}
+
+.btn.ghost{
+  background: transparent;
+  border-color: rgba(88,166,255,0.08);
+  color: var(--text-secondary);
+}
+
+.btn.ghost:hover{
+  background: rgba(255,255,255,0.03);
+  color: var(--text-primary);
+  border-color: rgba(88,166,255,0.16);
+  box-shadow: none;
 }
 
 .btn.small{
@@ -702,6 +723,7 @@ body::after{
   gap: 10px;
   margin-top: auto;
   padding-top: var(--s-5);
+  align-items: center;
 }
 
 .card .corner{
@@ -969,4 +991,15 @@ html[data-theme="light"] .project-spotlight{
 
 html[data-theme="light"] .spotlight-label{
   background: rgba(255,255,255,0.72);
+}
+
+html[data-theme="light"] .btn.ghost{
+  border-color: rgba(20,26,36,0.08);
+  color: rgba(20,26,36,0.72);
+}
+
+html[data-theme="light"] .btn.ghost:hover{
+  background: rgba(20,26,36,0.04);
+  color: var(--text-primary);
+  border-color: rgba(20,26,36,0.12);
 }
