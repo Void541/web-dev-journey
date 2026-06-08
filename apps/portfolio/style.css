@@ -790,6 +790,40 @@ body::after{
   margin-top: var(--s-6);
 }
 
+.learning-grid{
+  margin-top: var(--s-6);
+}
+
+.resource-card{
+  min-height: 100%;
+}
+
+.resource-head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.resource-kicker{
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--border-strong);
+}
+
+.resource-card h3{
+  margin-bottom: 0;
+}
+
+.resource-card p{
+  max-width: 40ch;
+}
+
 .faq-item{
   background: var(--bg-panel);
   border: 1px solid var(--panel-border);
