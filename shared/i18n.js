@@ -23,6 +23,7 @@ const translations = {
     about_text:"Ich entwickle mir gerade ein solides Fundament in moderner Frontend-Entwicklung, indem ich echte Projekte plane, baue und weiter verbessere. Besonders wichtig sind mir saubere Struktur, verständliche UI-Entscheidungen und ein systematischer Umgang mit wachsender Komplexität. Mit Projekten wie dem Game Lab trainiere ich nicht nur Oberflächen, sondern auch Architektur, State-Logik und produktnahes Denken.",
 
     skills_title: "Woran ich arbeite",
+    skills_intro: "Die Bereiche, die ich gerade am aktivsten über echte Projekte trainiere und weiter ausbaue.",
     skill_1: "HTML5 & semantische Struktur",
     skill_2: "CSS (Layout, Flexbox, Grid, Responsive Design)",
     skill_3: "JavaScript (DOM, State, Events, localStorage)",
@@ -31,6 +32,7 @@ const translations = {
     skill_6: "Grundlagen API-Integration",
 
     roadmap_title: "Worauf ich als Nächstes hinarbeite",
+    roadmap_intro: "Die nächsten Schritte, mit denen ich mein Frontend-Fundament gezielt Richtung moderne Libraries und größere Projekte ausbaue.",
     roadmap_1: "Stärkere Frontend-Architektur & sauberere Komponenten",
     roadmap_2: "Sichereres Web Design & bessere UI-Entscheidungen",
     roadmap_3: "API-Integration & Backend-Grundlagen",
@@ -58,6 +60,7 @@ const translations = {
     learning_item_4_desc: "Die Doku, auf die ich später hinarbeite, wenn mein Fundament in UI, Struktur und Komponenten-Denken noch stärker geworden ist.",
 
     projects_title: "Projekte",
+    projects_intro: "Eine kleine Auswahl der Projekte, an denen ich gerade am meisten wachse. Der Fokus liegt bewusst auf Qualität, Struktur und sichtbarem Lernfortschritt.",
     faq_title: "FAQ",
     faq_intro: "Fragen, die ich mir auf meinem Weg in die Webentwicklung selbst stelle und die auch in Gesprächen über moderne Softwareentwicklung immer wieder auftauchen.",
     contact_title: "Kontakt",
@@ -190,6 +193,7 @@ const translations = {
     about_text:"I’m building a solid foundation in modern frontend development by planning, building, and improving real projects. What matters most to me is clean structure, thoughtful UI decisions, and a systematic approach to growing complexity. With projects like Game Lab, I’m not only practicing interfaces, but also architecture, state logic, and product-oriented thinking.",
 
     skills_title: "What I’m actively building",
+    skills_intro: "The areas I’m currently training and improving most actively through real projects.",
     skill_1: "HTML5 & semantic structure",
     skill_2: "CSS (layout, Flexbox, Grid, responsive design)",
     skill_3: "JavaScript (DOM, state, events, localStorage)",
@@ -198,6 +202,7 @@ const translations = {
     skill_6: "API integration fundamentals",
 
     roadmap_title: "What I’m moving toward next",
+    roadmap_intro: "The next steps I’m using to intentionally grow my frontend foundation toward modern libraries and larger projects.",
     roadmap_1: "Stronger frontend architecture & cleaner components",
     roadmap_2: "More confident web design & better UI decisions",
     roadmap_3: "API integration & backend fundamentals",
@@ -225,6 +230,7 @@ const translations = {
     learning_item_4_desc: "The documentation I want to grow into once my foundation in UI, structure, and component thinking is even stronger.",
     
     projects_title: "Projects",
+    projects_intro: "A small selection of the projects where I’m currently growing the most. The focus is intentionally on quality, structure, and visible learning progress.",
     faq_title: "FAQ",
     faq_intro: "Questions I ask myself on my path into web development and that also come up often in conversations about modern software development.",
     contact_title: "Contact",
