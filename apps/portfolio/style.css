@@ -475,6 +475,11 @@ body::after{
     justify-content: flex-start;
   }
 
+  .hero-highlights,
+  .about-snapshot{
+    grid-template-columns: 1fr;
+  }
+
   .info-list li,
   .info-list-numbered li{
     padding-top: 12px;
@@ -527,6 +532,11 @@ body::after{
   .hero-lead{
     font-size: 1rem;
     line-height: 1.68;
+  }
+
+  .hero-highlight-card,
+  .about-snapshot-card{
+    padding: 14px 16px;
   }
 
   .tag,
@@ -632,6 +642,37 @@ body::after{
   color: rgba(231,237,247,0.68);
 }
 
+.hero-highlights{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin-top: var(--s-6);
+  max-width: 860px;
+}
+
+.hero-highlight-card{
+  padding: 16px 18px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-2);
+  background: linear-gradient(180deg, var(--panel-fill-soft), transparent 100%), var(--bg-panel);
+}
+
+.hero-highlight-label{
+  margin: 0 0 var(--s-2);
+  color: var(--border-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-highlight-copy{
+  margin: 0;
+  max-width: 34ch;
+  color: var(--text-primary);
+  line-height: 1.65;
+}
+
 /* =========================
    7) Buttons
    ========================= */
@@ -730,6 +771,35 @@ body::after{
   max-width: 68ch;
   font-size: 1rem;
   line-height: 1.8;
+}
+
+.about-snapshot{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin: var(--s-6) 0 var(--s-6);
+}
+
+.about-snapshot-card{
+  padding: 16px 18px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-2);
+  background: linear-gradient(180deg, var(--panel-fill-soft), transparent 100%), var(--bg-panel);
+}
+
+.about-snapshot-label{
+  margin: 0 0 var(--s-2);
+  color: var(--border-strong);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about-snapshot-copy{
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.65;
 }
 
 .section-title{

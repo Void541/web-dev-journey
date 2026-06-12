@@ -6,8 +6,12 @@ const translations = {
   de: {
     // ================= PORTFOLIO =================
     hero_kicker: "Portfolio von Fabian Materna",
-    hero_title: "Ich baue interaktive Webprojekte mit Fokus auf Struktur, Systeme und Gameplay.",
-    hero_subtitle: "Ich entwickle praxisnah moderne Frontend-Projekte, um saubere Architektur, UI-Verständnis und produktnahes Denken aufzubauen. Mein stärkstes Projekt ist aktuell das Game Lab.",
+    hero_title: "Ich baue interaktive Frontends mit Fokus auf Struktur, Systeme und sichtbaren Fortschritt.",
+    hero_subtitle: "Ich entwickle praxisnah moderne Webprojekte, um saubere Architektur, UI-Verständnis und produktnahes Denken aufzubauen.",
+    hero_highlight_1_label: "Was mich auszeichnet",
+    hero_highlight_1_copy: "Ich lerne über echte Projekte und kombiniere UI, Struktur und Systemdenken statt nur Theorie zu sammeln.",
+    hero_highlight_2_label: "Stärkstes Projekt",
+    hero_highlight_2_copy: "Game Lab ist aktuell mein klarstes Showcase für Gameplay-Logik, Architektur und saubere Weiterentwicklung.",
     btn_projects: "Projekte ansehen",
     btn_about: "Mehr über mich",
 
@@ -21,7 +25,13 @@ const translations = {
     nav_faq: "FAQ",
     about_title: "Über mich",
 
-    about_text:"Ich entwickle mir gerade ein solides Fundament in moderner Frontend-Entwicklung, indem ich echte Projekte plane, baue und weiter verbessere. Besonders wichtig sind mir saubere Struktur, verständliche UI-Entscheidungen und ein systematischer Umgang mit wachsender Komplexität. Mit Projekten wie dem Game Lab trainiere ich nicht nur Oberflächen, sondern auch Architektur, State-Logik und produktnahes Denken.",
+    about_text:"Ich arbeite gerade daran, mir ein starkes Fundament in moderner Frontend-Entwicklung aufzubauen. Mein Fokus liegt dabei auf echten Projekten, klarer Struktur und Interfaces, die nicht nur funktionieren, sondern bewusst gestaltet sind.",
+    about_snapshot_1_label: "Aktuell im Fokus",
+    about_snapshot_1_copy: "Interaktive Frontends, bessere UI-Entscheidungen und ein sauberer Umgang mit wachsender Projektkomplexität.",
+    about_snapshot_2_label: "Wie ich lerne",
+    about_snapshot_2_copy: "Nicht nur lesen, sondern bauen, verbessern, reflektieren und aus echten Projekten sichtbaren Fortschritt machen.",
+    about_snapshot_3_label: "Worauf ich hinarbeite",
+    about_snapshot_3_copy: "Ein starkes Frontend-Fundament, produktnähere Projekte und danach moderne Frameworks wie Vue.",
 
     skills_title: "Woran ich arbeite",
     skills_intro: "Die Bereiche, die ich gerade am aktivsten über echte Projekte trainiere und weiter ausbaue.",
@@ -176,8 +186,12 @@ const translations = {
   en: {
     // ================= PORTFOLIO ================= 
     hero_kicker: "Portfolio of Fabian Materna",
-    hero_title: "I build interactive web projects with a focus on structure, systems, and gameplay.",
-    hero_subtitle: "I’m developing practical frontend projects to build stronger architecture, UI thinking, and product-oriented problem solving. My strongest project right now is Game Lab.",
+    hero_title: "I build interactive frontends with a focus on structure, systems, and visible progress.",
+    hero_subtitle: "I’m developing practical modern web projects to build stronger architecture, UI thinking, and product-oriented problem solving.",
+    hero_highlight_1_label: "What stands out",
+    hero_highlight_1_copy: "I learn through real projects and combine UI, structure, and systems thinking instead of only collecting theory.",
+    hero_highlight_2_label: "Strongest project",
+    hero_highlight_2_copy: "Game Lab is currently my clearest showcase for gameplay logic, architecture, and thoughtful iteration.",
     btn_projects: "View Projects",
     btn_about: "Learn More",
 
@@ -192,7 +206,13 @@ const translations = {
     nav_faq: "FAQ",
     about_title: "About",
 
-    about_text:"I’m building a solid foundation in modern frontend development by planning, building, and improving real projects. What matters most to me is clean structure, thoughtful UI decisions, and a systematic approach to growing complexity. With projects like Game Lab, I’m not only practicing interfaces, but also architecture, state logic, and product-oriented thinking.",
+    about_text:"I’m currently building a strong foundation in modern frontend development. My focus is on real projects, clear structure, and interfaces that don’t just work, but feel intentionally designed.",
+    about_snapshot_1_label: "Current focus",
+    about_snapshot_1_copy: "Interactive frontends, better UI decisions, and a cleaner approach to growing project complexity.",
+    about_snapshot_2_label: "How I learn",
+    about_snapshot_2_copy: "Not just reading, but building, improving, reflecting, and turning real projects into visible progress.",
+    about_snapshot_3_label: "What I’m working toward",
+    about_snapshot_3_copy: "A strong frontend foundation, more product-like projects, and then modern frameworks like Vue.",
 
     skills_title: "What I’m actively building",
     skills_intro: "The areas I’m currently training and improving most actively through real projects.",
