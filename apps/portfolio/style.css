@@ -33,22 +33,31 @@
   --primary-hover: #2ea043;
 
   /* New “HUD / app” tokens (preferred) */
-  --bg-main: #0b0f16;
-  --bg-panel: rgba(255,255,255,0.04);
-  --text-primary: #e7edf7;
-  --text-secondary: rgba(231,237,247,0.75);
+  --bg-main: #07090d;
+  --bg-elev-1: #0f131a;
+  --bg-elev-2: #151b24;
+  --bg-panel: rgba(18, 24, 33, 0.92);
+  --bg-panel-strong: rgba(22, 29, 40, 0.98);
 
-  --hud-line: rgba(88,166,255,0.18);
-  --hud-glow: rgba(88,166,255,0.22);
-  --hud-grid: rgba(255,255,255,0.04);
-  --panel-border: rgba(231,237,247,0.08);
-  --panel-border-strong: rgba(88,166,255,0.22);
-  --panel-fill-soft: rgba(255,255,255,0.02);
-  --pill-border: rgba(231,237,247,0.1);
-  --pill-bg: rgba(255,255,255,0.03);
-  --nav-border: rgba(231,237,247,0.08);
-  --nav-bg: rgba(255,255,255,0.02);
-  --faq-open-bg: rgba(88,166,255,0.04);
+  --text-primary: #e7edf5;
+  --text-secondary: #9ea8b7;
+  --text-muted: #6f7a89;
+
+  --border-soft: rgba(163, 174, 194, 0.10);
+  --border-mid: rgba(163, 174, 194, 0.18);
+  --border-strong: rgba(79, 124, 255, 0.34);
+
+  --accent-cold: #4f7cff;
+  --accent-cold-soft: rgba(79, 124, 255, 0.16);
+  --accent-brass: #b78a35;
+  --accent-brass-soft: rgba(183, 138, 53, 0.14);
+
+  --glow-cold: rgba(79, 124, 255, 0.18);
+  --glow-brass: rgba(183, 138, 53, 0.12);
+
+  --grid-line: rgba(255,255,255,0.025);
+  --panel-stripe: rgba(255,255,255,0.03);
+  --danger-dim: #7f2f2f;
 
    /* spacing scale */
   --s-1: 4px;
@@ -189,9 +198,13 @@ html, body{ margin: 0; padding: 0; }
 body{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   line-height: 1.6;
-  background: var(--bg-main);
+  background:
+    radial-gradient(circle at 20% 10%, var(--glow-cold), transparent 30%),
+    radial-gradient(circle at 80% 20%, var(--glow-brass), transparent 24%),
+    linear-gradient(180deg, #0a0d12 0%, var(--bg-main) 100%);
   color: var(--text-primary);
 }
+
 
 p, li, .muted{ color: var(--text-secondary); }
 
@@ -205,10 +218,10 @@ body::before{
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(to right, var(--hud-grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--hud-grid) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.45;
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.55;
   z-index: 0;
 }
 
@@ -572,8 +585,21 @@ body::after{
    ========================= */
 .hero{
   padding: 112px 0 72px;
-  border-bottom: 1px solid var(--hud-line);
   position: relative;
+  background:
+    linear-gradient(135deg, rgba(79,124,255,0.08), transparent 42%),
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 100%);
+  border-bottom: 1px solid var(--border-mid);
+}
+
+.hero::before{
+  content: "";
+  position: absolute;
+  inset: 24px 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+  opacity: 0.8;
+  pointer-events: none;
 }
 
 .hero::after{
@@ -840,9 +866,12 @@ body::after{
   flex-direction: column;
   padding: var(--s-5);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-  background: linear-gradient(180deg, var(--panel-fill-soft), transparent 100%), var(--bg-panel);
-  border: 1px solid var(--panel-border);
+  background:
+    linear-gradient(180deg, var(--panel-stripe), transparent 100%),
+    var(--bg-panel);
+  border: 1px solid var(--border-soft);
   border-radius: var(--r-2);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.28);
   align-self: start;
 }
 
