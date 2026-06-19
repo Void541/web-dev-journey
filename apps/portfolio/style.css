@@ -1154,6 +1154,56 @@ body::after{
   line-height: 1.8;
 }
 
+#about,
+#learning{
+  position: relative;
+}
+
+#about::before,
+#learning::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+#about::before{
+  background:
+    linear-gradient(90deg, rgba(79,124,255,0.06), transparent 22%),
+    linear-gradient(180deg, rgba(255,255,255,0.02), transparent 100%);
+}
+
+#learning::before{
+  background:
+    radial-gradient(circle at 78% 18%, rgba(183,138,53,0.08), transparent 18%),
+    linear-gradient(90deg, transparent 0%, rgba(79,124,255,0.04) 100%);
+}
+
+#about .container,
+#learning .container{
+  position: relative;
+}
+
+#about .section-copy,
+#learning .section-intro{
+  position: relative;
+  padding-left: 18px;
+}
+
+#about .section-copy::before,
+#learning .section-intro::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  bottom: 0.35em;
+  width: 2px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent-brass), var(--accent-cold));
+  opacity: 0.75;
+}
+
 .about-snapshot{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1162,10 +1212,33 @@ body::after{
 }
 
 .about-snapshot-card{
+  position: relative;
+  overflow: hidden;
   padding: 16px 18px;
   border: 1px solid var(--panel-border);
   border-radius: var(--r-2);
-  background: linear-gradient(180deg, var(--panel-fill-soft), transparent 100%), var(--bg-panel);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), transparent 100%),
+    linear-gradient(135deg, rgba(79,124,255,0.08), transparent 60%),
+    var(--bg-panel);
+}
+
+.about-snapshot-card::before{
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent-cold), transparent 82%);
+  opacity: 0.95;
+}
+
+.about-snapshot-card:nth-child(2)::before{
+  background: linear-gradient(180deg, var(--accent-brass), transparent 82%);
+}
+
+.about-snapshot-card:nth-child(3)::before{
+  background: linear-gradient(180deg, #8d5eff, transparent 82%);
 }
 
 .about-snapshot-label{
@@ -1181,6 +1254,15 @@ body::after{
   margin: 0;
   color: var(--text-primary);
   line-height: 1.65;
+}
+
+#about .grid{
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  align-items: stretch;
+}
+
+#about .grid .card{
+  min-height: 100%;
 }
 
 .section-title{
@@ -1410,10 +1492,33 @@ body::after{
 
 .learning-grid{
   margin-top: var(--s-6);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
 }
 
 .resource-card{
-  min-height: 100%;
+  min-width: 0;
+  padding-top: 22px;
+}
+
+.resource-card:nth-child(1),
+.resource-card:nth-child(4),
+.resource-card:nth-child(5){
+  grid-column: span 7;
+}
+
+.resource-card:nth-child(2),
+.resource-card:nth-child(3),
+.resource-card:nth-child(6){
+  grid-column: span 5;
+}
+
+.resource-card::before{
+  opacity: 0.85;
+}
+
+.resource-card::after{
+  opacity: 0.34;
 }
 
 .resource-head{
@@ -1426,6 +1531,9 @@ body::after{
 }
 
 .resource-kicker{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 0.78rem;
   font-weight: 800;
@@ -1434,12 +1542,61 @@ body::after{
   color: var(--border-strong);
 }
 
+.resource-kicker::before{
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-brass);
+  box-shadow: 0 0 0 4px rgba(183,138,53,0.08);
+}
+
 .resource-card h3{
   margin-bottom: 0;
+  max-width: 22ch;
 }
 
 .resource-card p{
   max-width: 40ch;
+}
+
+.resource-card .card-actions{
+  margin-top: var(--s-5);
+}
+
+html[data-theme="light"] #about::before{
+  background:
+    linear-gradient(90deg, rgba(37,99,235,0.06), transparent 24%),
+    linear-gradient(180deg, rgba(20,26,36,0.02), transparent 100%);
+}
+
+html[data-theme="light"] #learning::before{
+  background:
+    radial-gradient(circle at 78% 18%, rgba(183,138,53,0.12), transparent 18%),
+    linear-gradient(90deg, transparent 0%, rgba(37,99,235,0.04) 100%);
+}
+
+html[data-theme="light"] .about-snapshot-card{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.7), transparent 100%),
+    linear-gradient(135deg, rgba(37,99,235,0.08), transparent 60%),
+    var(--bg-panel);
+}
+
+@media (max-width: 980px){
+  #about .grid,
+  .learning-grid{
+    grid-template-columns: 1fr;
+  }
+
+  .resource-card:nth-child(1),
+  .resource-card:nth-child(2),
+  .resource-card:nth-child(3),
+  .resource-card:nth-child(4),
+  .resource-card:nth-child(5),
+  .resource-card:nth-child(6){
+    grid-column: span 1;
+  }
 }
 
 .faq-item{

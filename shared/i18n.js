@@ -60,7 +60,7 @@ const translations = {
     roadmap_5: "Der Schritt in Frameworks wie Vue",
 
     learning_title: "Womit ich aktuell lerne",
-    learning_intro: "Ein paar Ressourcen, die mir gerade besonders helfen, besser in Web Design, CSS-Systemen und modernem Frontend-Denken zu werden.",
+    learning_intro: "Ein paar Ressourcen, die mir gerade besonders helfen, besser in Web Design, CSS-Systemen, JavaScript und modernem Frontend-Denken zu werden.",
     learning_open: "Öffnen",
     learning_item_1_type: "Dokumentation",
     learning_item_1_focus: "Frontend-Grundlagen",
@@ -78,6 +78,15 @@ const translations = {
     learning_item_4_focus: "Nächster Schritt",
     learning_item_4_title: "Vue Docs",
     learning_item_4_desc: "Die Doku, auf die ich später hinarbeite, wenn mein Fundament in UI, Struktur und Komponenten-Denken noch stärker geworden ist.",
+
+    learning_item_5_type: "Dokumentation",
+    learning_item_5_focus: "JavaScript Grundlagen",
+    learning_item_5_title: "javascript.info",
+    learning_item_5_desc: "Eine sehr gute Quelle, um JavaScript systematisch zu lernen und Themen Schritt fÃ¼r Schritt mit Beispielen zu verstehen.",
+    learning_item_6_type: "Guide",
+    learning_item_6_focus: "JavaScript Vertiefung",
+    learning_item_6_title: "MDN JavaScript Guide",
+    learning_item_6_desc: "Hilft mir dabei, JavaScript-Konzepte Ã¼ber die Grundlagen hinaus sauberer zu verstehen und besser einzuordnen.",
 
     projects_title: "Projekte",
     projects_intro: "Eine kleine Auswahl der Projekte, an denen ich gerade am meisten wachse. Der Fokus liegt bewusst auf Qualität, Struktur und sichtbarem Lernfortschritt.",
@@ -250,7 +259,7 @@ const translations = {
     roadmap_5: "The transition into frameworks like Vue",
 
     learning_title: "What I’m currently learning with",
-    learning_intro: "A few resources that are helping me get better at web design, CSS systems, and modern frontend thinking.",
+    learning_intro: "A few resources that are helping me get better at web design, CSS systems, JavaScript, and modern frontend thinking.",
     learning_open: "Open",
     learning_item_1_type: "Documentation",
     learning_item_1_focus: "Frontend fundamentals",
@@ -269,6 +278,15 @@ const translations = {
     learning_item_4_title: "Vue Docs",
     learning_item_4_desc: "The documentation I want to grow into once my foundation in UI, structure, and component thinking is even stronger.",
     
+    learning_item_5_type: "Documentation",
+    learning_item_5_focus: "JavaScript fundamentals",
+    learning_item_5_title: "javascript.info",
+    learning_item_5_desc: "A very good source for learning JavaScript in a structured way and understanding topics step by step with examples.",
+    learning_item_6_type: "Guide",
+    learning_item_6_focus: "Deeper JavaScript",
+    learning_item_6_title: "MDN JavaScript Guide",
+    learning_item_6_desc: "Helps me understand JavaScript concepts beyond the basics more clearly and place them in a stronger overall context.",
+
     projects_title: "Projects",
     projects_intro: "A small selection of the projects where I’m currently growing the most. The focus is intentionally on quality, structure, and visible learning progress.",
     faq_title: "FAQ",
