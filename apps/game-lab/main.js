@@ -184,6 +184,15 @@ function getMousePos(evt) {
   };
 }
 
+function isPointInsideRect(mx, my, rect) {
+  return (
+    mx >= rect.x &&
+    mx <= rect.x + rect.w &&
+    my >= rect.y &&
+    my <= rect.y + rect.h
+  );
+}
+
 // ---- World presets ----
 const WORLDS = {
   overworld: { w: 4000, h: 1400 },
@@ -1197,11 +1206,7 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
   const my = state.input.mouse.y - rect.top;
 
   for (const b of state.ui.workshopTabButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
     state.ui.workshopTab = b.id;
@@ -1209,11 +1214,7 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
 
   // Crafting buttons
   for (const b of state.ui.workshopButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
     if (b.disabled) continue;
@@ -1222,11 +1223,7 @@ if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
   }
 //Crew selection buttons
 for (const b of state.ui.crewButtons ?? []) {
-  const inside =
-    mx >= b.x &&
-    mx <= b.x + b.w &&
-    my >= b.y &&
-    my <= b.y + b.h;
+  const inside = isPointInsideRect(mx, my, b);
 
     if(!inside) continue;
     if(b.disabled) continue;
@@ -1263,11 +1260,7 @@ for (const b of state.ui.crewButtons ?? []) {
   }
   // Cannon slot selection
   for (const b of state.ui.cannonSlotButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
     if (b.disabled) continue;
@@ -1279,11 +1272,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
   // Cannon equip buttons
   for (const b of state.ui.cannonButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
 
@@ -1331,11 +1320,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
   // Ship buttons
   for (const b of state.ui.shipButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
 
@@ -1402,11 +1387,7 @@ if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
   const my = state.input.mouse.y - rect.top;
 
   for (const b of state.ui.skillButtons ?? []) {
-    const inside =
-      mx >= b.x &&
-      mx <= b.x + b.w &&
-      my >= b.y &&
-      my <= b.y + b.h;
+    const inside = isPointInsideRect(mx, my, b);
 
     if (!inside) continue;
     if (b.disabled) continue;

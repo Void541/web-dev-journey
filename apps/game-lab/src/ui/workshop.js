@@ -135,6 +135,10 @@ function renderSidebar(ctx, state, { x, y, w, inventory, mx, my }) {
   }
 
   const equippedShip = SHIP_TYPES[state.playerShip?.id ?? "sloop"] ?? SHIP_TYPES.sloop;
+  const equippedWeaponNames = (state.playerLoadout?.cannons ?? [])
+    .filter(Boolean)
+    .map((id) => CANNON_TYPES[id]?.name ?? id)
+    .join(", ") || "None";
 
   ctx.fillStyle = "#fff";
   ctx.font = "700 15px system-ui";
@@ -145,10 +149,11 @@ function renderSidebar(ctx, state, { x, y, w, inventory, mx, my }) {
   ctx.fillText(`Ship: ${equippedShip.name}`, x + 14, y + 260);
   ctx.fillText(`Slots: ${equippedShip.cannonSlots}`, x + 14, y + 282);
   ctx.fillText(`Credits: ${state.credits ?? 0}`, x + 14, y + 304);
+  ctx.fillText(`Weapons: ${equippedWeaponNames}`, x + 14, y + 326);
 
   ctx.fillStyle = "#fff";
   ctx.font = "700 15px system-ui";
-  ctx.fillText("Core Materials", x + 14, y + 344);
+  ctx.fillText("Core Materials", x + 14, y + 360);
 
   const invLines = [
     `Scrap: ${inventory.scrap ?? inventory.metal ?? 0}`,
@@ -156,7 +161,7 @@ function renderSidebar(ctx, state, { x, y, w, inventory, mx, my }) {
     `Gear: ${inventory.gear ?? 0}`,
   ];
 
-  let invY = y + 372;
+  let invY = y + 388;
   ctx.font = "13px system-ui";
   ctx.fillStyle = "rgba(255,255,255,0.78)";
   for (const line of invLines) {
