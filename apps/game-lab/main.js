@@ -418,6 +418,12 @@ function canAffordCost(cost) {
   return Object.entries(cost).every(([key, amount]) => getResourceAmount(key) >= amount);
 }
 
+function getWeaponClickAction(isUnlocked, canPay) {
+  if (!isUnlocked && !canPay) return "need-resources";
+  if (!isUnlocked && canPay) return "unlock";
+  return "equip";
+}
+
 function spendCost(cost) {
   if (!cost) return true;
   if (!canAffordCost(cost)) return false;
@@ -1286,13 +1292,16 @@ for (const b of state.ui.crewButtons ?? []) {
 
     const cannonData = CANNON_TYPES[b.id];
     const isUnlocked = Boolean(state.progression.unlocked.weapons[b.id]);
+    const canPay = canAffordCost(cannonData?.cost);
+    const action = getWeaponClickAction(isUnlocked, canPay);
 
-    if (!isUnlocked) {
-      if (!spendCost(cannonData?.cost)) {
-        state.pushLootNotice?.(`Need ${formatCostText(cannonData?.cost)} to unlock ${b.label}`);
-        continue;
-      }
+    if (action === "need-resources") {
+      state.pushLootNotice?.(`Need ${formatCostText(cannonData?.cost)} to unlock ${b.label}`);
+      continue;
+    }
 
+    if (action === "unlock") {
+      spendCost(cannonData?.cost);
       state.progression.unlocked.weapons[b.id] = true;
       state.pushLootNotice?.(`Unlocked ${b.label}`);
       saveLoadoutState();
