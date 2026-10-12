@@ -489,11 +489,6 @@ body::after{
     line-height: 1.04;
   }
 
-  .hero-shell{
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
   .hero-actions{
     flex-direction: column;
     align-items: stretch;
@@ -536,15 +531,6 @@ body::after{
   .hero-meta li{
     width: 100%;
     justify-content: flex-start;
-  }
-
-  .hero-highlights,
-  .about-snapshot{
-    grid-template-columns: 1fr;
-  }
-
-  .hero-panel-grid{
-    grid-template-columns: 1fr;
   }
 
   .info-list li,
@@ -681,6 +667,13 @@ body::after{
   min-width: 0;
 }
 
+@media (max-width: 720px){
+  .hero-shell{
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
 .hero-kicker{
   margin: 0 0 var(--s-3);
   color: var(--border-strong);
@@ -744,6 +737,12 @@ body::after{
   gap: var(--s-4);
   margin-top: var(--s-6);
   max-width: 860px;
+}
+
+@media (max-width: 720px){
+  .hero-highlights{
+    grid-template-columns: 1fr;
+  }
 }
 
 .hero-highlight-card{
@@ -990,6 +989,12 @@ body::after{
   gap: 12px;
 }
 
+@media (max-width: 720px){
+  .hero-panel-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
 .hero-panel-cell{
   padding: 14px 14px 15px;
   border: 1px solid var(--border-soft);
@@ -1213,6 +1218,12 @@ body::after{
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-4);
   margin: var(--s-6) 0 var(--s-6);
+}
+
+@media (max-width: 720px){
+  .about-snapshot{
+    grid-template-columns: 1fr;
+  }
 }
 
 .about-snapshot-card{
