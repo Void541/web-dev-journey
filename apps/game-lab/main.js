@@ -28,7 +28,7 @@ import { createQuestTracker } from "./src/ui/questTracker.js";
 import { SHIP_TYPES, getEquippedShip } from "./src/systems/ships.js";
 import { CrewSystem, getEquippedCrew } from "./src/systems/crew.js";
 import { CANNON_TYPES } from "./src/systems/cannons.js";
-import { createLevelSystem } from "./src/systems/levels.js";
+import { createLevelSystem, getXpToNext } from "./src/systems/levels.js";
 import { createTalentSystem } from "./src/systems/talente.js";
 import { createNetworkSystem } from "./src/multiplayer-server/network.js";
 import { isQuestComplete, giveQuestReward } from "./src/quests/questLogic.js";
@@ -331,10 +331,31 @@ const state = {
 state.multiplayerNetwork = multiplayerNetwork;
 multiplayerNetwork.attachSharedEnemiesStore(enemies);
 
+const progressSave = {
+  revision: 0,
+  savedRevision: 0,
+  inFlight: false,
+};
+
+function markProgressChanged() {
+  progressSave.revision += 1;
+}
+
+setInterval(() => {
+  if (progressSave.revision > progressSave.savedRevision) {
+    saveLoadoutState();
+  }
+}, 10_000); // Check for progress changes every ten seconds and save if needed.
+
 async function saveLoadoutState() {
   if (!state.account?.playerId) return;
+  if (progressSave.inFlight) return;
+
+  const revisionToSave = progressSave.revision;
+  progressSave.inFlight = true;
 
   try {
+    const response =
     await fetch(`${PLAYER_API_BASE}/save-loadout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -352,11 +373,22 @@ async function saveLoadoutState() {
         },
         progression: {
           unlocked: state.progression?.unlocked,
+          level: state.progression?.level,
+          xp: state.progression?.xp,
+          talentPoints: state.progression?.talentPoints,
+          talents: state.progression?.talents,
         },
       }),
     });
+    if (!response.ok) {
+      throw new Error(`Loadout save failed: ${response.status}`);
+    }
+    progressSave.savedRevision = revisionToSave;
   } catch (error) {
     console.error("Loadout save failed:", error);
+  }
+  finally {
+    progressSave.inFlight = false;
   }
 }
 
@@ -374,6 +406,7 @@ function applyAuthenticatedPlayer(playerData) {
       ...state.progression,
       ...playerData.progression,
     };
+    state.progression.xpToNext = getXpToNext(state.progression.level);
   }
 
   if (playerData.ship?.id) {
@@ -657,6 +690,7 @@ advanceQuestFlow();
   }
 }
 levelSystem.addXP?.(state, enemy.xp ?? 0,);
+  markProgressChanged();
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
 

@@ -189,6 +189,24 @@ app.post("/save-loadout", async (req, res) => {
       };
     }
 
+    if (progression) {
+      player.progression = player.progression ?? {};
+      player.progression.level = progression.level ?? player.progression?.level ?? 1;
+      player.progression.xp = progression.xp ?? player.progression?.xp ?? 0;
+      player.progression.talentPoints = progression.talentPoints ?? player.progression?.talentPoints ?? 0;
+
+     if (progression.talents) {
+        player.progression.talents = {
+         dmg: progression.talents?.dmg ?? player.progression?.talents?.dmg ?? 0,
+         hp: progression.talents?.hp ?? player.progression?.talents?.hp ?? 0,
+         speed: progression.talents?.speed ?? player.progression?.talents?.speed ?? 0,
+        };
+     }
+    }
+
+
+
+
     if (progression?.unlocked) {
       player.progression = player.progression ?? {};
       player.progression.unlocked = {

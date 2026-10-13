@@ -1,3 +1,7 @@
+export function getXpToNext(level) {
+  return 100 + (level - 1) * 50;
+}
+
 export function createLevelSystem() {
 
   function addXP(state, amount) {
@@ -15,7 +19,7 @@ export function createLevelSystem() {
 
     let level = progression.level;
     let xp = progression.xp;
-    let xpToNext = progression.xpToNext;
+    let xpToNext = getXpToNext(level);
     let talentPoints = progression.talentPoints;
 
 while (xp >= xpToNext) {
@@ -23,7 +27,7 @@ while (xp >= xpToNext) {
   xp -= xpToNext;
   level++;
   talentPoints++; // Increase the player's talent points on level up
-  xpToNext += 50; // Increase the experience required for the next level
+  xpToNext = getXpToNext(level); // Update the experience required for the next level
   }
 
     progression.level = level;
