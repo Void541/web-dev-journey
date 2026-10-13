@@ -324,15 +324,17 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p data-i18n="footer_left">© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
-      <span class="footer-tribute" role="img" aria-label="In Erinnerung an den besten Hund Akiko, 2012 bis 2026">
-        <svg class="footer-paw" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <circle cx="15" cy="20" r="7" />
-          <circle cx="30" cy="12" r="7" />
-          <circle cx="46" cy="20" r="7" />
-          <path d="M32 28c-12 0-20 10-20 19 0 8 7 13 13 9 3-2 5-4 7-4s4 2 7 4c6 4 13-1 13-9 0-9-8-19-20-19Z" />
-        </svg>
+      <details class="footer-tribute">
+        <summary aria-label="In Erinnerung an den besten Hund Akiko 2012-2026">
+          <svg class="footer-paw" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <circle cx="15" cy="20" r="7" />
+            <circle cx="30" cy="12" r="7" />
+            <circle cx="46" cy="20" r="7" />
+            <path d="M32 28c-12 0-20 10-20 19 0 8 7 13 13 9 3-2 5-4 7-4s4 2 7 4c6 4 13-1 13-9 0-9-8-19-20-19Z" />
+          </svg>
+        </summary>
         <span class="footer-tribute-label">In Erinnerung an den besten Hund Akiko 2012-2026</span>
-      </span>
+      </details>
       <p data-i18n="footer_right">Built with HTML, CSS & JavaScript • Hosted on GitHub Pages</p>
     </div>
   </footer>
@@ -385,7 +387,7 @@
       });
 
       window.addEventListener("resize", () => {
-        if (window.innerWidth > 720) closeNav();
+        if (window.innerWidth > 980) closeNav();
       });
     }
 

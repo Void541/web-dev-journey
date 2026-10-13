@@ -33,6 +33,7 @@
   --primary-hover: #2ea043;
 
   /* New “HUD / app” tokens (preferred) */
+  --bg-start: #0a0d12;
   --bg-main: #07090d;
   --bg-elev-1: #0f131a;
   --bg-elev-2: #151b24;
@@ -117,8 +118,10 @@ html[data-theme="dark"]{
 }
 
 html[data-theme="light"]{
+  --bg-start: #f6f8fb;
   --bg-main: #f6f8fb;
   --bg-panel: rgba(255,255,255,0.92);
+  --bg-panel-strong: #ffffff;
   --text-primary: #141a24;
   --text-secondary: rgba(20,26,36,0.70);
 
@@ -149,6 +152,8 @@ html[data-theme="light"]{
   --primary: #16a34a;
   --primary-hover: #15803d;
 }
+
+
 
 /* Theme-specific overlays / header/button behavior */
 html[data-theme="dark"] body::after{ opacity: 0.35; }
@@ -188,6 +193,11 @@ html[data-theme="light"] .faq-item{
   border-color: var(--panel-border);
 }
 
+html[data-theme="light"] .hero-emblem{
+  background:
+  radial-gradient(circle at center, rgba(79,128,255,0.12), transparent 52%), #151b24;
+}
+
 /* =========================
    3) Reset / base
    ========================= */
@@ -201,7 +211,7 @@ body{
   background:
     radial-gradient(circle at 20% 10%, var(--glow-cold), transparent 30%),
     radial-gradient(circle at 80% 20%, var(--glow-brass), transparent 24%),
-    linear-gradient(180deg, #0a0d12 0%, var(--bg-main) 100%);
+    linear-gradient(180deg, var(--bg-start) 0%, var(--bg-main) 100%);
   color: var(--text-primary);
 }
 
@@ -416,7 +426,7 @@ body::after{
   .featured-card{ grid-column: span 1; }
 }
 
-@media (max-width: 720px){
+@media (max-width: 980px){
   .container{
     padding: 0 16px;
   }
@@ -457,14 +467,6 @@ body::after{
 
   .header-actions{
     gap: 8px;
-  }
-
-  /* floating theme toggle */
-  .theme-toggle{
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-    z-index: 60;
   }
 
     .header-inner{
@@ -1680,7 +1682,7 @@ html[data-theme="light"] .about-snapshot-card{
   padding: 6px 9px;
   border: 1px solid var(--accent-brass-soft);
   border-radius: 999px;
-  background: var(--bg-elev-2);
+  background: var(--surface);
   box-shadow: var(--sh-1);
   color: var(--text-primary);
   font-size: 0.78rem;
@@ -1690,7 +1692,10 @@ html[data-theme="light"] .about-snapshot-card{
   pointer-events: none;
   transform: translate(-50%, 4px);
   transition: opacity 180ms ease, transform 180ms ease;
-  white-space: nowrap;
+  white-space: normal;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 48px));
+  text-align: center;
 }
 
 .footer-tribute:hover{
@@ -1700,6 +1705,30 @@ html[data-theme="light"] .about-snapshot-card{
 }
 
 .footer-tribute:hover .footer-tribute-label{
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.footer-tribute > summary{
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.footer-tribute > summary::-webkit-details-marker{
+  display: none;
+}
+
+.footer-tribute > summary:focus-visible{
+  outline: 2px solid var(--accent-brass);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+.footer-tribute[open] .footer-tribute-label{
   opacity: 1;
   transform: translate(-50%, 0);
 }
