@@ -32,6 +32,10 @@ const translations = {
     nav_contact: "Kontakt",
     nav_about: "Über mich",
     nav_faq: "FAQ",
+    themen_switch: "Theme wechseln",
+    lang_switch: "Zu Englisch wechseln",
+    menu_open: "Menü öffnen",
+    menu_close: "Menü schließen",
     about_title: "Über mich",
 
     about_text:"Ich arbeite gerade daran, mir ein starkes Fundament in moderner Frontend-Entwicklung aufzubauen. Mein Fokus liegt dabei auf echten Projekten, klarer Struktur und Interfaces, die nicht nur funktionieren, sondern bewusst gestaltet sind.",
@@ -231,6 +235,10 @@ const translations = {
     nav_contact: "Contact",
     nav_about: "About",
     nav_faq: "FAQ",
+    themen_switch: "Switch theme",
+    lang_switch: "Switch to German",
+    menu_open: "Open menu",
+    menu_close: "Close menu",
     about_title: "About",
 
     about_text:"I’m currently building a strong foundation in modern frontend development. My focus is on real projects, clear structure, and interfaces that don’t just work, but feel intentionally designed.",
@@ -438,6 +446,8 @@ export function setLang(lang) {
   document.documentElement.setAttribute("data-lang", lang);
   localStorage.setItem(LANG_KEY, lang);
 
+  document.documentElement.setAttribute("lang", lang);
+
   const toggle = document.getElementById("langToggle");
   if (toggle) toggle.textContent = (lang === "de" ? "EN" : "DE");
 
@@ -452,5 +462,13 @@ export function setLang(lang) {
     const key = el.getAttribute("data-i18n-placeholder");
     const value = dict[key];
     if (typeof value === "string") el.setAttribute("placeholder", value);
+  });
+
+  document.querySelectorAll("[data-i18n-aria-label]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria-label");
+    const value = dict[key];
+    if (typeof value === "string") {
+      el.setAttribute("aria-label", value);
+    }
   });
 }

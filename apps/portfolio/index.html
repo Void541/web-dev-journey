@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-lang="de">
 <head>
   <meta name="description" content="Void – Web Development Portfolio. HTML, CSS, JavaScript projects.">
   <meta charset="UTF-8" />
@@ -14,7 +14,7 @@
       <a class="brand" href="#top">Fabian Materna <span class="alias">aka Void</span> </a>
 
       <div class="header-controls">
-        <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" aria-expanded="false">
+        <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" data-i18n-aria-label="menu_open" aria-expanded="false">
           ☰
         </button>
 
@@ -27,11 +27,11 @@
         </nav>
 
         <div class="header-actions">
-          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln">
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln" data-i18n-aria-label="themen_switch">
             🌙
           </button>
 
-          <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln">
+          <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln" data-i18n-aria-label="lang_switch">
             DE
           </button>
         </div>
@@ -323,7 +323,7 @@
 
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p data-i18n="footer_left">© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
+      <p>© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
       <details class="footer-tribute">
         <summary aria-label="In Erinnerung an den besten Hund Akiko 2012-2026">
           <svg class="footer-paw" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
@@ -342,7 +342,7 @@
   <script type="module">
     import { renderAboutSnapshots, renderLearningResources } from "./content.js";
     import { initTheme } from "../../shared/theme.js";
-    import { initI18n } from "../../shared/i18n.js";
+    import { initI18n, t } from "../../shared/i18n.js";
 
     renderAboutSnapshots(document.getElementById("aboutSnapshots"));
     renderLearningResources(document.getElementById("learningGrid"));
@@ -358,14 +358,16 @@
       if (!navToggle || !siteNav) return;
       siteNav.classList.remove("is-open");
       navToggle.setAttribute("aria-expanded", "false");
-      navToggle.setAttribute("aria-label", "Menü öffnen");
+      navToggle.setAttribute("data-i18n-aria-label", "menu_open");
+      navToggle.setAttribute("aria-label", t("menu_open"));
     };
 
     const openNav = () => {
       if (!navToggle || !siteNav) return;
       siteNav.classList.add("is-open");
       navToggle.setAttribute("aria-expanded", "true");
-      navToggle.setAttribute("aria-label", "Menü schließen");
+      navToggle.setAttribute("data-i18n-aria-label", "menu_close");
+      navToggle.setAttribute("aria-label", t("menu_close"));
     };
 
     if (navToggle && siteNav) {
