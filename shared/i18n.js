@@ -6,8 +6,8 @@ const translations = {
   de: {
     // ================= PORTFOLIO =================
     hero_kicker: "Portfolio von Fabian Materna",
-    hero_title: "Ich baue interaktive Frontends mit Fokus auf Struktur, Systeme und sichtbaren Fortschritt.",
-    hero_subtitle: "Ich entwickle praxisnah moderne Webprojekte, um saubere Architektur, UI-Verständnis und produktnahes Denken aufzubauen.",
+    hero_title: "Ich entwickle ein Canvas-Spiel mit JavaScript.",
+    hero_subtitle: "Im Game Lab arbeite ich an einem Kampfsystem, einem Craftingsystem und einem questbasierten Fortschrittssystem.",
     hero_highlight_1_label: "Was mich auszeichnet",
     hero_highlight_1_copy: "Ich lerne über echte Projekte und kombiniere UI, Struktur und Systemdenken statt nur Theorie zu sammeln.",
     hero_highlight_2_label: "Stärkstes Projekt",
@@ -26,7 +26,7 @@ const translations = {
 
     meta_focus: "Fokus: Interaktive Frontends & Systemdenken",
     meta_rhythm: "Lernen durch echte Projekte",
-    meta_goal: "Ziel: Junior Frontend / Werkstudent",
+    meta_goal: "Ziel: Einstieg als Junior-Fullstack-Entwickler",
     nav_projects: "Projekte",
     nav_learning: "Lernquellen",
     nav_contact: "Kontakt",
@@ -208,8 +208,8 @@ const translations = {
   en: {
     // ================= PORTFOLIO ================= 
     hero_kicker: "Portfolio of Fabian Materna",
-    hero_title: "I build interactive frontends with a focus on structure, systems, and visible progress.",
-    hero_subtitle: "I’m developing practical modern web projects to build stronger architecture, UI thinking, and product-oriented problem solving.",
+    hero_title: "I'm building a canvas game with JavaScript.",
+    hero_subtitle: "In Game Lab, I'm working on a combat system, a crafting system, and a quest-based progression system.",
     hero_highlight_1_label: "What stands out",
     hero_highlight_1_copy: "I learn through real projects and combine UI, structure, and systems thinking instead of only collecting theory.",
     hero_highlight_2_label: "Strongest project",
@@ -228,7 +228,7 @@ const translations = {
 
     meta_focus: "Focus: Interactive frontends & systems thinking",
     meta_rhythm: "Learning through real projects",
-    meta_goal: "Goal: Junior Frontend / Working Student",
+    meta_goal: "Goal: A Junior Fullstack Developer role",
     btn_projects: "View Projects",
     nav_projects: "Projects",
     nav_learning: "Learning",
