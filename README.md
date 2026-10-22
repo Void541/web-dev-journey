@@ -1,85 +1,58 @@
 # Web Dev Journey (Void)
 
-Ein kleines Portfolio mit Lernprojekten in **HTML / CSS / JavaScript** – live gehostet über **GitHub Pages**.
-
-![HTML](https://img.shields.io/badge/HTML-5-orange)
-![CSS](https://img.shields.io/badge/CSS-3-blue)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6-yellow)
-![Live](https://img.shields.io/badge/Live-GitHub%20Pages-green)
-
-## Live Demos
-- **Portfolio:** https://void541.github.io/web-dev-journey/
-- **To-Do App:** https://void541.github.io/web-dev-journey/todo/
+Portfolio und Lernprojekte von Fabian Materna. Mein berufliches Ziel ist der
+Einstieg als Junior-Fullstack-Entwickler. Meine bisherigen Projekte zeigen vor
+allem praktische Arbeit mit HTML, CSS und JavaScript.
 
 ## Projekte
 
-### 1) Mini Portfolio (Projekt 1)
-**Highlights**
-- Responsive Layout (Desktop/Mobile)
-- Dark/Light Theme Toggle (localStorage)
-- Navigation + Smooth Scrolling
+### Portfolio
 
-<img src="assets/images/screenshots/portfolio.png" width="850" alt="Portfolio Screenshot">
+- Responsive Gestaltung mit persoenlichen Sci-Fi-Elementen
+- Dark- und Light-Theme mit gespeicherter Auswahl
+- Deutsche und englische Inhalte mit uebersetzten Button-Beschriftungen
+- Projektvorstellung, FAQ, Lernquellen und Kontaktbereich
 
-### 2) To-Do App (Projekt 2)
-**Features**
-- Add / Delete / Complete
-- Filter: Alle / Aktiv / Erledigt
-- “Done löschen”
-- Speicherung via localStorage
-- Dark/Light Theme Toggle
+[Live ansehen](https://void541.github.io/web-dev-journey/apps/portfolio/)
+| [Quellcode](apps/portfolio/)
 
-<img src="assets/images/screenshots//todo.png" width="850" alt="To-Do Screenshot">
+### Game Lab
 
-3) Quiz App (Projekt 3)
+Ein Canvas-Spiel mit JavaScript in aktiver Entwicklung. Ich arbeite dort an
+einem Kampfsystem, einem Craftingsystem und einem questbasierten
+Fortschrittssystem.
 
-Features:
+[Live ansehen](https://void541.github.io/web-dev-journey/apps/game-lab/)
+| [Quellcode](apps/game-lab/)
 
-Multiple Choice Quiz
+## Lernbereiche
 
-Kategorie-Filter (Web / JS / Games / Allgemein)
+- [Vue Lab](apps/vue-lab/): Uebungen zu Vue
+- [TypeScript Lab](apps/typescript-lab/): Uebungen zu TypeScript
 
-Optionaler Timer
+## Struktur
 
-Highscore (localStorage)
-
-Dark/Light Theme
-
-Tastatur-Steuerung (1–4)
-
-Question Editor im Browser (Custom Fragen)
-
-Fragen aus externer JSON-Datei geladen
-
-<img src="assets/images/screenshots//quiz.png" width="850" alt="Quiz Screenshot">
-<img src="assets/images/screenshots//quiz_fragen.png" width="850" alt="Quiz Screenshot">
-
-📦 Erweiterungen
-
-Fragen werden aus questions.json geladen
-
-Custom Fragen werden im localStorage gespeichert
-
-JSON + Custom werden beim Start gemerged
-
-🎮 Ziel
-
-Langfristiges Ziel:
-Aufbau eines modularen Top-Down PvE RPG Browsergames
-(Combat-System, Progression, Loot, Map-System)
-
-## Tech Stack
-- **HTML5**
-- **CSS3** (Flex/Grid, responsive, theme variables)
-- **JavaScript** (DOM, Events, localStorage)
-- **Git + GitHub Pages**
+- `apps/portfolio/`: Portfolio mit HTML, CSS und JavaScript-Modulen
+- `apps/game-lab/`: Canvas-Spiel
+- `shared/`: Gemeinsam verwendete Module, etwa fuer Theme und Uebersetzungen
+- `assets/`: Projektdateien wie Screenshots
 
 ## Lokal starten
-- Portfolio: `index.html` öffnen  
-- To-Do App: `todo/index.html` öffnen  
-(Optional: VS Code Extension **Live Server**)
 
-## Roadmap
-- Projekt 3: **Quiz App**
-- Kleine UI-Polish Iterationen
-- Weitere JavaScript-Projekte
+Das Repository in VS Code oeffnen und im Projektverzeichnis einen lokalen
+HTTP-Server starten, zum Beispiel mit der Erweiterung Live Server.
+
+Bei Live Server auf Port 5500:
+
+- Portfolio: `http://127.0.0.1:5500/apps/portfolio/`
+- Game Lab: `http://127.0.0.1:5500/apps/game-lab/`
+
+Das Portfolio verwendet JavaScript-Module und sollte ueber HTTP statt direkt
+als lokale HTML-Datei geoeffnet werden. Fuer die Lernbereiche gelten die
+Anleitungen in ihren jeweiligen README-Dateien.
+
+## Aktueller Fokus
+
+Bestehende Projekte gezielt verbessern, Ergebnisse pruefen und technische
+Entscheidungen nachvollziehbar dokumentieren. Das Portfolio wird schrittweise
+fuer Junior-Entwickler-Bewerbungen ueberarbeitet.
