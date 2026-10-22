@@ -583,7 +583,13 @@ state.crafting = {
       state.pushLootNotice?.("Crafting is only available in the Mercenary Hangar");
       return false;
     }
-    return craftingSystem.craft(state, id);
+    const crafted = craftingSystem.craft(state, id);
+
+    if (crafted) {
+      markProgressChanged();
+    }
+
+    return crafted;
   }
 };
 
@@ -696,6 +702,7 @@ levelSystem.addXP?.(state, enemy.xp ?? 0,);
 
 state.onSalvageLoot = () => {
   advanceQuestFlow();
+  markProgressChanged();
 };
 
 multiplayerNetwork.setEnemyKilledHandler(({ enemy, drop }) => {
