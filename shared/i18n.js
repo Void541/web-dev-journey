@@ -123,6 +123,9 @@ const translations = {
     project4_title: "Game Lab",
     project4_desc: "Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.",
 
+    project4_story_title: "Mein Einstieg",
+    project4_story_text: "Im Game Lab habe ich zunächst eine steuerbare Spielerfigur aufgebaut. Dafür habe ich Position, Geschwindigkeit und Lebenspunkte modelliert und anschließend Darstellung und Bewegung umgesetzt. So habe ich gelernt, wie Spielzustand, Canvas-Rendering und Eingaben zusammenspielen.",
+
     project4_highlight_1: "Canvas Rendering & Animation",
     project4_highlight_2: "Combat, Projectiles & Collision",
     project4_highlight_3: "UI, HUD und Gameplay-Systeme",
@@ -325,6 +328,9 @@ const translations = {
 
     project4_title: "Game Lab",
     project4_desc: "A browser-based 2D game with a custom game loop, combat systems, enemy behavior and modular architecture.",
+
+    project4_story_title: "How I started",
+    project4_story_text: "I started Game Lab by building a controllable player character. I defined its position, speed, and health, then implemented rendering and movement. This helped me understand how game state, canvas rendering, and player input work together.",
 
     project4_highlight_1: "Canvas rendering & animation",
     project4_highlight_2: "Combat, projectiles & collision",

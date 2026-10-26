@@ -1952,3 +1952,18 @@ html[data-theme="light"] .btn.ghost:hover{
     grid-template-columns: 1fr;
   }
 }
+
+
+.project-story{
+  margin-bottom: var(--s-5);
+}
+
+.project-story > summary{
+  cursor: pointer;
+}
+
+.project-story > summary:focus-visible{
+  outline: 2px solid var(--border-strong);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
