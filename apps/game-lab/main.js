@@ -1295,6 +1295,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
       state.progression.unlocked.crew[b.id] = true;
       state.pushLootNotice?.(`Hired ${b.label}`);
+      markProgressChanged();
       saveLoadoutState();
       continue;
     }
@@ -1303,6 +1304,7 @@ for (const b of state.ui.crewButtons ?? []) {
     state.crew[b.id] = !(state.crew?.[b.id] ?? false);
 
     state.pushLootNotice?.(`${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`);
+    markProgressChanged();
     saveLoadoutState();
   }
   // Cannon slot selection
@@ -1314,6 +1316,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
     state.ui.activeCannonSlot = b.index;
     state.pushLootNotice?.(`Selected Slot ${b.index + 1}`);
+    markProgressChanged();
     saveLoadoutState();
   }
 
@@ -1345,6 +1348,7 @@ for (const b of state.ui.crewButtons ?? []) {
       spendCost(cannonData?.cost);
       state.progression.unlocked.weapons[b.id] = true;
       state.pushLootNotice?.(`Unlocked ${b.label}`);
+      markProgressChanged();
       saveLoadoutState();
       continue;
     }
@@ -1356,6 +1360,7 @@ for (const b of state.ui.crewButtons ?? []) {
     state.playerLoadout.cannons[slot] = b.id;
 
     state.pushLootNotice?.(`Equipped ${b.label} to Slot ${slot + 1}`);
+    markProgressChanged();
     saveLoadoutState();
 
     state.effects.push({
@@ -1393,6 +1398,7 @@ for (const b of state.ui.crewButtons ?? []) {
 
       state.progression.unlocked.ships[b.id] = true;
       state.pushLootNotice?.(`Unlocked ship: ${b.label}`);
+      markProgressChanged();
       saveLoadoutState();
       continue;
     }
@@ -1427,6 +1433,7 @@ for (const b of state.ui.crewButtons ?? []) {
     }
 
     state.pushLootNotice?.(`Equipped ship: ${b.label}`);
+    markProgressChanged();
     saveLoadoutState();
   }
 }
@@ -1445,6 +1452,7 @@ if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
     const spent = talentSystem.allocateTalentPoint(state, b.id);
     if (spent) {
       state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
+      markProgressChanged();
       saveLoadoutState();
     }
   }
