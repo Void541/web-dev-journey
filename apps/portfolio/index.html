@@ -1,413 +1,667 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de" data-lang="de">
-<head>
-  <meta name="description" content="Void – Web Development Portfolio. HTML, CSS, JavaScript projects.">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fabian Materna – Web Dev Journey</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="https://fav.farm/🔥">
-</head>
-<body>
-  <header id="top" class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="#top">Fabian Materna <span class="alias">aka Void</span> </a>
+  <head>
+    <meta
+      name="description"
+      content="Void – Web Development Portfolio. HTML, CSS, JavaScript projects."
+    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fabian Materna – Web Dev Journey</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <header id="top" class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#top"
+          >Fabian Materna <span class="alias">aka Void</span>
+        </a>
 
-      <div class="header-controls">
-        <button class="nav-toggle" id="navToggle" type="button" aria-label="Menü öffnen" data-i18n-aria-label="menu_open" aria-expanded="false">
-          ☰
-        </button>
-
-        <nav class="nav" id="siteNav" aria-label="Hauptnavigation">
-          <a href="#about" data-i18n="nav_about">Über mich</a>
-          <a href="#projects" data-i18n="nav_projects">Projekte</a>
-          <a href="#learning" data-i18n="nav_learning">Lernquellen</a>
-          <a href="#faq" data-i18n="nav_faq">FAQ</a>
-          <a href="#contact" data-i18n="nav_contact">Kontakt</a>
-        </nav>
-
-        <div class="header-actions">
-          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Theme wechseln" data-i18n-aria-label="themen_switch">
-            🌙
+        <div class="header-controls">
+          <button
+            class="nav-toggle"
+            id="navToggle"
+            type="button"
+            aria-label="Menü öffnen"
+            data-i18n-aria-label="menu_open"
+            aria-expanded="false"
+          >
+            ☰
           </button>
 
-          <button id="langToggle" class="btn icon" type="button" aria-label="Sprache wechseln" data-i18n-aria-label="lang_switch">
-            DE
-          </button>
+          <nav class="nav" id="siteNav" aria-label="Hauptnavigation">
+            <a href="#about" data-i18n="nav_about">Über mich</a>
+            <a href="#projects" data-i18n="nav_projects">Projekte</a>
+            <a href="#learning" data-i18n="nav_learning">Lernquellen</a>
+            <a href="#faq" data-i18n="nav_faq">FAQ</a>
+            <a href="#contact" data-i18n="nav_contact">Kontakt</a>
+          </nav>
+
+          <div class="header-actions">
+            <button
+              class="theme-toggle"
+              id="themeToggle"
+              type="button"
+              aria-label="Theme wechseln"
+              data-i18n-aria-label="themen_switch"
+            >
+              🌙
+            </button>
+
+            <button
+              id="langToggle"
+              class="btn icon"
+              type="button"
+              aria-label="Sprache wechseln"
+              data-i18n-aria-label="lang_switch"
+            >
+              DE
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <section class="hero">
-      <div class="container">
-        <div class="hero-shell">
-          <div class="hero-copy">
-            <p class="hero-kicker" data-i18n="hero_kicker">Portfolio von Fabian Materna</p>
-            <h1 data-i18n="hero_title">Web Dev Journey</h1>
-            <p class="subtitle hero-lead" data-i18n="hero_subtitle">
-              Ich baue mein Fundament in HTML, CSS und JavaScript und entwickle Schritt für Schritt echte Projekte für meinen Weg in die Webentwicklung.
-            </p>
+    <main>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-shell">
+            <div class="hero-copy">
+              <p class="hero-kicker" data-i18n="hero_kicker">
+                Portfolio von Fabian Materna
+              </p>
+              <h1 data-i18n="hero_title">Web Dev Journey</h1>
+              <p class="subtitle hero-lead" data-i18n="hero_subtitle">
+                Ich baue mein Fundament in HTML, CSS und JavaScript und
+                entwickle Schritt für Schritt echte Projekte für meinen Weg in
+                die Webentwicklung.
+              </p>
 
-            <div class="hero-actions">
-              <a class="btn primary cta-strong" href="#projects" data-i18n="btn_projects">Projekte ansehen</a>
-              <a class="btn ghost" href="#about" data-i18n="btn_about">Mehr über mich</a>
-            </div>
-
-            <ul class="hero-meta">
-              <li data-i18n="meta_focus">Fokus: Webentwicklung</li>
-              <li data-i18n="meta_rhythm">Rhythmus: Konstantes Lernen & Bauen</li>
-              <li data-i18n="meta_goal">Ziel: Junior / Werkstudent</li>
-            </ul>
-
-            <div class="hero-highlights">
-              <article class="hero-highlight-card">
-                <p class="hero-highlight-label eyebrow" data-i18n="hero_highlight_1_label">Was mich auszeichnet</p>
-                <p class="hero-highlight-copy" data-i18n="hero_highlight_1_copy">Ich lerne über echte Projekte und kombiniere UI, Struktur und Systemdenken statt nur Theorie zu sammeln.</p>
-              </article>
-              <article class="hero-highlight-card">
-                <p class="hero-highlight-label eyebrow" data-i18n="hero_highlight_2_label">Stärkstes Projekt</p>
-                <p class="hero-highlight-copy" data-i18n="hero_highlight_2_copy">Game Lab ist aktuell mein klarstes Showcase für Gameplay-Logik, Architektur und saubere Weiterentwicklung.</p>
-              </article>
-            </div>
-          </div>
-
-          <aside class="hero-panel" aria-label="Hero Kontrollpanel">
-            <div class="hero-panel-head surface-head">
-              <p class="hero-panel-kicker eyebrow" data-i18n="hero_panel_kicker">Archive Node</p>
-              <span class="hero-panel-id">VOID-541</span>
-            </div>
-
-            <div class="hero-panel-core">
-              <div class="hero-emblem" aria-hidden="true">
-                <span class="hero-emblem-ring hero-emblem-ring-1"></span>
-                <span class="hero-emblem-ring hero-emblem-ring-2"></span>
-                <span class="hero-emblem-ring hero-emblem-ring-3"></span>
-
-                <span class="hero-emblem-pulse hero-emblem-pulse-1"></span>
-                <span class="hero-emblem-pulse hero-emblem-pulse-2"></span>
-                <span class="hero-emblem-pulse hero-emblem-pulse-3"></span>
-
-                <span class="hero-emblem-core"></span>
-
-                <span class="hero-contact hero-contact-1"></span>
-                <span class="hero-contact hero-contact-2"></span>
-                <span class="hero-contact hero-contact-3"></span>
-                <span class="hero-contact hero-contact-4"></span>
+              <div class="hero-actions">
+                <a
+                  class="btn primary cta-strong"
+                  href="#projects"
+                  data-i18n="btn_projects"
+                  >Projekte ansehen</a
+                >
+                <a class="btn ghost" href="#contact" data-i18n="btn_contact"
+                  >Kontakt aufnehmen</a
+                >
               </div>
 
-              <div class="hero-panel-grid">
-                <article class="hero-panel-cell hero-panel-cell-accent">
-                  <p class="hero-panel-label" data-i18n="hero_panel_1_label">Focus</p>
-                  <p class="hero-panel-value" data-i18n="hero_panel_1_value">Systems, UI, Frontend</p>
+              <ul class="hero-meta">
+                <li data-i18n="meta_focus">Fokus: Webentwicklung</li>
+                <li data-i18n="meta_rhythm">
+                  Rhythmus: Konstantes Lernen & Bauen
+                </li>
+                <li data-i18n="meta_goal">Ziel: Junior / Werkstudent</li>
+              </ul>
+
+              <div class="hero-highlights">
+                <article class="hero-highlight-card">
+                  <p
+                    class="hero-highlight-label eyebrow"
+                    data-i18n="hero_highlight_1_label"
+                  >
+                    Was mich auszeichnet
+                  </p>
+                  <p
+                    class="hero-highlight-copy"
+                    data-i18n="hero_highlight_1_copy"
+                  >
+                    Ich lerne über echte Projekte und kombiniere UI, Struktur
+                    und Systemdenken statt nur Theorie zu sammeln.
+                  </p>
                 </article>
-                <article class="hero-panel-cell">
-                  <p class="hero-panel-label" data-i18n="hero_panel_2_label">Current Project</p>
-                  <p class="hero-panel-value" data-i18n="hero_panel_2_value">Game Lab</p>
-                </article>
-                <article class="hero-panel-cell">
-                  <p class="hero-panel-label" data-i18n="hero_panel_3_label">Mode</p>
-                  <p class="hero-panel-value" data-i18n="hero_panel_3_value">Build. Refine. Repeat.</p>
-                </article>
-                <article class="hero-panel-cell">
-                  <p class="hero-panel-label" data-i18n="hero_panel_4_label">Direction</p>
-                  <p class="hero-panel-value" data-i18n="hero_panel_4_value">Vue, product UI, stronger systems</p>
+                <article class="hero-highlight-card">
+                  <p
+                    class="hero-highlight-label eyebrow"
+                    data-i18n="hero_highlight_2_label"
+                  >
+                    Stärkstes Projekt
+                  </p>
+                  <p
+                    class="hero-highlight-copy"
+                    data-i18n="hero_highlight_2_copy"
+                  >
+                    Game Lab ist aktuell mein klarstes Showcase für
+                    Gameplay-Logik, Architektur und saubere Weiterentwicklung.
+                  </p>
                 </article>
               </div>
             </div>
 
-            <div class="hero-panel-footer">
-              <span class="hero-panel-chip">Frontend</span>
-              <span class="hero-panel-chip">UI</span>
-              <span class="hero-panel-chip">Systems</span>
+            <aside class="hero-panel" aria-label="Hero Kontrollpanel">
+              <div class="hero-panel-head surface-head">
+                <p
+                  class="hero-panel-kicker eyebrow"
+                  data-i18n="hero_panel_kicker"
+                >
+                  Archive Node
+                </p>
+                <span class="hero-panel-id">VOID-541</span>
+              </div>
+
+              <div class="hero-panel-core">
+                <div class="hero-emblem" aria-hidden="true">
+                  <span class="hero-emblem-ring hero-emblem-ring-1"></span>
+                  <span class="hero-emblem-ring hero-emblem-ring-2"></span>
+                  <span class="hero-emblem-ring hero-emblem-ring-3"></span>
+
+                  <span class="hero-emblem-pulse hero-emblem-pulse-1"></span>
+                  <span class="hero-emblem-pulse hero-emblem-pulse-2"></span>
+                  <span class="hero-emblem-pulse hero-emblem-pulse-3"></span>
+
+                  <span class="hero-emblem-core"></span>
+
+                  <span class="hero-contact hero-contact-1"></span>
+                  <span class="hero-contact hero-contact-2"></span>
+                  <span class="hero-contact hero-contact-3"></span>
+                  <span class="hero-contact hero-contact-4"></span>
+                </div>
+
+                <div class="hero-panel-grid">
+                  <article class="hero-panel-cell hero-panel-cell-accent">
+                    <p class="hero-panel-label" data-i18n="hero_panel_1_label">
+                      Focus
+                    </p>
+                    <p class="hero-panel-value" data-i18n="hero_panel_1_value">
+                      Systems, UI, Frontend
+                    </p>
+                  </article>
+                  <article class="hero-panel-cell">
+                    <p class="hero-panel-label" data-i18n="hero_panel_2_label">
+                      Current Project
+                    </p>
+                    <p class="hero-panel-value" data-i18n="hero_panel_2_value">
+                      Game Lab
+                    </p>
+                  </article>
+                  <article class="hero-panel-cell">
+                    <p class="hero-panel-label" data-i18n="hero_panel_3_label">
+                      Mode
+                    </p>
+                    <p class="hero-panel-value" data-i18n="hero_panel_3_value">
+                      Build. Refine. Repeat.
+                    </p>
+                  </article>
+                  <article class="hero-panel-cell">
+                    <p class="hero-panel-label" data-i18n="hero_panel_4_label">
+                      Direction
+                    </p>
+                    <p class="hero-panel-value" data-i18n="hero_panel_4_value">
+                      Vue, product UI, stronger systems
+                    </p>
+                  </article>
+                </div>
+              </div>
+
+              <div class="hero-panel-footer">
+                <span class="hero-panel-chip">Frontend</span>
+                <span class="hero-panel-chip">UI</span>
+                <span class="hero-panel-chip">Systems</span>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="section">
+        <div class="container">
+          <h2 class="section-title accent-title" data-i18n="about_title">
+            Über mich
+          </h2>
+          <p class="section-copy" data-i18n="about_text">
+            Ich bin ein angehender Webentwickler und baue Projekte, um meine
+            Fähigkeiten in HTML, CSS und JavaScript Schritt für Schritt
+            auszubauen. Mein Fokus liegt auf sauberer Struktur, besserem
+            UI-Verständnis und interaktiven Webprojekten.
+          </p>
+
+          <div class="about-snapshot" id="aboutSnapshots"></div>
+
+          <div class="grid">
+            <div class="card">
+              <h3 class="accent-title" data-i18n="skills_title">Skills</h3>
+              <p class="card-intro" data-i18n="skills_intro">
+                Die Bereiche, die ich gerade am aktivsten über echte Projekte
+                trainiere und weiter ausbaue.
+              </p>
+              <ul class="info-list">
+                <li data-i18n="skill_1"></li>
+                <li data-i18n="skill_2"></li>
+                <li data-i18n="skill_3"></li>
+                <li data-i18n="skill_4"></li>
+                <li data-i18n="skill_5"></li>
+                <li data-i18n="skill_6"></li>
+              </ul>
             </div>
-          </aside>
-        </div>
-      </div>
-    </section>
 
-    <section id="about" class="section">
-      <div class="container">
-        <h2 class="section-title accent-title" data-i18n="about_title">Über mich</h2>
-        <p class="section-copy" data-i18n="about_text">
-          Ich bin ein angehender Webentwickler und baue Projekte, um meine Fähigkeiten in HTML, CSS und JavaScript Schritt für Schritt auszubauen. Mein Fokus liegt auf sauberer Struktur, besserem UI-Verständnis und interaktiven Webprojekten.
-        </p>
-
-        <div class="about-snapshot" id="aboutSnapshots"></div>
-
-        <div class="grid">
-          <div class="card">
-            <h3 class="accent-title" data-i18n="skills_title">Skills</h3>
-            <p class="card-intro" data-i18n="skills_intro">
-              Die Bereiche, die ich gerade am aktivsten über echte Projekte trainiere und weiter ausbaue.
-            </p>
-            <ul class="info-list">
-              <li data-i18n="skill_1"></li>
-              <li data-i18n="skill_2"></li>
-              <li data-i18n="skill_3"></li>
-              <li data-i18n="skill_4"></li>
-              <li data-i18n="skill_5"></li>
-              <li data-i18n="skill_6"></li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <h3 class="accent-title" data-i18n="roadmap_title">Roadmap</h3>
-            <p class="card-intro" data-i18n="roadmap_intro">
-              Die nächsten Schritte, mit denen ich mein Frontend-Fundament gezielt Richtung moderne Libraries und größere Projekte ausbaue.
-            </p>
-            <ol class="info-list info-list-numbered">
-              <li data-i18n="roadmap_1"></li>
-              <li data-i18n="roadmap_2"></li>
-              <li data-i18n="roadmap_3"></li>
-              <li data-i18n="roadmap_4"></li>
-              <li data-i18n="roadmap_5"></li>
-            </ol>
+            <div class="card">
+              <h3 class="accent-title" data-i18n="roadmap_title">Roadmap</h3>
+              <p class="card-intro" data-i18n="roadmap_intro">
+                Die nächsten Schritte, mit denen ich mein Frontend-Fundament
+                gezielt Richtung moderne Libraries und größere Projekte ausbaue.
+              </p>
+              <ol class="info-list info-list-numbered">
+                <li data-i18n="roadmap_1"></li>
+                <li data-i18n="roadmap_2"></li>
+                <li data-i18n="roadmap_3"></li>
+                <li data-i18n="roadmap_4"></li>
+                <li data-i18n="roadmap_5"></li>
+              </ol>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="projects" class="section">
-      <div class="container">
-        <h2 class="section-title accent-title" data-i18n="projects_title">Projekte</h2>
-        <p class="section-intro" data-i18n="projects_intro">
-          Eine kleine Auswahl der Projekte, an denen ich gerade am meisten wachse. Der Fokus liegt bewusst auf Qualität, Struktur und sichtbarem Lernfortschritt.
-        </p>
+      <section id="projects" class="section">
+        <div class="container">
+          <h2 class="section-title accent-title" data-i18n="projects_title">
+            Projekte
+          </h2>
+          <p class="section-intro" data-i18n="projects_intro">
+            Eine kleine Auswahl der Projekte, an denen ich gerade am meisten
+            wachse. Der Fokus liegt bewusst auf Qualität, Struktur und
+            sichtbarem Lernfortschritt.
+          </p>
 
-        <div class="grid">
-          <article class="card featured-card">
-  <div class="project-head surface-head">
-    <p class="project-kicker eyebrow" data-i18n="project_featured">Featured Project</p>
-    <span class="badge featured" data-i18n="badge_in_progress">In Progress</span>
-  </div>
+          <div class="grid">
+            <article class="card featured-card">
+              <div class="project-head surface-head">
+                <p class="project-kicker eyebrow" data-i18n="project_featured">
+                  Featured Project
+                </p>
+                <span class="badge featured" data-i18n="badge_in_progress"
+                  >In Progress</span
+                >
+              </div>
 
-  <div class="project-spotlight">
-    <span class="spotlight-label" data-i18n="project4_spotlight_label">Herzensprojekt</span>
-    <p class="spotlight-copy" data-i18n="project4_spotlight_text">
-      Das Game Lab ist aktuell mein wichtigstes Projekt, weil ich dort Gameplay, Struktur und Systemdenken zusammenbringe.
-    </p>
-  </div>
+              <div class="project-spotlight">
+                <span
+                  class="spotlight-label"
+                  data-i18n="project4_spotlight_label"
+                  >Herzensprojekt</span
+                >
+                <p class="spotlight-copy" data-i18n="project4_spotlight_text">
+                  Das Game Lab ist aktuell mein wichtigstes Projekt, weil ich
+                  dort Gameplay, Struktur und Systemdenken zusammenbringe.
+                </p>
+              </div>
 
-  <h3 class="accent-title" data-i18n="project4_title">Game Lab</h3>
+              <h3 class="accent-title" data-i18n="project4_title">Game Lab</h3>
 
-  <p class="project-lead" data-i18n="project4_desc">
-    Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.
-  </p>
+              <p class="project-lead" data-i18n="project4_desc">
+                Ein browserbasiertes 2D-Spiel mit eigenem Game Loop,
+                Kampfsystem, Gegnerverhalten und modularer Architektur.
+              </p>
 
-  <ul class="project-highlights">
-    <li data-i18n="project4_highlight_1">Canvas Rendering & Animation</li>
-    <li data-i18n="project4_highlight_2">Combat, Projectiles & Collision</li>
-    <li data-i18n="project4_highlight_3">UI, HUD und Gameplay-Systeme</li>
-    <li data-i18n="project4_highlight_4">Modularer JavaScript-Aufbau</li>
-  </ul>
+              <ul class="project-highlights">
+                <li data-i18n="project4_highlight_1">
+                  Canvas Rendering & Animation
+                </li>
+                <li data-i18n="project4_highlight_2">
+                  Combat, Projectiles & Collision
+                </li>
+                <li data-i18n="project4_highlight_3">
+                  UI, HUD und Gameplay-Systeme
+                </li>
+                <li data-i18n="project4_highlight_4">
+                  Modularer JavaScript-Aufbau
+                </li>
+              </ul>
 
-  <details class="project-story">
-    <summary data-i18n="project4_story_title">Mein Einstieg</summary>
-    <p data-i18n="project4_story_text">
-      Im Game Lab habe ich zunächst eine steuerbare Spielerfigur aufgebaut.
-      Dafür habe ich Position, Geschwindigkeit und Lebenspunkte modelliert
-      und anschließend Darstellung und Bewegung umgesetzt.
-      So habe ich gelernt, wie Spielzustand, Canvas-Rendering und Eingaben
-      zusammenspielen.
-    </p>
-  </details>
+              <details class="project-story">
+                <summary data-i18n="project4_story_title">
+                  Mein Einstieg
+                </summary>
+                <p data-i18n="project4_story_text">
+                  Im Game Lab habe ich zunächst eine steuerbare Spielerfigur
+                  aufgebaut. Dafür habe ich Position, Geschwindigkeit und
+                  Lebenspunkte modelliert und anschließend Darstellung und
+                  Bewegung umgesetzt. So habe ich gelernt, wie Spielzustand,
+                  Canvas-Rendering und Eingaben zusammenspielen.
+                </p>
+              </details>
 
-  <div class="project-stats">
-    <span class="project-stat" data-i18n="project4_stat_1">Status: Aktiv in Entwicklung</span>
-    <span class="project-stat" data-i18n="project4_stat_2">Fokus: Gameplay & Progression</span>
-    <span class="project-stat accent" data-i18n="project4_stat_3">Herzstück meines Portfolios</span>
-  </div>
+              <div class="project-stats">
+                <span class="project-stat" data-i18n="project4_stat_1"
+                  >Status: Aktiv in Entwicklung</span
+                >
+                <span class="project-stat" data-i18n="project4_stat_2"
+                  >Fokus: Gameplay & Progression</span
+                >
+                <span class="project-stat accent" data-i18n="project4_stat_3"
+                  >Herzstück meines Portfolios</span
+                >
+              </div>
 
-  <div class="tags">
-    <span class="tag">JavaScript</span>
-    <span class="tag">Canvas</span>
-    <span class="tag">Game Loop</span>
-    <span class="tag">Collision</span>
-    <span class="tag">UI</span>
-  </div>
+              <div class="tags">
+                <span class="tag">JavaScript</span>
+                <span class="tag">Canvas</span>
+                <span class="tag">Game Loop</span>
+                <span class="tag">Collision</span>
+                <span class="tag">UI</span>
+              </div>
 
-  <div class="card-actions">
-    <a class="btn small ghost" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey/tree/feature/game-lab-integration" target="_blank" rel="noopener noreferrer">Code</a>
-    <a class="btn small primary cta-strong" data-i18n="btn_live" href="../game-lab/">Live</a>
-  </div>
-</article>
+              <div class="card-actions">
+                <a
+                  class="btn small ghost"
+                  data-i18n="btn_code"
+                  href="https://github.com/Void541/web-dev-journey/tree/feature/game-lab-integration"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Code</a
+                >
+                <a
+                  class="btn small primary cta-strong"
+                  data-i18n="btn_live"
+                  href="../game-lab/"
+                  >Live</a
+                >
+              </div>
+            </article>
 
-<article class="card">
-  <h3 class="accent-title" data-i18n="project1_title">Mini Portfolio</h3>
-  <p data-i18n="project1_desc">
-    This portfolio website. Focused on structure, layout and GitHub Pages deployment.
-  </p>
-  <div class="tags">
-    <span class="tag">HTML</span>
-    <span class="tag">CSS</span>
-    <span class="tag">GitHub Pages</span>
-  </div>
-  <div class="card-actions">
-    <a class="btn small ghost" data-i18n="btn_code" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">Code</a>
-    <a class="btn small secondary" data-i18n="btn_live" href="../portfolio/">Live</a>
-  </div>
-</article>
+            <article class="card">
+              <h3 class="accent-title" data-i18n="project1_title">
+                Mini Portfolio
+              </h3>
+              <p data-i18n="project1_desc">
+                This portfolio website. Focused on structure, layout and GitHub
+                Pages deployment.
+              </p>
+              <div class="tags">
+                <span class="tag">HTML</span>
+                <span class="tag">CSS</span>
+                <span class="tag">GitHub Pages</span>
+              </div>
+              <div class="card-actions">
+                <a
+                  class="btn small ghost"
+                  data-i18n="btn_code"
+                  href="https://github.com/Void541/web-dev-journey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Code</a
+                >
+                <a
+                  class="btn small secondary"
+                  data-i18n="btn_live"
+                  href="../portfolio/"
+                  >Live</a
+                >
+              </div>
+            </article>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="learning" class="section">
-      <div class="container">
-        <h2 class="section-title accent-title" data-i18n="learning_title">Womit ich aktuell lerne</h2>
-        <p class="section-intro" data-i18n="learning_intro">
-          Ein paar Ressourcen, die mir gerade besonders helfen, besser in Web Design, CSS-Systemen und modernem Frontend-Denken zu werden.
-        </p>
+      <section id="learning" class="section">
+        <div class="container">
+          <h2 class="section-title accent-title" data-i18n="learning_title">
+            Womit ich aktuell lerne
+          </h2>
+          <p class="section-intro" data-i18n="learning_intro">
+            Ein paar Ressourcen, die mir gerade besonders helfen, besser in Web
+            Design, CSS-Systemen und modernem Frontend-Denken zu werden.
+          </p>
 
-        <div class="grid learning-grid" id="learningGrid"></div>
-      </div>
-    </section>
-
-    <section id="faq" class="section">
-      <div class="container">
-        <h2 class="section-title accent-title" data-i18n="faq_title">FAQ</h2>
-        <p class="section-intro" data-i18n="faq_intro">
-          Fragen, die in Gesprächen über meinen Weg in die Webentwicklung, meine Lernstrategie und moderne Themen wie KI immer wieder auftauchen.
-        </p>
-
-        <div class="faq-list">
-          <details class="faq-item" open>
-            <summary data-i18n="faq_q1">Warum willst du Webentwickler werden?</summary>
-            <p data-i18n="faq_a1">
-              Mich reizt, dass Webentwicklung Kreativität, Struktur und Problemlösen verbindet. Ich kann sichtbare Produkte bauen und gleichzeitig lernen, wie gute Software systematisch entsteht.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-i18n="faq_q2">Wie lernst du aktuell Programmieren?</summary>
-            <p data-i18n="faq_a2">
-              Ich lerne über echte Projekte. Statt nur Theorie zu lesen, baue ich kleine Anwendungen und ein größeres Herzensprojekt, damit ich UI, Logik, Debugging und Architektur praktisch trainiere.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-i18n="faq_q3">Was sind aktuell deine größten Stärken?</summary>
-            <p data-i18n="faq_a3">
-              Ich arbeite konstant, dokumentiere meinen Fortschritt über Projekte und denke gerne in Systemen. Besonders wichtig ist mir, nicht nur etwas irgendwie zum Laufen zu bringen, sondern den Code Schritt für Schritt sauberer zu strukturieren.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-i18n="faq_q4">Ersetzt KI Programmierer?</summary>
-            <p data-i18n="faq_a4">
-              Ich sehe KI eher als Werkzeug als als Ersatz. Sie kann beim Recherchieren, Strukturieren oder Debuggen helfen, aber Verständnis, Verantwortung, Priorisierung und gute Entscheidungen im Produkt bleiben menschlich sehr wichtig.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-i18n="faq_q5">Wie nutzt du KI beim Lernen und Entwickeln?</summary>
-            <p data-i18n="faq_a5">
-              Ich nutze KI, um schneller Feedback zu bekommen, Konzepte besser zu verstehen und verschiedene Lösungswege zu vergleichen. Wichtig ist mir dabei, die Antworten nicht blind zu übernehmen, sondern sie nachzuvollziehen und selbst umzusetzen.
-            </p>
-          </details>
-
-          <details class="faq-item">
-            <summary data-i18n="faq_q6">Was macht für dich modernes Programmieren aus?</summary>
-            <p data-i18n="faq_a6">
-              Modernes Programmieren bedeutet für mich nicht nur neue Tools zu kennen, sondern sauber zu kommunizieren, wartbaren Code zu schreiben, mit Hilfsmitteln wie KI sinnvoll umzugehen und kontinuierlich dazuzulernen.
-            </p>
-          </details>
+          <div class="grid learning-grid" id="learningGrid"></div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="contact" class="section">
-      <div class="container">
-        <h2 class="section-title accent-title" data-i18n="contact_title">Kontakt</h2>
-        <p class="section-copy" data-i18n="contact_text">
-          Du möchtest meinen Fortschritt verfolgen oder dir meine Projekte ansehen? Dann schau gerne auf meinem GitHub vorbei.
-        </p>
+      <section id="faq" class="section">
+        <div class="container">
+          <h2 class="section-title accent-title" data-i18n="faq_title">FAQ</h2>
+          <p class="section-intro" data-i18n="faq_intro">
+            Fragen, die in Gesprächen über meinen Weg in die Webentwicklung,
+            meine Lernstrategie und moderne Themen wie KI immer wieder
+            auftauchen.
+          </p>
 
-        <div class="hero-actions">
-          <a class="btn primary cta-strong" href="https://github.com/Void541/web-dev-journey" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <a class="btn ghost" data-i18n="btn_top" href="#top">Nach oben</a>
+          <div class="faq-list">
+            <details class="faq-item" open>
+              <summary data-i18n="faq_q1">
+                Warum willst du Webentwickler werden?
+              </summary>
+              <p data-i18n="faq_a1">
+                Mich reizt, dass Webentwicklung Kreativität, Struktur und
+                Problemlösen verbindet. Ich kann sichtbare Produkte bauen und
+                gleichzeitig lernen, wie gute Software systematisch entsteht.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq_q2">
+                Wie lernst du aktuell Programmieren?
+              </summary>
+              <p data-i18n="faq_a2">
+                Ich lerne über echte Projekte. Statt nur Theorie zu lesen, baue
+                ich kleine Anwendungen und ein größeres Herzensprojekt, damit
+                ich UI, Logik, Debugging und Architektur praktisch trainiere.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq_q3">
+                Was sind aktuell deine größten Stärken?
+              </summary>
+              <p data-i18n="faq_a3">
+                Ich arbeite konstant, dokumentiere meinen Fortschritt über
+                Projekte und denke gerne in Systemen. Besonders wichtig ist mir,
+                nicht nur etwas irgendwie zum Laufen zu bringen, sondern den
+                Code Schritt für Schritt sauberer zu strukturieren.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq_q4">Ersetzt KI Programmierer?</summary>
+              <p data-i18n="faq_a4">
+                Ich sehe KI eher als Werkzeug als als Ersatz. Sie kann beim
+                Recherchieren, Strukturieren oder Debuggen helfen, aber
+                Verständnis, Verantwortung, Priorisierung und gute
+                Entscheidungen im Produkt bleiben menschlich sehr wichtig.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq_q5">
+                Wie nutzt du KI beim Lernen und Entwickeln?
+              </summary>
+              <p data-i18n="faq_a5">
+                Ich nutze KI, um schneller Feedback zu bekommen, Konzepte besser
+                zu verstehen und verschiedene Lösungswege zu vergleichen.
+                Wichtig ist mir dabei, die Antworten nicht blind zu übernehmen,
+                sondern sie nachzuvollziehen und selbst umzusetzen.
+              </p>
+            </details>
+
+            <details class="faq-item">
+              <summary data-i18n="faq_q6">
+                Was macht für dich modernes Programmieren aus?
+              </summary>
+              <p data-i18n="faq_a6">
+                Modernes Programmieren bedeutet für mich nicht nur neue Tools zu
+                kennen, sondern sauber zu kommunizieren, wartbaren Code zu
+                schreiben, mit Hilfsmitteln wie KI sinnvoll umzugehen und
+                kontinuierlich dazuzulernen.
+              </p>
+            </details>
+          </div>
         </div>
+      </section>
+
+      <section id="contact" class="section">
+        <div class="container">
+          <h2 class="section-title accent-title" data-i18n="contact_title">
+            Kontakt
+          </h2>
+
+          <form
+            class="contact-form"
+            action="https://formspree.io/f/xaeeolke"
+            method="POST"
+          >
+            <label for="contact-name" data-i18n="contact_name"> Name </label>
+            <input
+              id="contact-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+            />
+
+            <label for="contact-email" data-i18n="contact_email">
+              E-Mail
+            </label>
+            <input
+              id="contact-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+
+            <label for="contact-message" data-i18n="contact_message">
+              Nachricht
+            </label>
+            <textarea
+              id="contact-message"
+              name="message"
+              rows="6"
+              required
+            ></textarea>
+
+            <p class="contact-notice">
+              <span data-i18n="contact_privacy">
+                Beim Absenden werden deine Angaben zur Bearbeitung deiner
+                Anfrage an Formspree übermittelt.
+              </span>
+              <a
+                href="https://formspree.io/legal/privacy-policy/"
+                data-i18n="contact_privacy_link"
+              >
+                Datenschutzhinweise von Formspree
+              </a>
+            </p>
+
+            <button class="btn primary" type="submit" data-i18n="contact_send">
+              Nachricht senden
+            </button>
+          </form>
+
+          <p class="section-copy" data-i18n="contact_text">
+            Du möchtest meinen Fortschritt verfolgen oder dir meine Projekte
+            ansehen? Dann schau gerne auf meinem GitHub vorbei.
+          </p>
+
+          <div class="hero-actions">
+            <a
+              class="btn primary cta-strong"
+              href="https://github.com/Void541/web-dev-journey"
+              target="_blank"
+              rel="noopener noreferrer"
+              >GitHub</a
+            >
+            <a class="btn ghost" data-i18n="btn_top" href="#top">Nach oben</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
+        <details class="footer-tribute">
+          <summary
+            aria-label="In Erinnerung an den besten Hund Akiko 2012-2026"
+          >
+            <svg
+              class="footer-paw"
+              viewBox="0 0 64 64"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="15" cy="20" r="7" />
+              <circle cx="30" cy="12" r="7" />
+              <circle cx="46" cy="20" r="7" />
+              <path
+                d="M32 28c-12 0-20 10-20 19 0 8 7 13 13 9 3-2 5-4 7-4s4 2 7 4c6 4 13-1 13-9 0-9-8-19-20-19Z"
+              />
+            </svg>
+          </summary>
+          <span class="footer-tribute-label"
+            >In Erinnerung an den besten Hund Akiko 2012-2026</span
+          >
+        </details>
+        <p data-i18n="footer_right">
+          Built with HTML, CSS & JavaScript • Hosted on GitHub Pages
+        </p>
       </div>
-    </section>
-  </main>
+    </footer>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <p>© <span id="year"></span> Fabian Materna — Web Dev Journey</p>
-      <details class="footer-tribute">
-        <summary aria-label="In Erinnerung an den besten Hund Akiko 2012-2026">
-          <svg class="footer-paw" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-            <circle cx="15" cy="20" r="7" />
-            <circle cx="30" cy="12" r="7" />
-            <circle cx="46" cy="20" r="7" />
-            <path d="M32 28c-12 0-20 10-20 19 0 8 7 13 13 9 3-2 5-4 7-4s4 2 7 4c6 4 13-1 13-9 0-9-8-19-20-19Z" />
-          </svg>
-        </summary>
-        <span class="footer-tribute-label">In Erinnerung an den besten Hund Akiko 2012-2026</span>
-      </details>
-      <p data-i18n="footer_right">Built with HTML, CSS & JavaScript • Hosted on GitHub Pages</p>
-    </div>
-  </footer>
+    <script type="module">
+      import {
+        renderAboutSnapshots,
+        renderLearningResources,
+      } from "./content.js";
+      import { initTheme } from "../../shared/theme.js";
+      import { initI18n, t } from "../../shared/i18n.js";
 
-  <script type="module">
-    import { renderAboutSnapshots, renderLearningResources } from "./content.js";
-    import { initTheme } from "../../shared/theme.js";
-    import { initI18n, t } from "../../shared/i18n.js";
+      renderAboutSnapshots(document.getElementById("aboutSnapshots"));
+      renderLearningResources(document.getElementById("learningGrid"));
 
-    renderAboutSnapshots(document.getElementById("aboutSnapshots"));
-    renderLearningResources(document.getElementById("learningGrid"));
+      initTheme();
+      initI18n();
 
-    initTheme();
-    initI18n();
+      const navToggle = document.getElementById("navToggle");
+      const siteNav = document.getElementById("siteNav");
+      const navLinks = siteNav ? siteNav.querySelectorAll("a") : [];
 
-    const navToggle = document.getElementById("navToggle");
-    const siteNav = document.getElementById("siteNav");
-    const navLinks = siteNav ? siteNav.querySelectorAll("a") : [];
+      const closeNav = () => {
+        if (!navToggle || !siteNav) return;
+        siteNav.classList.remove("is-open");
+        navToggle.setAttribute("aria-expanded", "false");
+        navToggle.setAttribute("data-i18n-aria-label", "menu_open");
+        navToggle.setAttribute("aria-label", t("menu_open"));
+      };
 
-    const closeNav = () => {
-      if (!navToggle || !siteNav) return;
-      siteNav.classList.remove("is-open");
-      navToggle.setAttribute("aria-expanded", "false");
-      navToggle.setAttribute("data-i18n-aria-label", "menu_open");
-      navToggle.setAttribute("aria-label", t("menu_open"));
-    };
+      const openNav = () => {
+        if (!navToggle || !siteNav) return;
+        siteNav.classList.add("is-open");
+        navToggle.setAttribute("aria-expanded", "true");
+        navToggle.setAttribute("data-i18n-aria-label", "menu_close");
+        navToggle.setAttribute("aria-label", t("menu_close"));
+      };
 
-    const openNav = () => {
-      if (!navToggle || !siteNav) return;
-      siteNav.classList.add("is-open");
-      navToggle.setAttribute("aria-expanded", "true");
-      navToggle.setAttribute("data-i18n-aria-label", "menu_close");
-      navToggle.setAttribute("aria-label", t("menu_close"));
-    };
+      if (navToggle && siteNav) {
+        navToggle.addEventListener("click", () => {
+          const isOpen = siteNav.classList.contains("is-open");
+          if (isOpen) {
+            closeNav();
+          } else {
+            openNav();
+          }
+        });
 
-    if (navToggle && siteNav) {
-      navToggle.addEventListener("click", () => {
-        const isOpen = siteNav.classList.contains("is-open");
-        if (isOpen) {
-          closeNav();
-        } else {
-          openNav();
-        }
-      });
+        navLinks.forEach((link) => {
+          link.addEventListener("click", closeNav);
+        });
 
-      navLinks.forEach((link) => {
-        link.addEventListener("click", closeNav);
-      });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") closeNav();
+        });
 
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") closeNav();
-      });
+        window.addEventListener("resize", () => {
+          if (window.innerWidth > 980) closeNav();
+        });
+      }
 
-      window.addEventListener("resize", () => {
-        if (window.innerWidth > 980) closeNav();
-      });
-    }
+      const yearEl = document.getElementById("year");
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
 
-    const yearEl = document.getElementById("year");
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-  </script>
-
-  <a href="#top" class="back-to-top" aria-label="Nach oben">↑</a>
-</body>
+    <a href="#top" class="back-to-top" aria-label="Nach oben">↑</a>
+  </body>
 </html>
