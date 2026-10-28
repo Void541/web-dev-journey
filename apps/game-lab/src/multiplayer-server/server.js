@@ -9,7 +9,6 @@ const { Server } = require("socket.io");
 
 const bcrypt = require("bcryptjs");
 
-
 const app = express();
 const server = http.createServer(app);
 
@@ -23,12 +22,12 @@ mongoose.connection.on("error", (error) => {
   console.error("MongoDB connection error:", error.message);
 });
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .catch((error) => {
-    console.error("MongoDB is unavailable. The server will keep running without database access.");
-    console.error(error.message);
-  });
+mongoose.connect(process.env.MONGODB_URI).catch((error) => {
+  console.error(
+    "MongoDB is unavailable. The server will keep running without database access.",
+  );
+  console.error(error.message);
+});
 
 const Player = require("./models/Player");
 app.use(cors());
@@ -46,6 +45,7 @@ function toClientPlayer(player) {
     email: player.email,
     emailVerified: Boolean(player.emailVerified),
     progression: player.progression,
+    quests: player.quests,
     ship: player.ship,
     loadout: player.loadout,
     crew: player.crew,
@@ -54,17 +54,20 @@ function toClientPlayer(player) {
 }
 
 app.post("/register", async (req, res) => {
-  console.log("[AUTH] Register request received for:", req.body?.username ?? "(missing username)");
+  console.log(
+    "[AUTH] Register request received for:",
+    req.body?.username ?? "(missing username)",
+  );
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: "Database unavailable" });
   }
 
   const { username, email, password } = req.body;
 
-
-
   if (!username || !email || !password) {
-    return res.status(400).json({ error: "Username, email, and password are required" });
+    return res
+      .status(400)
+      .json({ error: "Username, email, and password are required" });
   }
 
   // Hash passwords on the server so the raw value never gets stored in MongoDB.
@@ -81,11 +84,16 @@ app.post("/register", async (req, res) => {
         level: 1,
         xp: 0,
         talentPoints: 0,
-        talents: {dmg: 0, hp: 0, speed: 0,},
+        talents: { dmg: 0, hp: 0, speed: 0 },
         unlocked: {
           ships: { sloop: true, brig: false, frigate: false },
           weapons: { light: true, heavy: false, rapid: false },
-          crew: { captain: true, firstMate: false, navigator: false, gunner: false },
+          crew: {
+            captain: true,
+            firstMate: false,
+            navigator: false,
+            gunner: false,
+          },
         },
       },
       ship: { id: "sloop" },
@@ -99,9 +107,18 @@ app.post("/register", async (req, res) => {
         firstMate: false,
         captain: true,
       },
-      inventory: { credits: 0, wood: 0, metal: 0, scrap: 0, cloth: 0, tech: 0, powder: 0, gear: 0 },
-      });
-      
+      inventory: {
+        credits: 0,
+        wood: 0,
+        metal: 0,
+        scrap: 0,
+        cloth: 0,
+        tech: 0,
+        powder: 0,
+        gear: 0,
+      },
+    });
+
     await newPlayer.save();
     res.json({
       success: true,
@@ -121,7 +138,10 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  console.log("[AUTH] Login request received for:", req.body?.username ?? "(missing username)");
+  console.log(
+    "[AUTH] Login request received for:",
+    req.body?.username ?? "(missing username)",
+  );
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: "Database unavailable" });
   }
@@ -138,12 +158,16 @@ app.post("/login", async (req, res) => {
 });
 
 app.post("/save-loadout", async (req, res) => {
-  console.log("[AUTH] Save loadout request received for:", req.body?.playerId ?? "(missing player id)");
+  console.log(
+    "[AUTH] Save loadout request received for:",
+    req.body?.playerId ?? "(missing player id)",
+  );
   if (mongoose.connection.readyState !== 1) {
     return res.status(503).json({ error: "Database unavailable" });
   }
 
-  const { playerId, ship, loadout, crew, inventory, progression } = req.body ?? {};
+  const { playerId, ship, loadout, crew, inventory, progression, quests } =
+    req.body ?? {};
 
   if (!playerId) {
     return res.status(400).json({ error: "Player id is required" });
@@ -160,9 +184,25 @@ app.post("/save-loadout", async (req, res) => {
       player.ship = { id: ship.id };
     }
 
+    if (quests) {
+      player.quests = player.quests ?? {};
+
+      if (typeof quests.activeId === "string" || quests.activeId === null) {
+        player.quests.activeId = quests.activeId;
+      }
+
+      if (Array.isArray(quests.completed)) {
+        player.quests.completed = quests.completed.filter(
+          (id) => typeof id === "string",
+        );
+      }
+    }
+
     if (loadout) {
       player.loadout = {
-        cannons: Array.isArray(loadout.cannons) ? loadout.cannons.slice(0, 3) : ["light", null, null],
+        cannons: Array.isArray(loadout.cannons)
+          ? loadout.cannons.slice(0, 3)
+          : ["light", null, null],
         activeCannonSlot: Number(loadout.activeCannonSlot ?? 0),
       };
     }
@@ -178,10 +218,21 @@ app.post("/save-loadout", async (req, res) => {
 
     if (inventory) {
       player.inventory = {
-        credits: Number(inventory.credits ?? inventory.gold ?? player.inventory?.credits ?? player.inventory?.gold ?? 0),
+        credits: Number(
+          inventory.credits ??
+            inventory.gold ??
+            player.inventory?.credits ??
+            player.inventory?.gold ??
+            0,
+        ),
         wood: Number(inventory.wood ?? player.inventory?.wood ?? 0),
         metal: Number(inventory.metal ?? player.inventory?.metal ?? 0),
-        scrap: Number(inventory.scrap ?? player.inventory?.scrap ?? player.inventory?.metal ?? 0),
+        scrap: Number(
+          inventory.scrap ??
+            player.inventory?.scrap ??
+            player.inventory?.metal ??
+            0,
+        ),
         cloth: Number(inventory.cloth ?? player.inventory?.cloth ?? 0),
         tech: Number(inventory.tech ?? player.inventory?.tech ?? 0),
         powder: Number(inventory.powder ?? player.inventory?.powder ?? 0),
@@ -191,40 +242,83 @@ app.post("/save-loadout", async (req, res) => {
 
     if (progression) {
       player.progression = player.progression ?? {};
-      player.progression.level = progression.level ?? player.progression?.level ?? 1;
+      player.progression.level =
+        progression.level ?? player.progression?.level ?? 1;
       player.progression.xp = progression.xp ?? player.progression?.xp ?? 0;
-      player.progression.talentPoints = progression.talentPoints ?? player.progression?.talentPoints ?? 0;
+      player.progression.talentPoints =
+        progression.talentPoints ?? player.progression?.talentPoints ?? 0;
 
-     if (progression.talents) {
+      if (progression.talents) {
         player.progression.talents = {
-         dmg: progression.talents?.dmg ?? player.progression?.talents?.dmg ?? 0,
-         hp: progression.talents?.hp ?? player.progression?.talents?.hp ?? 0,
-         speed: progression.talents?.speed ?? player.progression?.talents?.speed ?? 0,
+          dmg:
+            progression.talents?.dmg ?? player.progression?.talents?.dmg ?? 0,
+          hp: progression.talents?.hp ?? player.progression?.talents?.hp ?? 0,
+          speed:
+            progression.talents?.speed ??
+            player.progression?.talents?.speed ??
+            0,
         };
-     }
+      }
     }
-
-
-
 
     if (progression?.unlocked) {
       player.progression = player.progression ?? {};
       player.progression.unlocked = {
         ships: {
-          sloop: Boolean(progression.unlocked.ships?.sloop ?? player.progression?.unlocked?.ships?.sloop ?? true),
-          brig: Boolean(progression.unlocked.ships?.brig ?? player.progression?.unlocked?.ships?.brig ?? false),
-          frigate: Boolean(progression.unlocked.ships?.frigate ?? player.progression?.unlocked?.ships?.frigate ?? false),
+          sloop: Boolean(
+            progression.unlocked.ships?.sloop ??
+            player.progression?.unlocked?.ships?.sloop ??
+            true,
+          ),
+          brig: Boolean(
+            progression.unlocked.ships?.brig ??
+            player.progression?.unlocked?.ships?.brig ??
+            false,
+          ),
+          frigate: Boolean(
+            progression.unlocked.ships?.frigate ??
+            player.progression?.unlocked?.ships?.frigate ??
+            false,
+          ),
         },
         weapons: {
-          light: Boolean(progression.unlocked.weapons?.light ?? player.progression?.unlocked?.weapons?.light ?? true),
-          heavy: Boolean(progression.unlocked.weapons?.heavy ?? player.progression?.unlocked?.weapons?.heavy ?? false),
-          rapid: Boolean(progression.unlocked.weapons?.rapid ?? player.progression?.unlocked?.weapons?.rapid ?? false),
+          light: Boolean(
+            progression.unlocked.weapons?.light ??
+            player.progression?.unlocked?.weapons?.light ??
+            true,
+          ),
+          heavy: Boolean(
+            progression.unlocked.weapons?.heavy ??
+            player.progression?.unlocked?.weapons?.heavy ??
+            false,
+          ),
+          rapid: Boolean(
+            progression.unlocked.weapons?.rapid ??
+            player.progression?.unlocked?.weapons?.rapid ??
+            false,
+          ),
         },
         crew: {
-          captain: Boolean(progression.unlocked.crew?.captain ?? player.progression?.unlocked?.crew?.captain ?? true),
-          firstMate: Boolean(progression.unlocked.crew?.firstMate ?? player.progression?.unlocked?.crew?.firstMate ?? false),
-          navigator: Boolean(progression.unlocked.crew?.navigator ?? player.progression?.unlocked?.crew?.navigator ?? false),
-          gunner: Boolean(progression.unlocked.crew?.gunner ?? player.progression?.unlocked?.crew?.gunner ?? false),
+          captain: Boolean(
+            progression.unlocked.crew?.captain ??
+            player.progression?.unlocked?.crew?.captain ??
+            true,
+          ),
+          firstMate: Boolean(
+            progression.unlocked.crew?.firstMate ??
+            player.progression?.unlocked?.crew?.firstMate ??
+            false,
+          ),
+          navigator: Boolean(
+            progression.unlocked.crew?.navigator ??
+            player.progression?.unlocked?.crew?.navigator ??
+            false,
+          ),
+          gunner: Boolean(
+            progression.unlocked.crew?.gunner ??
+            player.progression?.unlocked?.crew?.gunner ??
+            false,
+          ),
         },
       };
     }
@@ -259,10 +353,53 @@ const SHARED_WORLD = {
 };
 
 const ENEMY_TYPES = {
-  basic: { hp: 24, r: 16, speed: 90, color: "rgb(170,45,40)", spawnWeight: 70, fireCooldown: 1.2, attackRange: 520, damage: 10, credits: 2 },
-  tank: { hp: 40, r: 22, speed: 58, color: "rgb(120,40,40)", spawnWeight: 18, fireCooldown: 2.0, attackRange: 520, damage: 12, credits: 4 },
-  sniper: { hp: 18, r: 16, speed: 80, color: "rgb(200,200,255)", spawnWeight: 8, fireCooldown: 2.4, attackRange: 720, damage: 11, credits: 3 },
-  disabler: { hp: 28, r: 17, speed: 86, color: "rgb(140,220,160)", spawnWeight: 4, fireCooldown: 1.7, attackRange: 520, damage: 10, credits: 3, appliesSlow: true, slowAmount: 0.6, slowDuration: 1.2 },
+  basic: {
+    hp: 24,
+    r: 16,
+    speed: 90,
+    color: "rgb(170,45,40)",
+    spawnWeight: 70,
+    fireCooldown: 1.2,
+    attackRange: 520,
+    damage: 10,
+    credits: 2,
+  },
+  tank: {
+    hp: 40,
+    r: 22,
+    speed: 58,
+    color: "rgb(120,40,40)",
+    spawnWeight: 18,
+    fireCooldown: 2.0,
+    attackRange: 520,
+    damage: 12,
+    credits: 4,
+  },
+  sniper: {
+    hp: 18,
+    r: 16,
+    speed: 80,
+    color: "rgb(200,200,255)",
+    spawnWeight: 8,
+    fireCooldown: 2.4,
+    attackRange: 720,
+    damage: 11,
+    credits: 3,
+  },
+  disabler: {
+    hp: 28,
+    r: 17,
+    speed: 86,
+    color: "rgb(140,220,160)",
+    spawnWeight: 4,
+    fireCooldown: 1.7,
+    attackRange: 520,
+    damage: 10,
+    credits: 3,
+    appliesSlow: true,
+    slowAmount: 0.6,
+    slowDuration: 1.2,
+  },
 };
 
 function rand(min, max) {
@@ -274,8 +411,13 @@ function clamp(value, min, max) {
 }
 
 function pickSharedEnemyType() {
-  const entries = Object.entries(ENEMY_TYPES).filter(([type]) => type !== "admiral");
-  const totalWeight = entries.reduce((sum, [, config]) => sum + (config.spawnWeight ?? 1), 0);
+  const entries = Object.entries(ENEMY_TYPES).filter(
+    ([type]) => type !== "admiral",
+  );
+  const totalWeight = entries.reduce(
+    (sum, [, config]) => sum + (config.spawnWeight ?? 1),
+    0,
+  );
   let roll = rand(0, totalWeight);
 
   for (const [type, config] of entries) {
@@ -298,13 +440,14 @@ function rollSharedEnemyReward(enemy) {
   addLoot("scrap", 1 + Math.floor(Math.random() * 3));
   if (Math.random() < 0.18) addLoot("tech", 1);
 
-  if (type === "tank" && Math.random() < 0.75) addLoot("scrap", 1 + Math.floor(Math.random() * 2));
+  if (type === "tank" && Math.random() < 0.75)
+    addLoot("scrap", 1 + Math.floor(Math.random() * 2));
   if (type === "sniper" && Math.random() < 0.3) addLoot("tech", 1);
-  if (type === "disabler" && Math.random() < 0.55) addLoot("scrap", 1 + Math.floor(Math.random() * 2));
+  if (type === "disabler" && Math.random() < 0.55)
+    addLoot("scrap", 1 + Math.floor(Math.random() * 2));
 
   reward.credits =
-    (ENEMY_TYPES[type]?.credits ?? 1) +
-    (enemy?.isAdmiral ? 10 : 0);
+    (ENEMY_TYPES[type]?.credits ?? 1) + (enemy?.isAdmiral ? 10 : 0);
 
   if (enemy?.isAdmiral) {
     addLoot("tech", 1 + Math.floor(Math.random() * 2));
@@ -397,7 +540,8 @@ function updateSharedEnemies(dt) {
   ) {
     spawnSharedEnemy({
       type: pickSharedEnemyType(),
-      anchor: overworldPlayers[Math.floor(Math.random() * overworldPlayers.length)],
+      anchor:
+        overworldPlayers[Math.floor(Math.random() * overworldPlayers.length)],
     });
     spawnTimer = SHARED_WORLD.spawnEvery;
   }
@@ -409,7 +553,8 @@ function updateSharedEnemies(dt) {
     const target = overworldPlayers.reduce((best, player) => {
       if (!best) return player;
       const bestDist = (best.x - enemy.x) ** 2 + (best.y - enemy.y) ** 2;
-      const candidateDist = (player.x - enemy.x) ** 2 + (player.y - enemy.y) ** 2;
+      const candidateDist =
+        (player.x - enemy.x) ** 2 + (player.y - enemy.y) ** 2;
       return candidateDist < bestDist ? player : best;
     }, null);
 
@@ -452,15 +597,25 @@ function updateSharedEnemies(dt) {
     }
 
     const steer = (enemy.aggroT ?? 0) > 0 ? 0.12 : 0.08;
-    enemy.vx = (enemy.vx ?? desiredX) + (desiredX - (enemy.vx ?? desiredX)) * steer;
-    enemy.vy = (enemy.vy ?? desiredY) + (desiredY - (enemy.vy ?? desiredY)) * steer;
+    enemy.vx =
+      (enemy.vx ?? desiredX) + (desiredX - (enemy.vx ?? desiredX)) * steer;
+    enemy.vy =
+      (enemy.vy ?? desiredY) + (desiredY - (enemy.vy ?? desiredY)) * steer;
 
     const moveLen = Math.hypot(enemy.vx, enemy.vy) || 1;
     enemy.vx /= moveLen;
     enemy.vy /= moveLen;
 
-    enemy.x = clamp(enemy.x + enemy.vx * enemy.speed * dt, enemy.r, SHARED_WORLD.width - enemy.r);
-    enemy.y = clamp(enemy.y + enemy.vy * enemy.speed * dt, enemy.r, SHARED_WORLD.height - enemy.r);
+    enemy.x = clamp(
+      enemy.x + enemy.vx * enemy.speed * dt,
+      enemy.r,
+      SHARED_WORLD.width - enemy.r,
+    );
+    enemy.y = clamp(
+      enemy.y + enemy.vy * enemy.speed * dt,
+      enemy.r,
+      SHARED_WORLD.height - enemy.r,
+    );
 
     if (enemy.x <= enemy.r) {
       enemy.x = enemy.r;
@@ -498,7 +653,11 @@ function updateSharedEnemies(dt) {
           damage: enemy.damage ?? 10,
           isAdmiralShot: Boolean(enemy.isAdmiral),
           effect: enemy.appliesSlow
-            ? { kind: "slow", t: enemy.slowDuration ?? 1.2, mul: enemy.slowAmount ?? 0.6 }
+            ? {
+                kind: "slow",
+                t: enemy.slowDuration ?? 1.2,
+                mul: enemy.slowAmount ?? 0.6,
+              }
             : null,
         });
 
@@ -507,7 +666,11 @@ function updateSharedEnemies(dt) {
           isAdmiralShot: Boolean(enemy.isAdmiral),
           enemyId: enemy.id,
           effect: enemy.appliesSlow
-            ? { kind: "slow", t: enemy.slowDuration ?? 1.2, mul: enemy.slowAmount ?? 0.6 }
+            ? {
+                kind: "slow",
+                t: enemy.slowDuration ?? 1.2,
+                mul: enemy.slowAmount ?? 0.6,
+              }
             : null,
         });
 
@@ -544,7 +707,8 @@ io.on("connection", (socket) => {
     players[socket.id].x = data.x;
     players[socket.id].y = data.y;
     players[socket.id].angle = data.angle ?? 0;
-    players[socket.id].mode = data.mode ?? players[socket.id].mode ?? "pirateCove";
+    players[socket.id].mode =
+      data.mode ?? players[socket.id].mode ?? "pirateCove";
 
     console.log("playerMove received server:", players[socket.id]);
 

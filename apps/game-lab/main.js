@@ -45,7 +45,6 @@ const SPEED_TALENT_STEP = 0.08;
 const multiplayerNetwork = createNetworkSystem();
 const remotePlayers = multiplayerNetwork.remotePlayers;
 
-
 const overworld = createOverworld();
 const pirateCove = createPirateCove();
 const sprites = createSpriteManager();
@@ -106,7 +105,6 @@ const repair = {
   breakFlash: 0,
 };
 
-
 // World/camera
 const world = {
   w: 4000,
@@ -135,7 +133,6 @@ function fitCanvas() {
     cssH = maxH;
     cssW = cssH * aspect;
   }
-
 
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = `${cssW}px`;
@@ -241,17 +238,20 @@ const ENEMY_NAMES = [
   "Blacktide",
   "Reddock",
   "Morrow",
-  "Thorne"
+  "Thorne",
 ];
 
 function randomEnemyName(type) {
   const base = ENEMY_NAMES[Math.floor(Math.random() * ENEMY_NAMES.length)];
 
   const title =
-    type === "tank" ? "Bulwark" :
-    type === "sniper" ? "Sharpshot" :
-    type === "disabler" ? "Hexer" :
-    "Raider";
+    type === "tank"
+      ? "Bulwark"
+      : type === "sniper"
+        ? "Sharpshot"
+        : type === "disabler"
+          ? "Hexer"
+          : "Raider";
 
   return `${title} ${base}`;
 }
@@ -277,7 +277,7 @@ const player = {
 
 let lastSent = {
   x: player.x,
-  y:player.y,
+  y: player.y,
   angle: player.angle,
 };
 
@@ -298,7 +298,6 @@ function shouldSendPlayerState(player) {
   return true;
 }
 
-
 const enemies = [];
 const projectiles = [];
 const trail = [];
@@ -308,13 +307,23 @@ let time = 0;
 let fpsSmoothing = 0;
 const enemyRuntime = {
   nextId: 1,
-}
+};
 
 const state = {
-  canvas, ctx, input,
-  world, camera,
-  player, enemies, projectiles, effects, trail,
-  combat, islands, space, damage,
+  canvas,
+  ctx,
+  input,
+  world,
+  camera,
+  player,
+  enemies,
+  projectiles,
+  effects,
+  trail,
+  combat,
+  islands,
+  space,
+  damage,
   mode,
   overworldSpawnTimer,
   enemyTypes,
@@ -355,8 +364,7 @@ async function saveLoadoutState() {
   progressSave.inFlight = true;
 
   try {
-    const response =
-    await fetch(`${PLAYER_API_BASE}/save-loadout`, {
+    const response = await fetch(`${PLAYER_API_BASE}/save-loadout`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -371,6 +379,12 @@ async function saveLoadoutState() {
           ...state.inventory,
           credits: state.credits,
         },
+
+        quests: {
+          activeId: state.quests?.active?.id ?? null,
+          completed: state.quests?.completed ?? [],
+        },
+
         progression: {
           unlocked: state.progression?.unlocked,
           level: state.progression?.level,
@@ -386,8 +400,7 @@ async function saveLoadoutState() {
     progressSave.savedRevision = revisionToSave;
   } catch (error) {
     console.error("Loadout save failed:", error);
-  }
-  finally {
+  } finally {
     progressSave.inFlight = false;
   }
 }
@@ -409,6 +422,15 @@ function applyAuthenticatedPlayer(playerData) {
     state.progression.xpToNext = getXpToNext(state.progression.level);
   }
 
+  const activeQuestId = playerData.quests?.activeId ?? null;
+
+  state.quests = {
+    active: QUESTS.find((quest) => quest.id === activeQuestId) ?? null,
+    completed: Array.isArray(playerData.quests?.completed)
+      ? [...playerData.quests.completed]
+      : [],
+  };
+
   if (playerData.ship?.id) {
     state.playerShip = { id: playerData.ship.id };
   }
@@ -421,7 +443,9 @@ function applyAuthenticatedPlayer(playerData) {
         : state.playerLoadout.cannons,
       cooldowns: [0, 0, 0],
     };
-    state.ui.activeCannonSlot = Number(playerData.loadout.activeCannonSlot ?? 0);
+    state.ui.activeCannonSlot = Number(
+      playerData.loadout.activeCannonSlot ?? 0,
+    );
   }
 
   if (playerData.crew) {
@@ -432,7 +456,12 @@ function applyAuthenticatedPlayer(playerData) {
   }
 
   if (playerData.inventory) {
-    state.credits = Number(playerData.inventory.credits ?? playerData.inventory.gold ?? state.credits ?? 0);
+    state.credits = Number(
+      playerData.inventory.credits ??
+        playerData.inventory.gold ??
+        state.credits ??
+        0,
+    );
     state.inventory = {
       ...state.inventory,
       ...playerData.inventory,
@@ -442,13 +471,16 @@ function applyAuthenticatedPlayer(playerData) {
 
 function getResourceAmount(key) {
   if (key === "credits") return state.credits ?? 0;
-  if (key === "scrap") return state.inventory?.scrap ?? state.inventory?.metal ?? 0;
+  if (key === "scrap")
+    return state.inventory?.scrap ?? state.inventory?.metal ?? 0;
   return state.inventory?.[key] ?? 0;
 }
 
 function canAffordCost(cost) {
   if (!cost) return true;
-  return Object.entries(cost).every(([key, amount]) => getResourceAmount(key) >= amount);
+  return Object.entries(cost).every(
+    ([key, amount]) => getResourceAmount(key) >= amount,
+  );
 }
 
 function getWeaponClickAction(isUnlocked, canPay) {
@@ -469,9 +501,15 @@ function spendCost(cost) {
 
     if (key === "scrap") {
       if ((state.inventory?.scrap ?? 0) > 0) {
-        state.inventory.scrap = Math.max(0, (state.inventory.scrap ?? 0) - amount);
+        state.inventory.scrap = Math.max(
+          0,
+          (state.inventory.scrap ?? 0) - amount,
+        );
       } else {
-        state.inventory.metal = Math.max(0, (state.inventory?.metal ?? 0) - amount);
+        state.inventory.metal = Math.max(
+          0,
+          (state.inventory?.metal ?? 0) - amount,
+        );
       }
       continue;
     }
@@ -500,14 +538,13 @@ const hudOverlay = createHudOverlay();
 state.hudOverlay = hudOverlay;
 state.getEquippedShip = getEquippedShip;
 
-
 state.playerShip = {
   id: "sloop",
 };
 
 state.shipStats = shipStats;
 state.playerLoadout = {
-  cannons:["light", null, null],
+  cannons: ["light", null, null],
   cooldowns: [0, 0, 0],
 };
 
@@ -530,7 +567,7 @@ state.progress = state.progress ?? {
 };
 
 state.questEvents = state.questEvents ?? {
-  firstAdmiralTriggered:false,
+  firstAdmiralTriggered: false,
 };
 
 state.progression = {
@@ -564,10 +601,10 @@ state.moveTarget = null;
 state.crew = state.crew ?? {};
 
 state.crew = {
-  gunner:false,
-  navigator:false,
-  firstMate:false,
-  captain:true,
+  gunner: false,
+  navigator: false,
+  firstMate: false,
+  captain: true,
 };
 
 state.ui.activeCannonSlot = state.ui.cannonSlot ?? 0;
@@ -580,7 +617,9 @@ state.crafting = {
   recipes: craftingRecipes,
   craft: (id) => {
     if (state.mode !== "pirateCove") {
-      state.pushLootNotice?.("Crafting is only available in the Mercenary Hangar");
+      state.pushLootNotice?.(
+        "Crafting is only available in the Mercenary Hangar",
+      );
       return false;
     }
     const crafted = craftingSystem.craft(state, id);
@@ -590,7 +629,7 @@ state.crafting = {
     }
 
     return crafted;
-  }
+  },
 };
 
 const cfg = {
@@ -610,7 +649,16 @@ const wrecks = createWreckSystem({
 const lootTable = createLootTable();
 state.lootTable = lootTable;
 
-state.inventory = state.inventory ?? { credits: 0, wood: 0, metal: 0, scrap: 0, cloth: 0, tech: 0, powder: 0, gear: 0 };
+state.inventory = state.inventory ?? {
+  credits: 0,
+  wood: 0,
+  metal: 0,
+  scrap: 0,
+  cloth: 0,
+  tech: 0,
+  powder: 0,
+  gear: 0,
+};
 state.credits = state.credits ?? 0;
 
 function advanceQuestFlow() {
@@ -627,10 +675,16 @@ function advanceQuestFlow() {
   const nextQuest = QUESTS.find((quest) => quest.id === nextQuestId) ?? null;
   state.quests.active = nextQuest;
 
-  if (nextQuest?.id === "admiral1" && !state.questEvents.firstAdmiralTriggered) {
+  if (
+    nextQuest?.id === "admiral1" &&
+    !state.questEvents.firstAdmiralTriggered
+  ) {
     state.questEvents.firstAdmiralTriggered = true;
     state.pushLootNotice?.("Admiral contact detected near the West Relay!");
-    if (multiplayerNetwork.isSharedWorldActive() && state.mode === "overworld") {
+    if (
+      multiplayerNetwork.isSharedWorldActive() &&
+      state.mode === "overworld"
+    ) {
       multiplayerNetwork.requestQuestAdmiral({
         x: state.player.x,
         y: state.player.y,
@@ -660,42 +714,45 @@ state.onEnemyKilled = (enemy, drop) => {
   if (credits > 0) {
     state.pushLootNotice?.(`+${credits} Credits`);
   }
-    state.pushLootNotice?.(`+${enemy.xp ?? 0} XP`);
+  state.pushLootNotice?.(`+${enemy.xp ?? 0} XP`);
 
-if(enemy.isAdmiral) {
-  state.progress.admiralKills += 1;
-} else {
-  state.progress.kills += 1;
-}
+  if (enemy.isAdmiral) {
+    state.progress.admiralKills += 1;
+  } else {
+    state.progress.kills += 1;
+  }
 
-advanceQuestFlow();
+  advanceQuestFlow();
 
   if (enemy.isAdmiral) {
     state.admirals.active = Math.max(0, state.admirals.active - 1);
     state.pushLootNotice?.(`${enemy.name} defeated`);
- } else {
-  const countsForAdmiral =
-    enemy.type === "basic" || enemy.type === "basic";
+  } else {
+    const countsForAdmiral = enemy.type === "basic" || enemy.type === "basic";
 
-  if (countsForAdmiral) {
-    state.admirals.killCount += 1;
-  }
+    if (countsForAdmiral) {
+      state.admirals.killCount += 1;
+    }
 
-  const adm = state.admirals;
-  if (adm.killCount >= adm.killsNeeded && adm.active < adm.maxActive && adm.naturalSpawn) {
-    const spawned = state.spawnEnemy?.({
-      type: "basic",
-      admiral: true,
-    });
+    const adm = state.admirals;
+    if (
+      adm.killCount >= adm.killsNeeded &&
+      adm.active < adm.maxActive &&
+      adm.naturalSpawn
+    ) {
+      const spawned = state.spawnEnemy?.({
+        type: "basic",
+        admiral: true,
+      });
 
-    if (spawned) {
-      adm.killCount = 0;
-      adm.active += 1;
-      state.pushLootNotice?.(`${spawned.name} has appeared!`);
+      if (spawned) {
+        adm.killCount = 0;
+        adm.active += 1;
+        state.pushLootNotice?.(`${spawned.name} has appeared!`);
+      }
     }
   }
-}
-levelSystem.addXP?.(state, enemy.xp ?? 0,);
+  levelSystem.addXP?.(state, enemy.xp ?? 0);
   markProgressChanged();
   currentMode.onEnemyKilled?.(state, enemy, drop);
 };
@@ -708,10 +765,11 @@ state.onSalvageLoot = () => {
 multiplayerNetwork.setEnemyKilledHandler(({ enemy, drop }) => {
   if (!enemy) return;
 
-  const resolvedDrop = drop ?? state.lootTable?.rollForEnemy?.(enemy) ?? {
-    loot: { scrap: 2, tech: 1 },
-    credits: state.enemyTypes?.[enemy.type]?.credits ?? 1,
-  };
+  const resolvedDrop = drop ??
+    state.lootTable?.rollForEnemy?.(enemy) ?? {
+      loot: { scrap: 2, tech: 1 },
+      credits: state.enemyTypes?.[enemy.type]?.credits ?? 1,
+    };
 
   state.onEnemyKilled?.(enemy, resolvedDrop);
 });
@@ -724,9 +782,17 @@ multiplayerNetwork.setPlayerDamagedHandler((payload) => {
 
   if (state.damage) {
     if (payload?.isAdmiralShot) {
-      state.damage.spawnAdmiralHit(player.x, player.y - player.r - 12, damageAmount);
+      state.damage.spawnAdmiralHit(
+        player.x,
+        player.y - player.r - 12,
+        damageAmount,
+      );
     } else {
-      state.damage.spawnPlayerHit(player.x, player.y - player.r - 12, damageAmount);
+      state.damage.spawnPlayerHit(
+        player.x,
+        player.y - player.r - 12,
+        damageAmount,
+      );
     }
   }
 
@@ -793,21 +859,21 @@ window.__gameActions = {
     state.wrecks?.trySalvage?.(0.2, state);
   },
 
-shootTarget: () => {
-  const target = getTargetEnemy(state);
-  if (!target) return;
+  shootTarget: () => {
+    const target = getTargetEnemy(state);
+    if (!target) return;
 
-  const dx = target.x - player.x;
-  const dy = target.y - player.y;
-  const d = Math.hypot(dx, dy);
+    const dx = target.x - player.x;
+    const dy = target.y - player.y;
+    const d = Math.hypot(dx, dy);
 
-  if (d <= combat.range && combat.cooldown <= 0) {
-    const fired = fireCannonAtTarget(state, target, combat.cannonId);
-    if (fired) {
-      combat.cooldown = 1 / combat.fireRate;
+    if (d <= combat.range && combat.cooldown <= 0) {
+      const fired = fireCannonAtTarget(state, target, combat.cannonId);
+      if (fired) {
+        combat.cooldown = 1 / combat.fireRate;
+      }
     }
-  }
-},
+  },
 
   toggleWorkshop: () => {
     state.ui.workshopOpen = !state.ui.workshopOpen;
@@ -989,7 +1055,19 @@ canvas.addEventListener("click", (ev) => {
 
 // ---------- Spawning ----------
 
-function spawnProjectile({ x, y, vx, vy, fromEnemy, dmg, ttl, r, effect = null, isAdmiralShot = false, visualOnly = false }) {
+function spawnProjectile({
+  x,
+  y,
+  vx,
+  vy,
+  fromEnemy,
+  dmg,
+  ttl,
+  r,
+  effect = null,
+  isAdmiralShot = false,
+  visualOnly = false,
+}) {
   projectiles.push({
     x,
     y,
@@ -1010,25 +1088,24 @@ player.hp = player.maxHp;
 
 // ---------- Update ----------
 function update(dt) {
-
   time += dt;
 
-const equippedShip = getEquippedShip(state);
-const newMaxHp =
-  Number(
-    equippedShip.maxHp +
-      (state.progression?.talents?.hp ?? 0) * HP_TALENT_BONUS
-  ) || 10 ;
+  const equippedShip = getEquippedShip(state);
+  const newMaxHp =
+    Number(
+      equippedShip.maxHp +
+        (state.progression?.talents?.hp ?? 0) * HP_TALENT_BONUS,
+    ) || 10;
 
-const oldMaxHp = Number(player.maxHp) || newMaxHp ;
-const oldHp = Number(player.hp) || oldMaxHp;
+  const oldMaxHp = Number(player.maxHp) || newMaxHp;
+  const oldHp = Number(player.hp) || oldMaxHp;
 
-if (oldMaxHp !== newMaxHp) {
-  const hpRatio = oldMaxHp > 0 ? oldHp / oldMaxHp : 1;
+  if (oldMaxHp !== newMaxHp) {
+    const hpRatio = oldMaxHp > 0 ? oldHp / oldMaxHp : 1;
 
-  player.maxHp = newMaxHp ;
-  player.hp = Math.max(1, Math.min(newMaxHp, Math.round(newMaxHp * hpRatio)));
-}
+    player.maxHp = newMaxHp;
+    player.hp = Math.max(1, Math.min(newMaxHp, Math.round(newMaxHp * hpRatio)));
+  }
 
   if (paused) {
     input.endFrame();
@@ -1044,15 +1121,21 @@ if (oldMaxHp !== newMaxHp) {
   wrecks.trySalvage(dt, state);
 
   const wantsMove =
-    input.isDown("a") || input.isDown("d") || input.isDown("w") || input.isDown("s") ||
-    input.isDown("arrowleft") || input.isDown("arrowright") || input.isDown("arrowup") || input.isDown("arrowdown");
+    input.isDown("a") ||
+    input.isDown("d") ||
+    input.isDown("w") ||
+    input.isDown("s") ||
+    input.isDown("arrowleft") ||
+    input.isDown("arrowright") ||
+    input.isDown("arrowup") ||
+    input.isDown("arrowdown");
 
   if (wantsMove && state.moveTarget) {
     state.moveTarget = null;
   }
 
-const equippedCrew = getEquippedCrew(state);
-const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
+  const equippedCrew = getEquippedCrew(state);
+  const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
 
   if (repair.active && wantsMove) {
     repair.active = false;
@@ -1083,14 +1166,12 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
   let ax = 0;
   let ay = 0;
 
-
   if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
   if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
   if (input.isDown("w") || input.isDown("arrowup")) ay -= 1;
   if (input.isDown("s") || input.isDown("arrowdown")) ay += 1;
 
   if (ax !== 0 && ay !== 0) {
-
     const inv = 1 / Math.sqrt(2);
     ax *= inv;
     ay *= inv;
@@ -1101,7 +1182,9 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
     let targetY = state.moveTarget.y;
 
     if (state.moveTarget.kind === "enemy") {
-      const targetEnemy = enemies.find((enemy) => enemy?.id === state.moveTarget.enemyId);
+      const targetEnemy = enemies.find(
+        (enemy) => enemy?.id === state.moveTarget.enemyId,
+      );
 
       if (!targetEnemy || targetEnemy.hp <= 0) {
         state.moveTarget = null;
@@ -1137,20 +1220,17 @@ const repairMul = equippedCrew.firstMate?.repairMul ?? 1.0;
     }
   }
 
-   if ( ax !== 0 || ay !== 0) {
-        player.angle = Math.atan2(ay, ax);  
+  if (ax !== 0 || ay !== 0) {
+    player.angle = Math.atan2(ay, ax);
   }
 
-multiplayerNetwork.updateRemotePlayers();
-
+  multiplayerNetwork.updateRemotePlayers();
 
   const islandColliders = islands.getColliders();
 
   if (typeof islands.resolveCircle === "function") {
     islands.resolveCircle(player);
   }
-
-  
 
   const ship = getEquippedShip(state);
   const speedMul = equippedCrew.navigator?.speed ?? 1.0;
@@ -1186,7 +1266,9 @@ multiplayerNetwork.updateRemotePlayers();
 
   if (!sharedWorldEnemiesActive) {
     updateEnemies(dt, {
-      enemies, player, canvas,
+      enemies,
+      player,
+      canvas,
       world,
       ENEMY_SPEED,
       ENEMY_FIRE_ENABLED,
@@ -1194,7 +1276,8 @@ multiplayerNetwork.updateRemotePlayers();
       ENEMY_BULLET_SPEED,
       ENEMY_BULLET_TTL,
       ENEMY_AGGRO_TIME,
-      norm, rand,
+      norm,
+      rand,
       spawnProjectile,
       islandColliders,
       islands,
@@ -1246,224 +1329,238 @@ multiplayerNetwork.updateRemotePlayers();
 
   updateCamera();
 
+  if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
+    const rect = state.canvas.getBoundingClientRect();
+    const mx = state.input.mouse.x - rect.left;
+    const my = state.input.mouse.y - rect.top;
 
-if (state.ui?.workshopOpen && state.input?.mousePressed?.()) {
-  const rect = state.canvas.getBoundingClientRect();
-  const mx = state.input.mouse.x - rect.left;
-  const my = state.input.mouse.y - rect.top;
+    for (const b of state.ui.workshopTabButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-  for (const b of state.ui.workshopTabButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
+      if (!inside) continue;
+      state.ui.workshopTab = b.id;
+    }
 
-    if (!inside) continue;
-    state.ui.workshopTab = b.id;
-  }
+    // Crafting buttons
+    for (const b of state.ui.workshopButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-  // Crafting buttons
-  for (const b of state.ui.workshopButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
+      if (!inside) continue;
+      if (b.disabled) continue;
 
-    if (!inside) continue;
-    if (b.disabled) continue;
+      state.crafting?.craft?.(b.id);
+    }
+    //Crew selection buttons
+    for (const b of state.ui.crewButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-    state.crafting?.craft?.(b.id);
-  }
-//Crew selection buttons
-for (const b of state.ui.crewButtons ?? []) {
-  const inside = isPointInsideRect(mx, my, b);
+      if (!inside) continue;
+      if (b.disabled) continue;
 
-    if(!inside) continue;
-    if(b.disabled) continue;
+      state.progression = state.progression ?? {};
+      state.progression.unlocked = state.progression.unlocked ?? {};
+      state.progression.unlocked.crew = state.progression.unlocked.crew ?? {
+        captain: true,
+        firstMate: false,
+        navigator: false,
+        gunner: false,
+      };
 
-    state.progression = state.progression ?? {};
-    state.progression.unlocked = state.progression.unlocked ?? {};
-    state.progression.unlocked.crew = state.progression.unlocked.crew ?? {
-      captain: true,
-      firstMate: false,
-      navigator: false,
-      gunner: false,
-    };
+      const crewData = CrewSystem[b.id];
+      const isUnlocked = Boolean(state.progression.unlocked.crew[b.id]);
 
-    const crewData = CrewSystem[b.id];
-    const isUnlocked = Boolean(state.progression.unlocked.crew[b.id]);
+      if (!isUnlocked) {
+        if (!spendCost(crewData?.cost)) {
+          state.pushLootNotice?.(
+            `Need ${formatCostText(crewData?.cost)} to hire ${b.label}`,
+          );
+          continue;
+        }
 
-    if (!isUnlocked) {
-      if (!spendCost(crewData?.cost)) {
-        state.pushLootNotice?.(`Need ${formatCostText(crewData?.cost)} to hire ${b.label}`);
+        state.progression.unlocked.crew[b.id] = true;
+        state.pushLootNotice?.(`Hired ${b.label}`);
+        markProgressChanged();
+        saveLoadoutState();
         continue;
       }
 
-      state.progression.unlocked.crew[b.id] = true;
-      state.pushLootNotice?.(`Hired ${b.label}`);
+      state.crew = state.crew ?? {};
+      state.crew[b.id] = !(state.crew?.[b.id] ?? false);
+
+      state.pushLootNotice?.(
+        `${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`,
+      );
       markProgressChanged();
       saveLoadoutState();
-      continue;
     }
+    // Cannon slot selection
+    for (const b of state.ui.cannonSlotButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-    state.crew = state.crew ?? {};
-    state.crew[b.id] = !(state.crew?.[b.id] ?? false);
+      if (!inside) continue;
+      if (b.disabled) continue;
 
-    state.pushLootNotice?.(`${state.crew[b.id] ? "Equipped" : "Unequipped"} ${b.label}`);
-    markProgressChanged();
-    saveLoadoutState();
-  }
-  // Cannon slot selection
-  for (const b of state.ui.cannonSlotButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
-
-    if (!inside) continue;
-    if (b.disabled) continue;
-
-    state.ui.activeCannonSlot = b.index;
-    state.pushLootNotice?.(`Selected Slot ${b.index + 1}`);
-    markProgressChanged();
-    saveLoadoutState();
-  }
-
-  // Cannon equip buttons
-  for (const b of state.ui.cannonButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
-
-    if (!inside) continue;
-
-    state.progression = state.progression ?? {};
-    state.progression.unlocked = state.progression.unlocked ?? {};
-    state.progression.unlocked.weapons = state.progression.unlocked.weapons ?? {
-      light: true,
-      heavy: false,
-      rapid: false,
-    };
-
-    const cannonData = CANNON_TYPES[b.id];
-    const isUnlocked = Boolean(state.progression.unlocked.weapons[b.id]);
-    const canPay = canAffordCost(cannonData?.cost);
-    const action = getWeaponClickAction(isUnlocked, canPay);
-
-    if (action === "need-resources") {
-      state.pushLootNotice?.(`Need ${formatCostText(cannonData?.cost)} to unlock ${b.label}`);
-      continue;
-    }
-
-    if (action === "unlock") {
-      spendCost(cannonData?.cost);
-      state.progression.unlocked.weapons[b.id] = true;
-      state.pushLootNotice?.(`Unlocked ${b.label}`);
+      state.ui.activeCannonSlot = b.index;
+      state.pushLootNotice?.(`Selected Slot ${b.index + 1}`);
       markProgressChanged();
       saveLoadoutState();
-      continue;
     }
 
-    state.playerLoadout = state.playerLoadout ?? {};
-    state.playerLoadout.cannons = state.playerLoadout.cannons ?? ["light", null, null];
+    // Cannon equip buttons
+    for (const b of state.ui.cannonButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-    const slot = state.ui?.activeCannonSlot ?? 0;
-    state.playerLoadout.cannons[slot] = b.id;
+      if (!inside) continue;
 
-    state.pushLootNotice?.(`Equipped ${b.label} to Slot ${slot + 1}`);
-    markProgressChanged();
-    saveLoadoutState();
+      state.progression = state.progression ?? {};
+      state.progression.unlocked = state.progression.unlocked ?? {};
+      state.progression.unlocked.weapons = state.progression.unlocked
+        .weapons ?? {
+        light: true,
+        heavy: false,
+        rapid: false,
+      };
 
-    state.effects.push({
-      x: player.x,
-      y: player.y,
-      t: 0.4,
-      size: 20,
-      type: "equip",
-    });
-  }
+      const cannonData = CANNON_TYPES[b.id];
+      const isUnlocked = Boolean(state.progression.unlocked.weapons[b.id]);
+      const canPay = canAffordCost(cannonData?.cost);
+      const action = getWeaponClickAction(isUnlocked, canPay);
 
-
-  // Ship buttons
-  for (const b of state.ui.shipButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
-
-    if (!inside) continue;
-
-    state.progression = state.progression ?? {};
-    state.progression.unlocked = state.progression.unlocked ?? {};
-    state.progression.unlocked.ships = state.progression.unlocked.ships ?? {
-      sloop: true,
-      brig: false,
-      frigate: false,
-    };
-
-    const shipData = SHIP_TYPES[b.id];
-    const isUnlocked = Boolean(state.progression.unlocked.ships[b.id]);
-
-    if (!isUnlocked) {
-      if (!spendCost(shipData?.cost)) {
-        state.pushLootNotice?.(`Need ${formatCostText(shipData?.cost)} to unlock ${b.label}`);
+      if (action === "need-resources") {
+        state.pushLootNotice?.(
+          `Need ${formatCostText(cannonData?.cost)} to unlock ${b.label}`,
+        );
         continue;
       }
 
-      state.progression.unlocked.ships[b.id] = true;
-      state.pushLootNotice?.(`Unlocked ship: ${b.label}`);
+      if (action === "unlock") {
+        spendCost(cannonData?.cost);
+        state.progression.unlocked.weapons[b.id] = true;
+        state.pushLootNotice?.(`Unlocked ${b.label}`);
+        markProgressChanged();
+        saveLoadoutState();
+        continue;
+      }
+
+      state.playerLoadout = state.playerLoadout ?? {};
+      state.playerLoadout.cannons = state.playerLoadout.cannons ?? [
+        "light",
+        null,
+        null,
+      ];
+
+      const slot = state.ui?.activeCannonSlot ?? 0;
+      state.playerLoadout.cannons[slot] = b.id;
+
+      state.pushLootNotice?.(`Equipped ${b.label} to Slot ${slot + 1}`);
       markProgressChanged();
       saveLoadoutState();
-      continue;
+
+      state.effects.push({
+        x: player.x,
+        y: player.y,
+        t: 0.4,
+        size: 20,
+        type: "equip",
+      });
     }
 
-    state.playerShip = state.playerShip ?? {};
-    state.playerShip.id = b.id;
+    // Ship buttons
+    for (const b of state.ui.shipButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
 
-    state.playerLoadout = state.playerLoadout ?? {};
-    state.playerLoadout.cannons = state.playerLoadout.cannons ?? ["light", null, null];
-    state.playerLoadout.cooldowns = state.playerLoadout.cooldowns ?? [0, 0, 0];
+      if (!inside) continue;
 
-    for(let i = 0; i < 3; i++) {
-      state.playerLoadout.cannons[i] = null;
-      state.playerLoadout.cooldowns[i] = 0;
-    }
+      state.progression = state.progression ?? {};
+      state.progression.unlocked = state.progression.unlocked ?? {};
+      state.progression.unlocked.ships = state.progression.unlocked.ships ?? {
+        sloop: true,
+        brig: false,
+        frigate: false,
+      };
 
-    const maxSlots =
-      b.id === "brig" ? 2 :
-      b.id === "frigate" ? 3 :
-      1;
+      const shipData = SHIP_TYPES[b.id];
+      const isUnlocked = Boolean(state.progression.unlocked.ships[b.id]);
 
-    for (let i = maxSlots; i < 3; i++) {
-      state.playerLoadout.cannons[i] = null;
-    }
+      if (!isUnlocked) {
+        if (!spendCost(shipData?.cost)) {
+          state.pushLootNotice?.(
+            `Need ${formatCostText(shipData?.cost)} to unlock ${b.label}`,
+          );
+          continue;
+        }
 
-    if (!state.playerLoadout.cannons[0]) {
-      state.playerLoadout.cannons[0] = "light";
-    }
+        state.progression.unlocked.ships[b.id] = true;
+        state.pushLootNotice?.(`Unlocked ship: ${b.label}`);
+        markProgressChanged();
+        saveLoadoutState();
+        continue;
+      }
 
-    if ((state.ui.activeCannonSlot ?? 0) >= maxSlots) {
-      state.ui.activeCannonSlot = 0;
-    }
+      state.playerShip = state.playerShip ?? {};
+      state.playerShip.id = b.id;
 
-    state.pushLootNotice?.(`Equipped ship: ${b.label}`);
-    markProgressChanged();
-    saveLoadoutState();
-  }
-}
+      state.playerLoadout = state.playerLoadout ?? {};
+      state.playerLoadout.cannons = state.playerLoadout.cannons ?? [
+        "light",
+        null,
+        null,
+      ];
+      state.playerLoadout.cooldowns = state.playerLoadout.cooldowns ?? [
+        0, 0, 0,
+      ];
 
-if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
-  const rect = state.canvas.getBoundingClientRect();
-  const mx = state.input.mouse.x - rect.left;
-  const my = state.input.mouse.y - rect.top;
+      for (let i = 0; i < 3; i++) {
+        state.playerLoadout.cannons[i] = null;
+        state.playerLoadout.cooldowns[i] = 0;
+      }
 
-  for (const b of state.ui.skillButtons ?? []) {
-    const inside = isPointInsideRect(mx, my, b);
+      const maxSlots = b.id === "brig" ? 2 : b.id === "frigate" ? 3 : 1;
 
-    if (!inside) continue;
-    if (b.disabled) continue;
+      for (let i = maxSlots; i < 3; i++) {
+        state.playerLoadout.cannons[i] = null;
+      }
 
-    const spent = talentSystem.allocateTalentPoint(state, b.id);
-    if (spent) {
-      state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
+      if (!state.playerLoadout.cannons[0]) {
+        state.playerLoadout.cannons[0] = "light";
+      }
+
+      if ((state.ui.activeCannonSlot ?? 0) >= maxSlots) {
+        state.ui.activeCannonSlot = 0;
+      }
+
+      state.pushLootNotice?.(`Equipped ship: ${b.label}`);
       markProgressChanged();
       saveLoadoutState();
     }
   }
-}
+
+  if (state.ui?.skillsOpen && state.input?.mousePressed?.()) {
+    const rect = state.canvas.getBoundingClientRect();
+    const mx = state.input.mouse.x - rect.left;
+    const my = state.input.mouse.y - rect.top;
+
+    for (const b of state.ui.skillButtons ?? []) {
+      const inside = isPointInsideRect(mx, my, b);
+
+      if (!inside) continue;
+      if (b.disabled) continue;
+
+      const spent = talentSystem.allocateTalentPoint(state, b.id);
+      if (spent) {
+        state.pushLootNotice?.(`Talent upgraded: ${b.label}`);
+        markProgressChanged();
+        saveLoadoutState();
+      }
+    }
+  }
 
   if (shouldSendPlayerState(player)) {
     multiplayerNetwork.sendPlayerState(player, state.mode);
   }
 
-state.questTracker.update();
-input.endFrame();
+  state.questTracker.update();
+  input.endFrame();
 }
 // ---------- Render helpers ----------
 
@@ -1507,8 +1604,6 @@ function isTypingIntoUi() {
   );
 }
 
-
-
 function renderEnemy(e) {
   ctx.save();
 
@@ -1523,11 +1618,21 @@ function renderEnemy(e) {
     e.y,
     e.r * 3.2,
     e.r * 3.2,
-    angle
+    angle,
   );
 
   if (!drewSprite) {
-    renderFallbackShip(ctx, e.x, e.y, e.r, angle, isTarget, true, e.type, e.color || "rgb(170,45,40)");
+    renderFallbackShip(
+      ctx,
+      e.x,
+      e.y,
+      e.r,
+      angle,
+      isTarget,
+      true,
+      e.type,
+      e.color || "rgb(170,45,40)",
+    );
   }
 
   if (e.isAdmiral) {
@@ -1549,10 +1654,10 @@ function renderEnemy(e) {
     ctx.lineWidth = 2;
 
     ctx.beginPath();
-    ctx.moveTo(e.x, iconY - 10);       // oben
-    ctx.lineTo(e.x + 10, iconY);       // rechts
-    ctx.lineTo(e.x, iconY + 10);       // unten
-    ctx.lineTo(e.x - 10, iconY);       // links
+    ctx.moveTo(e.x, iconY - 10); // oben
+    ctx.lineTo(e.x + 10, iconY); // rechts
+    ctx.lineTo(e.x, iconY + 10); // unten
+    ctx.lineTo(e.x - 10, iconY); // links
     ctx.closePath();
 
     ctx.fill();
@@ -1580,12 +1685,12 @@ function renderEnemy(e) {
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
 
-ctx.fillStyle = e.isAdmiral ? "rgb(255,215,90)" : "#fff";
-ctx.font = e.isAdmiral
-  ? "700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial"
-  : "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
+  ctx.fillStyle = e.isAdmiral ? "rgb(255,215,90)" : "#fff";
+  ctx.font = e.isAdmiral
+    ? "700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial"
+    : "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
 
-ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
+  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
 
   const w = 34;
   const h = 5;
@@ -1602,13 +1707,12 @@ ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
   ctx.fillStyle = "rgb(32,172,32)";
   ctx.fillRect(bx, by, w * pct, h);
 
-ctx.globalAlpha = 0.35;
-ctx.strokeStyle = e.isAdmiral ? "rgb(255,210,60)" : "#fff";
-ctx.lineWidth = e.isAdmiral ? 2 : 1;
-ctx.strokeRect(bx, by, w, h);
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = e.isAdmiral ? "rgb(255,210,60)" : "#fff";
+  ctx.lineWidth = e.isAdmiral ? 2 : 1;
+  ctx.strokeRect(bx, by, w, h);
 
   ctx.restore();
-
 }
 
 // ---------- Render ----------
@@ -1625,5 +1729,3 @@ function render() {
     getIslandColliders,
   });
 }
-
-
