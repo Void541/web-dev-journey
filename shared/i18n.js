@@ -131,6 +131,7 @@ const translations = {
     contact_privacy:
       "Beim Absenden werden deine Angaben zur Bearbeitung deiner Anfrage an Formspree übermittelt.",
     contact_privacy_link: "Datenschutzhinweise von Formspree",
+    privacy_link: "Datenschutz (Entwurf)",
     contact_send: "Nachricht senden",
     contact_text:
       "Wenn du Feedback hast oder sehen möchtest, wie ich mich entwickle, schau auf GitHub vorbei.",
@@ -373,6 +374,7 @@ const translations = {
     contact_privacy:
       "When you submit this form, your details are sent to Formspree to process your enquiry.",
     contact_privacy_link: "Formspree privacy policy",
+    privacy_link: "Privacy (German draft)",
     contact_send: "Send message",
     contact_text:
       "If you have feedback or want to see how I'm progressing, check out my GitHub.",

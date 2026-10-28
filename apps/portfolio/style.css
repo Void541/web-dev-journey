@@ -2141,3 +2141,49 @@ html[data-theme="light"] .btn.ghost:hover {
   outline-offset: 4px;
   border-radius: 4px;
 }
+
+.footer-info{
+  min-width: 0;
+}
+
+.privacy-header{
+  gap: var(--s-4);
+}
+
+.privacy-header .brand{
+  min-width: 0;
+  max-width: none;
+  white-space: normal;
+}
+
+.privacy-header .theme-toggle{
+  flex-shrink: 0;
+}
+
+.privacy-page{
+  max-width: 76ch;
+  padding-block: var(--s-6);
+  overflow-wrap: anywhere;
+}
+
+.privacy-page section{
+  margin-block: var(--s-6);
+}
+
+.privacy-draft{
+  padding: var(--s-4);
+  border: 1px solid var(--accent-brass);
+  border-radius: var(--r-1);
+  background: var(--surface);
+}
+
+.privacy-draft h2{
+  margin-top: 0;
+}
+
+.privacy-page a:focus-visible,
+.contact-notice a:focus-visible,
+.footer-info a:focus-visible{
+  outline: 2px solid var(--border-strong);
+  outline-offset: 3px;
+}
