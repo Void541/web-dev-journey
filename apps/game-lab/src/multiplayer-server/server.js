@@ -46,6 +46,7 @@ function toClientPlayer(player) {
     emailVerified: Boolean(player.emailVerified),
     progression: player.progression,
     quests: player.quests,
+    progress: player.progress,
     ship: player.ship,
     loadout: player.loadout,
     crew: player.crew,
@@ -166,7 +167,7 @@ app.post("/save-loadout", async (req, res) => {
     return res.status(503).json({ error: "Database unavailable" });
   }
 
-  const { playerId, ship, loadout, crew, inventory, progression, quests } =
+  const { playerId, ship, loadout, crew, inventory, progression, quests, progress } =
     req.body ?? {};
 
   if (!playerId) {
@@ -195,6 +196,18 @@ app.post("/save-loadout", async (req, res) => {
         player.quests.completed = quests.completed.filter(
           (id) => typeof id === "string",
         );
+      }
+    }
+
+    if (progress) {
+      player.progress = player.progress ?? {};
+
+      if (Number.isInteger(progress.kills) && progress.kills >= 0) {
+        player.progress.kills = progress.kills;
+      }
+
+      if (Number.isInteger(progress.admiralKills) && progress.admiralKills >= 0) {
+        player.progress.admiralKills = progress.admiralKills;
       }
     }
 

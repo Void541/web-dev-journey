@@ -385,6 +385,11 @@ async function saveLoadoutState() {
           completed: state.quests?.completed ?? [],
         },
 
+        progress: {
+          kills: state.progress?.kills ?? 0,
+          admiralKills: state.progress?.admiralKills ?? 0,
+        },
+
         progression: {
           unlocked: state.progression?.unlocked,
           level: state.progression?.level,
@@ -429,6 +434,11 @@ function applyAuthenticatedPlayer(playerData) {
     completed: Array.isArray(playerData.quests?.completed)
       ? [...playerData.quests.completed]
       : [],
+  };
+
+  state.progress = {
+    kills: playerData.progress?.kills ?? 0,
+    admiralKills: playerData.progress?.admiralKills ?? 0,
   };
 
   if (playerData.ship?.id) {

@@ -47,6 +47,11 @@ const playerSchema = new mongoose.Schema({
     completed: { type: [String], default: [] },
   },
 
+  progress: {
+    kills: { type: Number, default: 0 },
+    admiralKills: { type: Number, default: 0 },
+  },
+
   ship: {
     id: String,
   },
