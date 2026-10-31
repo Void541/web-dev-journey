@@ -133,6 +133,7 @@ export function updateNavigator(state) {
           state.quests.active = quest;
           state.ui.navigatorOpen = false;
           state.pushLootNotice?.(`Accepted quest: ${quest.title}`);
+          state.markProgressChanged?.();
         }
       }
 
@@ -143,6 +144,7 @@ export function updateNavigator(state) {
           state.quests.completed.push(quest.id);
           state.pushLootNotice?.(`Completed quest: ${quest.title}`);
           state.quests.active = null;
+          state.markProgressChanged?.();
         }
       }
 
@@ -150,6 +152,7 @@ export function updateNavigator(state) {
         if (state.quests.active) {
           state.pushLootNotice?.(`Abandoned quest: ${state.quests.active.title}`);
           state.quests.active = null;
+          state.markProgressChanged?.();
         }
       }
     }

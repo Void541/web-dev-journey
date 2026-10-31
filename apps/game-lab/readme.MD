@@ -36,6 +36,8 @@ The saved data includes:
 - Unlocked ships, weapons, and crew.
 - Equipped ship, cannon loadout, active cannon slot, and crew selection.
 - Inventory resources and credits.
+- Active quest ID, completed quest IDs, normal/admiral kill counters, and the
+  `firstAdmiralTriggered` event flag. Quest definitions remain in `QUESTS`.
 
 On login, `applyAuthenticatedPlayer()` restores these fields. The XP threshold
 for the next level is derived using `getXpToNext(level)` rather than stored:
@@ -47,6 +49,8 @@ for the next level is derived using `getXpToNext(level)` rather than stored:
 persistent change. Enemy kills, salvaged loot, and successful crafting mark
 changes for the periodic save check. Purchases, equipment changes, active slot
 selection, and successful talent allocation also request an immediate save.
+Accepting, abandoning, and claiming a quest mark changes through
+`state.markProgressChanged()` for the periodic save check.
 
 Every 10 seconds, the browser checks whether `revision > savedRevision`.
 If changes are pending, it attempts to save. Only one request can run at a time.
@@ -59,15 +63,35 @@ unchanged, and release the request lock so the next check can retry.
 Retries resend the current state; they do not repeat purchases or deduct costs
 again.
 
+#### Resuming the Admiral Quest
+
+`ensureQuestAdmiral()` runs after login data is restored, after entering a map,
+and after an automatic quest transition. It acts only in the overworld when
+`admiral1` is active and its goal is not complete. An existing local admiral is
+reused. Otherwise, offline play spawns one locally; connected play sends the
+current player mode and requests an admiral from the server. The server checks
+for an existing admiral before spawning one.
+
+The saved event flag records that the event was triggered, not that an admiral
+still exists or has been defeated. It does not block replacing a missing enemy.
+Enemy position and remaining HP are not persisted.
+
 #### Verification and Open Limits
 
 Isolated checks with simulated HTTP responses have covered save success, HTTP
 503, network failure, automatic retries, and changes during an active request.
 They also checked crafting success/failure, loot change marking, and level
 threshold calculation. These were ad hoc checks, not a committed test suite.
+Additional checks exercised quest menu actions and a combined accept, progress,
+save, restore, transition, and final reward claim flow. The combined check used
+the actual player schema and route logic with in-memory database substitutes,
+simulated HTTP transport, and manually supplied gameplay counters. It also
+checked restoring the event flag and replacing a missing offline admiral.
 
 - A real MongoDB save followed by a fresh login has not yet been verified.
-- Active/completed quests, quest counters, and quest event flags are not saved.
+- Live multiplayer recovery, including reconnects and server restarts during
+  an ongoing session, has not been verified. Recovery checks are not currently
+  triggered by network reconnect events.
 - There is no local backup or guaranteed final save when the page closes.
   Unsaved changes can be lost on reload, browser closure, or a crash.
 - Failed saves currently appear only in the console, without an in-game status.

@@ -78,6 +78,7 @@ function setMode(next, options = {}) {
   }
 
   currentMode.enter?.(state, options);
+  ensureQuestAdmiral();
 }
 
 const canvas = document.getElementById("game");
@@ -349,6 +350,7 @@ const progressSave = {
 function markProgressChanged() {
   progressSave.revision += 1;
 }
+state.markProgressChanged = markProgressChanged;
 
 setInterval(() => {
   if (progressSave.revision > progressSave.savedRevision) {
@@ -388,6 +390,10 @@ async function saveLoadoutState() {
         progress: {
           kills: state.progress?.kills ?? 0,
           admiralKills: state.progress?.admiralKills ?? 0,
+        },
+
+        questEvents: {
+          firstAdmiralTriggered: state.questEvents?.firstAdmiralTriggered ?? false,
         },
 
         progression: {
@@ -441,6 +447,11 @@ function applyAuthenticatedPlayer(playerData) {
     admiralKills: playerData.progress?.admiralKills ?? 0,
   };
 
+  state.questEvents = {
+    firstAdmiralTriggered:
+      playerData.questEvents?.firstAdmiralTriggered ?? false,
+  };
+
   if (playerData.ship?.id) {
     state.playerShip = { id: playerData.ship.id };
   }
@@ -477,6 +488,7 @@ function applyAuthenticatedPlayer(playerData) {
       ...playerData.inventory,
     };
   }
+  ensureQuestAdmiral();
 }
 
 function getResourceAmount(key) {
@@ -671,6 +683,28 @@ state.inventory = state.inventory ?? {
 };
 state.credits = state.credits ?? 0;
 
+function ensureQuestAdmiral() {
+  const quest = state.quests?.active;
+
+  if (state.mode !== "overworld") return;
+  if (quest?.id !== "admiral1") return;
+  if (isQuestComplete(state, quest)) return;
+  if (state.enemies.some((enemy) => enemy.isAdmiral)) return;
+
+  if (multiplayerNetwork.isSharedWorldActive()) {
+    multiplayerNetwork.sendPlayerState(state.player, state.mode);
+    multiplayerNetwork.requestQuestAdmiral({
+      x: state.player.x,
+      y: state.player.y,
+    });
+  } else {
+    state.spawnEnemy({
+      type: "basic",
+      admiral: true,
+    });
+  }
+}
+
 function advanceQuestFlow() {
   const activeQuest = state.quests?.active;
   if (!activeQuest || !isQuestComplete(state, activeQuest)) return;
@@ -691,21 +725,8 @@ function advanceQuestFlow() {
   ) {
     state.questEvents.firstAdmiralTriggered = true;
     state.pushLootNotice?.("Admiral contact detected near the West Relay!");
-    if (
-      multiplayerNetwork.isSharedWorldActive() &&
-      state.mode === "overworld"
-    ) {
-      multiplayerNetwork.requestQuestAdmiral({
-        x: state.player.x,
-        y: state.player.y,
-      });
-    } else {
-      state.spawnEnemy?.({
-        type: "basic",
-        admiral: true,
-      });
-    }
   }
+  ensureQuestAdmiral();
 }
 
 state.onEnemyKilled = (enemy, drop) => {

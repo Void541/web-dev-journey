@@ -47,6 +47,7 @@ function toClientPlayer(player) {
     progression: player.progression,
     quests: player.quests,
     progress: player.progress,
+    questEvents: player.questEvents,
     ship: player.ship,
     loadout: player.loadout,
     crew: player.crew,
@@ -167,7 +168,7 @@ app.post("/save-loadout", async (req, res) => {
     return res.status(503).json({ error: "Database unavailable" });
   }
 
-  const { playerId, ship, loadout, crew, inventory, progression, quests, progress } =
+  const { playerId, ship, loadout, crew, inventory, progression, quests, progress, questEvents } =
     req.body ?? {};
 
   if (!playerId) {
@@ -208,6 +209,15 @@ app.post("/save-loadout", async (req, res) => {
 
       if (Number.isInteger(progress.admiralKills) && progress.admiralKills >= 0) {
         player.progress.admiralKills = progress.admiralKills;
+      }
+    }
+
+    if (questEvents) {
+      player.questEvents = player.questEvents ?? {};
+
+      if (typeof questEvents.firstAdmiralTriggered === "boolean") {
+        player.questEvents.firstAdmiralTriggered =
+          questEvents.firstAdmiralTriggered;
       }
     }
 

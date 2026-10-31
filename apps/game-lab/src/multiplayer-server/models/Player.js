@@ -52,6 +52,10 @@ const playerSchema = new mongoose.Schema({
     admiralKills: { type: Number, default: 0 },
   },
 
+  questEvents: {
+    firstAdmiralTriggered: { type: Boolean, default: false },
+  },
+
   ship: {
     id: String,
   },
