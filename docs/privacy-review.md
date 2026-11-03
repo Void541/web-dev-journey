@@ -1,6 +1,6 @@
 # Datenschutzentwurf: Portfolio
 
-Stand: 2026-10-28. Die Seite `apps/portfolio/privacy.html` ist ein Entwurf,
+Stand: 2026-11-03. Die Seite `apps/portfolio/privacy.html` ist ein Entwurf,
 keine rechtliche Freigabe. Sie ist als Entwurf gekennzeichnet und enthaelt
 `noindex`; beides verhindert keinen direkten oeffentlichen Zugriff.
 
@@ -13,9 +13,14 @@ keine rechtliche Freigabe. Sie ist als Entwurf gekennzeichnet und enthaelt
 - Browser-Einstellungen: localStorage-Schluessel `lang` und `theme`, ohne Ablaufdatum.
 - Formular: Name, E-Mail, Nachricht; Uebermittlung per HTML-POST an Formspree.
 - Formshield und CAPTCHA sind laut Screenshot im Konto aktiviert.
+- Am 2026-11-03 per Screenshot bestaetigt: CAPTCHA-Loesung reCAPTCHA,
+  aktiviert. Keine Versionsnummer im Dialog sichtbar.
+- Darstellung der Datenschutzseite bei 390 Pixeln in beiden Themes und
+  Ruecklink zum Formular am 2026-11-03 vom Betreiber bestaetigt.
 - Testversand ins Postfach erfolgreich, vom Betreiber bestaetigt.
 - Kein eingebundenes CAPTCHA-Skript auf der Portfolio-Seite.
-- Externes Favicon von fav.farm auf der Hauptseite.
+- Seit 2026-11-03 lokales SVG-Favicon auf Haupt- und Datenschutzseite;
+  der externe Abruf von fav.farm wurde fuer das Portfolio entfernt.
 - Keine Analyse- oder Werbeskripte im geprueften Portfolio-Code.
 
 ## Vor Freigabe klaeren
@@ -26,12 +31,11 @@ keine rechtliche Freigabe. Sie ist als Entwurf gekennzeichnet und enthaelt
 - Formspree-Vertragsunterlagen, Auftragsverarbeitung, Unterauftragnehmer und
   Drittlandtransfer fuer das tatsaechliche Konto pruefen. Eine allgemeine
   Anbieterwerbung ersetzt diese Pruefung nicht.
-- CAPTCHA-Anbieter und Variante im Konto bestaetigen; Datenarten, Zwecke,
+- Konkrete reCAPTCHA-Version und Datenverarbeitung pruefen; Zwecke,
   Rechtsgrundlage und etwaige Einwilligungsanforderungen beruecksichtigen.
 - Loeschkonzept festlegen: Formspree, Hauptpostfach, Kontaktpostfach und Antworten.
   Eine sichtbare Archivfrist ist nicht automatisch eine garantierte Loeschfrist.
-- GitHub-Hosting, WEB.DE und Weiterleitung sowie externe Favicon-Abfrage
-  vollstaendig einordnen; gegebenenfalls Favicon lokal bereitstellen.
+- GitHub-Hosting, WEB.DE und Weiterleitung vollstaendig einordnen.
 - Zustaendige Datenschutzaufsicht nach Betreiberstandort bestimmen.
 - Lokalen Speicher und initiales automatisches Speichern rechtlich bewerten.
 - Verlinktes Game Lab separat erfassen; diese Erklaerung deckt dessen Funktionen
