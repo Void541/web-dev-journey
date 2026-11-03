@@ -149,6 +149,11 @@ const translations = {
       "Das Game Lab ist aktuell mein wichtigstes Projekt, weil ich dort Gameplay, Struktur und Systemdenken zusammenbringe.",
 
     project4_title: "Game Lab",
+    project4_combat_alt: "Game Lab: Raumschiff im Kampf gegen Raider mit Spieler- und Ziel-Lebensanzeige.",
+    project4_combat_caption: "Kampfansicht: Gegner, Zielauswahl und Lebensanzeigen.",
+    project4_hangar_toggle: "Hangaransicht ansehen",
+    project4_preview_alt: "Game Lab: Raumschiff im Hangar mit NPC-Stationen und Minimap.",
+    project4_preview_caption: "Einblick ins Game Lab: Hangar und NPC-Stationen.",
     project4_desc:
       "Ein browserbasiertes 2D-Spiel mit eigenem Game Loop, Kampfsystem, Gegnerverhalten und modularer Architektur.",
 
@@ -392,6 +397,11 @@ const translations = {
       "Game Lab is my main project right now because it brings together gameplay, structure, and systems thinking in one place.",
 
     project4_title: "Game Lab",
+    project4_combat_alt: "Game Lab: a spaceship fighting raiders, with player and target health indicators.",
+    project4_combat_caption: "Combat view: enemies, target selection, and health indicators.",
+    project4_hangar_toggle: "View the hangar",
+    project4_preview_alt: "Game Lab: a spaceship in the hangar with NPC stations and a minimap.",
+    project4_preview_caption: "Inside Game Lab: the hangar and NPC stations.",
     project4_desc:
       "A browser-based 2D game with a custom game loop, combat systems, enemy behavior and modular architecture.",
 

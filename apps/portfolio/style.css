@@ -2181,6 +2181,65 @@ html[data-theme="light"] .btn.ghost:hover {
   margin-top: 0;
 }
 
+.project-preview{
+  margin: var(--s-4) 0 var(--s-5);
+  min-width: 0;
+}
+
+.project-preview-frame{
+  position: relative;
+  aspect-ratio: 1400 / 787;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-1);
+  background: #07090d;
+}
+
+/* Show the 1400 x 787 playfield at (580, 311) in the original screenshot. */
+.project-preview-image{
+  position: absolute;
+  display: block;
+  width: 182.857143%;
+  max-width: none;
+  height: auto;
+  left: -41.428571%;
+  top: -39.517154%;
+}
+
+.project-preview figcaption{
+  margin-top: var(--s-2);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.project-preview-frame--full{
+  aspect-ratio: auto;
+}
+
+.project-preview-image--full{
+  position: static;
+  width: 100%;
+}
+
+.project-more-previews{
+  margin-bottom: var(--s-5);
+}
+
+.project-more-previews > .project-preview{
+  margin: var(--s-3) 0 0;
+}
+
+.project-more-previews > summary{
+  cursor: pointer;
+}
+
+.project-more-previews > summary:focus-visible{
+  outline: 2px solid var(--border-strong);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .privacy-page a:focus-visible,
 .contact-notice a:focus-visible,
 .footer-info a:focus-visible{
