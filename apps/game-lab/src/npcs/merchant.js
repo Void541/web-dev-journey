@@ -74,6 +74,7 @@ export function updateMerchant(state) {
         if (removeItem(state, scrapKey, 10)) {
           state.credits += 4;
           state.pushLootNotice?.(`Sold 10 ${scrapKey} for 4 credits`);
+          state.markProgressChanged?.();
         } else {
           state.pushLootNotice?.(`Not enough ${scrapKey} to sell`);
         }
@@ -83,6 +84,7 @@ export function updateMerchant(state) {
         if (removeItem(state, "tech", 2)) {
           state.credits += 10;
           state.pushLootNotice?.("Sold 2 tech for 10 credits");
+          state.markProgressChanged?.();
         } else {
           state.pushLootNotice?.("Not enough tech to sell");
         }
@@ -93,6 +95,7 @@ export function updateMerchant(state) {
           state.credits -= 12;
           addItem(state, "tech", 1);
           state.pushLootNotice?.("Bought 1 tech for 12 credits");
+          state.markProgressChanged?.();
         } else {
           state.pushLootNotice?.("Not enough credits to buy tech");
         }
@@ -103,6 +106,7 @@ export function updateMerchant(state) {
           state.credits -= 28;
           addItem(state, "gear", 1);
           state.pushLootNotice?.("Bought 1 gear for 28 credits");
+          state.markProgressChanged?.();
         } else {
           state.pushLootNotice?.("Not enough credits to buy gear");
         }

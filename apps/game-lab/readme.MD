@@ -49,8 +49,9 @@ for the next level is derived using `getXpToNext(level)` rather than stored:
 persistent change. Enemy kills, salvaged loot, and successful crafting mark
 changes for the periodic save check. Purchases, equipment changes, active slot
 selection, and successful talent allocation also request an immediate save.
-Accepting, abandoning, and claiming a quest mark changes through
-`state.markProgressChanged()` for the periodic save check.
+Accepting, abandoning, and claiming a quest, as well as successful merchant
+purchases and sales, mark changes through `state.markProgressChanged()` for the
+periodic save check.
 
 Every 10 seconds, the browser checks whether `revision > savedRevision`.
 If changes are pending, it attempts to save. Only one request can run at a time.
@@ -88,7 +89,11 @@ the actual player schema and route logic with in-memory database substitutes,
 simulated HTTP transport, and manually supplied gameplay counters. It also
 checked restoring the event flag and replacing a missing offline admiral.
 
-- A real MongoDB save followed by a fresh login has not yet been verified.
+A live MongoDB check used a temporary account to verify merchant autosave and a
+fresh HTTP login. The login response restored the updated inventory and credits,
+as well as the checked progression and quest fields. The temporary account was
+removed after the check.
+
 - Live multiplayer recovery, including reconnects and server restarts during
   an ongoing session, has not been verified. Recovery checks are not currently
   triggered by network reconnect events.
