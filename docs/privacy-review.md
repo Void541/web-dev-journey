@@ -77,12 +77,21 @@ Diese Anleitung ist vorbereitet; sie loest keine automatische Loeschung aus.
 Bei vorzeitigen Loeschbegehren ist eine gesonderte Bearbeitung erforderlich;
 die Person muss nicht auf das Ende dieser internen Frist warten.
 
-## Laufende Anbieteranfrage
+## Antwort des Formspree-Supports
 
-Der Betreiber hat am 2026-11-03 den Formspree-Support zu den offenen
-Datenschutzunterlagen angeschrieben. Laut Betreiber wurde eine Antwortzeit
-von ungefaehr zwei Werktagen genannt. Die Antwort liegt noch nicht vor;
-keine Annahme ueber ihren Inhalt treffen.
+Anfrage vom 2026-11-03, Supportantwort vom 2026-11-04, ausgewertet am
+2026-11-10. Der E-Mail-Export bleibt ausserhalb des Repositorys.
+
+- Formspree arbeitet laut Support daran, Standardvertragsklauseln (SCCs)
+  in die Nutzungsbedingungen aufzunehmen, und will sich danach melden.
+  Die Antwort benennt weder einen fuer das Konto geltenden AV-Vertrag
+  noch bestaetigt sie die Rolle bei der Verarbeitung von Formulareinsendungen.
+- Einsendungen lassen sich im Dashboard einzeln oder gesammelt loeschen;
+  eine automatische Loeschung ist laut Support nicht verfuegbar.
+- Fuer Backups und andere Daten nennt der Support eine gesonderte Anfrage
+  an `support@formspree.io`, die innerhalb von 30 Tagen bearbeitet wird.
+  Das ist keine automatische Backup-Loeschfrist nach Dashboard-Loeschung.
+  Die Dauer bis zur Loeschung ohne gesonderte Anfrage bleibt offen.
 
 ## Quellen
 
