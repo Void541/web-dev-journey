@@ -91,7 +91,7 @@ export function renderWorkshopUI(ctx, state) {
   ctx.fillStyle = "rgba(255,255,255,0.6)";
   ctx.font = "13px system-ui";
   ctx.textAlign = "center";
-  ctx.fillText("Press F to close � Press K for Pilot Skills", x + w / 2, y + h - 22);
+  ctx.fillText("Press F to close | Press K for Pilot Skills", x + w / 2, y + h - 22);
   ctx.textAlign = "left";
   ctx.restore();
 }
@@ -208,7 +208,7 @@ function renderShipyardTab(ctx, state, { x, y, w, unlockedShips, mx, my }) {
     ctx.fillText(selected ? `${b.label} (Equipped)` : unlocked ? b.label : `${b.label} (Locked)`, b.x + 14, b.y + 10);
     ctx.font = "13px system-ui";
     ctx.fillStyle = "rgba(255,255,255,0.72)";
-    ctx.fillText(`HP ${shipType.maxHp} � Speed x${shipType.speedMul} � Slots ${shipType.cannonSlots}`, b.x + 14, b.y + 34);
+    ctx.fillText(`HP ${shipType.maxHp} | Speed x${shipType.speedMul} | Slots ${shipType.cannonSlots}`, b.x + 14, b.y + 34);
     ctx.fillText(formatCost(shipType.cost), b.x + 14, b.y + 50);
   }
 }
@@ -288,9 +288,24 @@ function renderWeaponsTab(ctx, state, { x, y, w, unlockedWeapons, mx, my }) {
     ctx.fillText(selected ? `${b.label} (Equipped)` : unlocked ? b.label : `${b.label} (Locked)`, b.x + 14, b.y + 10);
     ctx.font = "13px system-ui";
     ctx.fillStyle = "rgba(255,255,255,0.72)";
-    ctx.fillText(`DMG ${cannon.damage} � Rate ${cannon.fireRate} � Range ${cannon.range}`, b.x + 14, b.y + 30);
+    ctx.fillText(`DMG ${cannon.damage} | Rate ${cannon.fireRate} | Range ${cannon.range}`, b.x + 14, b.y + 30);
     ctx.fillText(formatCost(cannon.cost), b.x + 14, b.y + 46);
   }
+}
+
+function formatCrewBonus(member) {
+  const bonuses = [];
+  if (member.repairMul > 1) {
+    bonuses.push(`+${Math.round((member.repairMul - 1) * 100)}% repair rate`);
+  }
+  if (member.speed > 1) {
+    bonuses.push(`+${Math.round((member.speed - 1) * 100)}% movement speed`);
+  }
+  if (member.dmgMul > 1) bonuses.push(`${member.dmgMul}x base cannon damage`);
+  if (member.reloadCooldownMul < 1) {
+    bonuses.push(`${Math.round((1 - member.reloadCooldownMul) * 100)}% shorter reload`);
+  }
+  return bonuses.join(" / ") || "No additional stat bonus";
 }
 
 function renderCrewTab(ctx, state, { x, y, w, unlockedCrew, mx, my }) {
@@ -330,6 +345,9 @@ function renderCrewTab(ctx, state, { x, y, w, unlockedCrew, mx, my }) {
     ctx.fillText(member.name, x + 32, by + 10);
 
     ctx.font = "13px system-ui";
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.fillText(formatCrewBonus(member), x + 32, by + 28, button.x - x - 44);
+
     ctx.fillStyle = "rgba(255,255,255,0.72)";
     ctx.fillText(
       member.id === "captain"
@@ -340,7 +358,7 @@ function renderCrewTab(ctx, state, { x, y, w, unlockedCrew, mx, my }) {
             ? "Available for assignment"
             : formatCost(member.cost),
       x + 32,
-      by + 34
+      by + 46
     );
 
     ctx.fillStyle = button.disabled

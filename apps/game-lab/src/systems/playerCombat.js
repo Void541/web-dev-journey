@@ -43,6 +43,14 @@ export function fireCannonAtTarget(state, target, cannonId) {
     ttl: 2,
     r: 3,
   });
+
+  const muzzleOffset = Math.min(state.player.r, d / 2);
+  state.effects?.push({
+    kind: "playerShot",
+    x: state.player.x + dirX * muzzleOffset,
+    y: state.player.y + dirY * muzzleOffset,
+    t: 0.12,
+  });
   return true;
 }
 

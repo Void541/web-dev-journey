@@ -18,13 +18,15 @@ export function renderProjectiles(ctx, projectiles, sprites) {
 
   for (const projectile of projectiles) {
     const angle = Math.atan2(projectile.vy, projectile.vx);
-    const drewProjectile = sprites?.draw(
+    // The wide projectile image includes substantial transparent padding.
+    const spriteWidth = projectile.r * 12;
+    const drewProjectile = !projectile.fromEnemy && sprites?.draw(
       ctx,
-      "cannonball",
+      "projectile",
       projectile.x,
       projectile.y,
-      projectile.r * 5,
-      projectile.r * 5,
+      spriteWidth,
+      spriteWidth / 3,
       angle
     );
 
@@ -46,12 +48,17 @@ export function renderProjectiles(ctx, projectiles, sprites) {
   ctx.restore();
 }
 
-export function renderMuzzleEffects(ctx, effects) {
+export function renderMuzzleEffects(ctx, effects, sprites) {
   ctx.save();
   ctx.fillStyle = "#fff";
 
   for (const effect of effects) {
     const life = Math.max(0, effect.t / 0.12);
+    ctx.globalAlpha = life;
+    if (effect.kind === "playerShot" && sprites?.draw(
+      ctx, "player_muzzle_flash", effect.x, effect.y, 52, 52,
+    )) continue;
+
     ctx.globalAlpha = 0.55 * life;
     ctx.beginPath();
     ctx.arc(effect.x, effect.y, 14, 0, Math.PI * 2);

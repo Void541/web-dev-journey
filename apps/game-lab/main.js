@@ -21,7 +21,6 @@ import { createSpriteManager } from "./src/sprites.js";
 import {
   createPlayerCombat,
   getTargetEnemy,
-  fireCannonAtTarget,
   updatePlayerCombat,
 } from "./src/systems/playerCombat.js";
 import { createQuestTracker } from "./src/ui/questTracker.js";
@@ -50,12 +49,14 @@ const pirateCove = createPirateCove();
 const sprites = createSpriteManager();
 
 // --- Load sprites ---
-sprites.load("player", "assets/ships/player.png");
+sprites.load("player_sloop", "assets/ships/sloop/idle.png");
 sprites.load("enemy_tank", "assets/ships/enemy_tank.png");
 sprites.load("enemy_sniper", "assets/ships/enemy_sniper.png");
 sprites.load("enemy_disabler", "assets/ships/enemy_disabler.png");
 sprites.load("enemy_raider", "assets/ships/enemy_raider.png");
-sprites.load("cannonball", "assets/ships/cannonball.png");
+sprites.load("projectile", "assets/effects/player/projectile.png");
+sprites.load("player_muzzle_flash", "assets/effects/player/muzzle-flash.png");
+sprites.load("enemy_admiral", "assets/ships/enemy_admiral.png");
 
 const shipStats = createShipStats();
 const craftingRecipes = createCraftingRecipes();
@@ -573,7 +574,7 @@ state.playerLoadout = {
 state.admirals = {
   naturalSpawn: false,
   killCount: 0,
-  killsNeeded: 99999,
+  killsNeeded: 10,
   active: 0,
   maxActive: 1,
 };
@@ -683,12 +684,8 @@ state.inventory = state.inventory ?? {
 };
 state.credits = state.credits ?? 0;
 
-function ensureQuestAdmiral() {
-  const quest = state.quests?.active;
-
+function spawnAdmiralIfMissing() {
   if (state.mode !== "overworld") return;
-  if (quest?.id !== "admiral1") return;
-  if (isQuestComplete(state, quest)) return;
   if (state.enemies.some((enemy) => enemy.isAdmiral)) return;
 
   if (multiplayerNetwork.isSharedWorldActive()) {
@@ -703,6 +700,12 @@ function ensureQuestAdmiral() {
       admiral: true,
     });
   }
+}
+
+function ensureQuestAdmiral() {
+  const quest = state.quests?.active;
+  if (quest?.id !== "admiral1" || isQuestComplete(state, quest)) return;
+  spawnAdmiralIfMissing();
 }
 
 function advanceQuestFlow() {
@@ -891,19 +894,7 @@ window.__gameActions = {
   },
 
   shootTarget: () => {
-    const target = getTargetEnemy(state);
-    if (!target) return;
-
-    const dx = target.x - player.x;
-    const dy = target.y - player.y;
-    const d = Math.hypot(dx, dy);
-
-    if (d <= combat.range && combat.cooldown <= 0) {
-      const fired = fireCannonAtTarget(state, target, combat.cannonId);
-      if (fired) {
-        combat.cooldown = 1 / combat.fireRate;
-      }
-    }
+    updatePlayerCombat(0, state);
   },
 
   toggleWorkshop: () => {
@@ -925,16 +916,17 @@ window.__gameActions = {
   },
 };
 
-if (DEV_MODE) {
+const isLocalDebugHost = ["localhost", "127.0.0.1", "[::1]"].includes(
+  window.location.hostname,
+);
+
+if (DEV_MODE && isLocalDebugHost) {
   window.addEventListener("keydown", (e) => {
     if (isTypingIntoUi()) return;
     const k = e.key.toLowerCase();
 
-    if (k === "m") {
-      state.spawnEnemy?.({
-        type: "basic",
-        admiral: true,
-      });
+    if (k === "m" && !e.repeat) {
+      spawnAdmiralIfMissing();
     }
   });
 }
@@ -1633,117 +1625,6 @@ function isTypingIntoUi() {
     tag === "select" ||
     el.isContentEditable === true
   );
-}
-
-function renderEnemy(e) {
-  ctx.save();
-
-  const isTarget = combat.targetId === e.id;
-  const angle = Math.atan2(e.vy, e.vx);
-  const spriteKey = getEnemySpriteKey(e.type);
-
-  const drewSprite = state.sprites?.draw(
-    ctx,
-    spriteKey,
-    e.x,
-    e.y,
-    e.r * 3.2,
-    e.r * 3.2,
-    angle,
-  );
-
-  if (!drewSprite) {
-    renderFallbackShip(
-      ctx,
-      e.x,
-      e.y,
-      e.r,
-      angle,
-      isTarget,
-      true,
-      e.type,
-      e.color || "rgb(170,45,40)",
-    );
-  }
-
-  if (e.isAdmiral) {
-    ctx.save();
-
-    // Goldene Aura
-    ctx.globalAlpha = 0.15;
-    ctx.fillStyle = "rgba(255,215,80,1)";
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.r + 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw a simple rank marker above admiral ships so they stand out in combat.
-    const iconY = e.y - e.r - 20;
-
-    ctx.globalAlpha = 0.95;
-    ctx.fillStyle = "rgb(255,215,90)";
-    ctx.strokeStyle = "rgba(0,0,0,0.55)";
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-    ctx.moveTo(e.x, iconY - 10); // oben
-    ctx.lineTo(e.x + 10, iconY); // rechts
-    ctx.lineTo(e.x, iconY + 10); // unten
-    ctx.lineTo(e.x - 10, iconY); // links
-    ctx.closePath();
-
-    ctx.fill();
-    ctx.stroke();
-
-    // kleiner Punkt in der Mitte
-    ctx.beginPath();
-    ctx.arc(e.x, iconY, 3, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff";
-    ctx.fill();
-
-    ctx.restore();
-  }
-
-  ctx.globalAlpha = e.hitT > 0 ? 0.65 : 0.95;
-
-  const tcfg = state.enemyTypes?.[e.type] || {};
-  ctx.fillStyle = tcfg.color || "rgb(170,45,40)";
-
-  ctx.globalAlpha = 0.95;
-  ctx.font = "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "bottom";
-
-  ctx.fillStyle = "rgba(0,0,0,0.7)";
-  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x + 1, e.y + e.r + 6);
-
-  ctx.fillStyle = e.isAdmiral ? "rgb(255,215,90)" : "#fff";
-  ctx.font = e.isAdmiral
-    ? "700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial"
-    : "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-
-  ctx.fillText(e.name ?? e.type ?? "Enemy", e.x, e.y + e.r + 10);
-
-  const w = 34;
-  const h = 5;
-  const pct = clamp(e.hp / (e.maxHp || 1), 0, 1);
-
-  const bx = e.x - w / 2;
-  const by = e.y + e.r + 15;
-
-  ctx.globalAlpha = 0.35;
-  ctx.fillStyle = "#000";
-  ctx.fillRect(bx, by, w, h);
-
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = "rgb(32,172,32)";
-  ctx.fillRect(bx, by, w * pct, h);
-
-  ctx.globalAlpha = 0.35;
-  ctx.strokeStyle = e.isAdmiral ? "rgb(255,210,60)" : "#fff";
-  ctx.lineWidth = e.isAdmiral ? 2 : 1;
-  ctx.strokeRect(bx, by, w, h);
-
-  ctx.restore();
 }
 
 // ---------- Render ----------

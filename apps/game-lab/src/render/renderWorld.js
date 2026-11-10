@@ -85,7 +85,6 @@ export function renderGame(ctx, state, options) {
 
   renderRemotePlayers(ctx, remotePlayers, state.player.r);
   renderTrail(ctx, state.trail);
-  renderProjectiles(ctx, state.projectiles, state.sprites);
   if (state.mode !== "pirateCove") {
     renderEnemies(ctx, state.enemies, state);
   }
@@ -95,7 +94,8 @@ export function renderGame(ctx, state, options) {
   }
 
   renderPlayer(ctx, state);
-  renderMuzzleEffects(ctx, state.effects);
+  renderProjectiles(ctx, state.projectiles, state.sprites);
+  renderMuzzleEffects(ctx, state.effects, state.sprites);
   renderRepairEffects(ctx, state.player, repair);
   state.damage.render(ctx);
   renderIslandColliders(ctx, getIslandColliders());

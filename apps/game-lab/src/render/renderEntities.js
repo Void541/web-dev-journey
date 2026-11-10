@@ -24,7 +24,7 @@ export function renderFallbackShip(
   isTarget,
   isEnemy,
   type = "basic",
-  color = "rgb(170,45,40)"
+  color = "rgb(170,45,40)",
 ) {
   ctx.save();
   ctx.translate(x, y);
@@ -184,7 +184,7 @@ export function renderRemotePlayers(ctx, remotePlayers, playerRadius) {
       false,
       false,
       "basic",
-      "rgb(100,100,255)"
+      "rgb(100,100,255)",
     );
   }
 }
@@ -194,7 +194,9 @@ export function renderEnemy(ctx, enemy, state) {
 
   const isTarget = state.combat?.targetId === enemy.id;
   const angle = Math.atan2(enemy.vy, enemy.vx);
-  const spriteKey = getEnemySpriteKey(enemy.type);
+  const spriteKey = enemy.isAdmiral
+    ? "enemy_admiral"
+    : getEnemySpriteKey(enemy.type);
 
   const drewSprite = state.sprites?.draw(
     ctx,
@@ -203,7 +205,7 @@ export function renderEnemy(ctx, enemy, state) {
     enemy.y,
     enemy.r * 3.2,
     enemy.r * 3.2,
-    angle
+    angle,
   );
 
   if (!drewSprite) {
@@ -216,7 +218,7 @@ export function renderEnemy(ctx, enemy, state) {
       isTarget,
       true,
       enemy.type,
-      enemy.color || "rgb(170,45,40)"
+      enemy.color || "rgb(170,45,40)",
     );
   }
 
@@ -263,13 +265,21 @@ export function renderEnemy(ctx, enemy, state) {
   ctx.textBaseline = "bottom";
 
   ctx.fillStyle = "rgba(0,0,0,0.7)";
-  ctx.fillText(enemy.name ?? enemy.type ?? "Enemy", enemy.x + 1, enemy.y + enemy.r + 6);
+  ctx.fillText(
+    enemy.name ?? enemy.type ?? "Enemy",
+    enemy.x + 1,
+    enemy.y + enemy.r + 6,
+  );
 
   ctx.fillStyle = enemy.isAdmiral ? "rgb(255,215,90)" : "#fff";
   ctx.font = enemy.isAdmiral
     ? "700 12px system-ui, -apple-system, Segoe UI, Roboto, Arial"
     : "600 11px system-ui, -apple-system, Segoe UI, Roboto, Arial";
-  ctx.fillText(enemy.name ?? enemy.type ?? "Enemy", enemy.x, enemy.y + enemy.r + 10);
+  ctx.fillText(
+    enemy.name ?? enemy.type ?? "Enemy",
+    enemy.x,
+    enemy.y + enemy.r + 10,
+  );
 
   const barWidth = 34;
   const barHeight = 5;
@@ -303,14 +313,15 @@ export function renderPlayer(ctx, state) {
   const { player } = state;
   const playerAngle = player.angle ?? 0;
 
-  const drewPlayer = state.sprites?.draw(
+  const isSloop = (state.playerShip?.id ?? "sloop") === "sloop";
+  const drewPlayer = isSloop && state.sprites?.draw(
     ctx,
-    "player",
+    "player_sloop",
     player.x,
     player.y,
     player.r * 4.2,
     player.r * 4.2,
-    playerAngle
+    playerAngle + Math.PI / 2,
   );
 
   if (!drewPlayer) {
@@ -322,7 +333,7 @@ export function renderPlayer(ctx, state) {
       playerAngle,
       false,
       false,
-      "player"
+      "player",
     );
   }
 }

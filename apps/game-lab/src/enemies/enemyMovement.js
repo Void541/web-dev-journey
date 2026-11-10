@@ -11,10 +11,24 @@ export function updateEnemyMovement(e, dt, state) {
   const tcfg = enemyTypes?.[e.type] ?? {};
   const speed = ENEMY_SPEED * (tcfg.speedMul ?? 1.0);
   const inCombat = (e.aggroT ?? 0) > 0;
+  const edgeMargin = e.r + 8;
+  const atLeft = e.x <= edgeMargin;
+  const atRight = e.x >= w - edgeMargin;
+  const atTop = e.y <= edgeMargin;
+  const atBottom = e.y >= h - edgeMargin;
+  const nearEdge = atLeft || atRight || atTop || atBottom;
 
-  // Intended behavior:
-  // Enemies roam freely only while they are not aggroed.
-  if (!inCombat && (e.stunT ?? 0) <= 0) {
+  // Allow combat enemies to move inward when they reach a map edge.
+  if ((!inCombat || nearEdge) && (e.stunT ?? 0) <= 0) {
+    if (nearEdge) {
+      if (atLeft) e.vx = Math.max(0.5, e.vx);
+      if (atRight) e.vx = Math.min(-0.5, e.vx);
+      if (atTop) e.vy = Math.max(0.5, e.vy);
+      if (atBottom) e.vy = Math.min(-0.5, e.vy);
+      const length = Math.hypot(e.vx, e.vy) || 1;
+      e.vx /= length;
+      e.vy /= length;
+    }
     e.x += e.vx * speed * dt;
     e.y += e.vy * speed * dt;
   }

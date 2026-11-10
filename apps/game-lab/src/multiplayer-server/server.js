@@ -625,6 +625,13 @@ function updateSharedEnemies(dt) {
     enemy.vy =
       (enemy.vy ?? desiredY) + (desiredY - (enemy.vy ?? desiredY)) * steer;
 
+    // Keep steering inward at the edge even when a target is beyond it.
+    const edgeMargin = enemy.r + 8;
+    if (enemy.x <= edgeMargin) enemy.vx = Math.max(0.5, enemy.vx);
+    if (enemy.x >= SHARED_WORLD.width - edgeMargin) enemy.vx = Math.min(-0.5, enemy.vx);
+    if (enemy.y <= edgeMargin) enemy.vy = Math.max(0.5, enemy.vy);
+    if (enemy.y >= SHARED_WORLD.height - edgeMargin) enemy.vy = Math.min(-0.5, enemy.vy);
+
     const moveLen = Math.hypot(enemy.vx, enemy.vy) || 1;
     enemy.vx /= moveLen;
     enemy.vy /= moveLen;
