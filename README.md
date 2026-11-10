@@ -51,6 +51,21 @@ Das Portfolio verwendet JavaScript-Module und sollte ueber HTTP statt direkt
 als lokale HTML-Datei geoeffnet werden. Fuer die Lernbereiche gelten die
 Anleitungen in ihren jeweiligen README-Dateien.
 
+## Portfolio pruefen
+
+Im Repository-Stamm `node scripts/check-portfolio.mjs` ausfuehren. Der Check
+benoetigt keine npm-Abhaengigkeiten und prueft DE/EN-Schluessel, doppelte IDs
+und lokale Link- und Bildziele der Portfolio-Seiten.
+
+Vor und nach einer Veroeffentlichung zusaetzlich im Browser pruefen:
+
+- Bei 390, 720 und 1280 Pixeln Navigation, Projektvorschauen und Formular ansehen.
+- Sprache und Theme wechseln und die gespeicherte Auswahl nach Neuladen pruefen.
+- Menue, FAQ, Hangaransicht und Akiko-Erinnerung per Tastatur bedienen.
+- Game-Lab-Demo und Quellcode-Link oeffnen, Datenschutzlink und Rueckweg pruefen.
+- Formularvalidierung ohne Versand pruefen; einen echten Testversand separat
+  und bewusst durchfuehren.
+
 ## Aktueller Fokus
 
 Bestehende Projekte gezielt verbessern, Ergebnisse pruefen und technische

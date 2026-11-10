@@ -23,7 +23,7 @@ const translations = {
     hero_panel_3_label: "Modus",
     hero_panel_3_value: "Bauen. Verfeinern. Wiederholen.",
     hero_panel_4_label: "Richtung",
-    hero_panel_4_value: "Vue, produktnähere UI, stärkere Systeme",
+    hero_panel_4_value: "Vue, TypeScript und Backend-Grundlagen",
     btn_projects: "Projekte ansehen",
     btn_contact: "Kontakt aufnehmen",
 
@@ -42,35 +42,35 @@ const translations = {
     about_title: "Über mich",
 
     about_text:
-      "Ich arbeite gerade daran, mir ein starkes Fundament in moderner Frontend-Entwicklung aufzubauen. Mein Fokus liegt dabei auf echten Projekten, klarer Struktur und Interfaces, die nicht nur funktionieren, sondern bewusst gestaltet sind.",
+      "Ich bin Fabian und suche den Einstieg als Junior-Fullstack-Entwickler. Im Game Lab entwickle ich ein Canvas-Spiel mit JavaScript. Dieses Portfolio zeigt, wie ich responsive Oberflächen, Tastaturbedienung und einen Sprachwechsel umsetze. Auf dieser Frontend-Praxis baue ich meine Backend-Kenntnisse auf.",
     about_snapshot_1_label: "Aktuell im Fokus",
     about_snapshot_1_copy:
-      "Interaktive Frontends, bessere UI-Entscheidungen und ein sauberer Umgang mit wachsender Projektkomplexität.",
+      "Im Game Lab entwickle ich Spiellogik und Canvas-Darstellung. Im Portfolio arbeite ich an responsivem Layout und verständlicher Bedienung.",
     about_snapshot_2_label: "Wie ich lerne",
     about_snapshot_2_copy:
-      "Nicht nur lesen, sondern bauen, verbessern, reflektieren und aus echten Projekten sichtbaren Fortschritt machen.",
+      "Ich setze Funktionen in kleinen Schritten um, prüfe sie im Browser und halte Änderungen in Git fest.",
     about_snapshot_3_label: "Worauf ich hinarbeite",
     about_snapshot_3_copy:
-      "Ein starkes Frontend-Fundament, produktnähere Projekte und danach moderne Frameworks wie Vue.",
+      "Ich vertiefe Vue und TypeScript in Übungen und möchte als Nächstes eigene APIs und Datenbanken kennenlernen.",
 
-    skills_title: "Woran ich arbeite",
+    skills_title: "Was ich bereits einsetze",
     skills_intro:
-      "Die Bereiche, die ich gerade am aktivsten über echte Projekte trainiere und weiter ausbaue.",
-    skill_1: "HTML5 & semantische Struktur",
-    skill_2: "CSS (Layout, Flexbox, Grid, Responsive Design)",
-    skill_3: "JavaScript (DOM, State, Events, localStorage)",
-    skill_4: "Modulare Architektur & Code-Organisation",
-    skill_5: "Git & GitHub Workflow",
-    skill_6: "Grundlagen API-Integration",
+      "Konkrete Beispiele aus meinem Portfolio und Game Lab.",
+    skill_1: "HTML: semantische Abschnitte und beschriftete Formularfelder",
+    skill_2: "CSS: responsive Layouts mit Grid und Flexbox",
+    skill_3: "JavaScript: DOM-Ereignisse, Sprachwechsel und gespeicherte Einstellungen",
+    skill_4: "Game Lab: Canvas-Rendering, Bewegung und Spielzustand",
+    skill_5: "Git und GitHub: Änderungen versionieren und über Pages veröffentlichen",
+    skill_6: "Barrierefreiheit: Tastaturbedienung und zugängliche Button-Beschriftungen",
 
     roadmap_title: "Worauf ich als Nächstes hinarbeite",
     roadmap_intro:
-      "Die nächsten Schritte, mit denen ich mein Frontend-Fundament gezielt Richtung moderne Libraries und größere Projekte ausbaue.",
-    roadmap_1: "Stärkere Frontend-Architektur & sauberere Komponenten",
-    roadmap_2: "Sichereres Web Design & bessere UI-Entscheidungen",
-    roadmap_3: "API-Integration & Backend-Grundlagen",
-    roadmap_4: "Komplexere Systemlogiken für interaktive Projekte",
-    roadmap_5: "Der Schritt in Frameworks wie Vue",
+      "Meine Lernziele auf dem Weg in die Fullstack-Entwicklung.",
+    roadmap_1: "Vue-Komponenten und gemeinsame Zustände in Übungen strukturieren",
+    roadmap_2: "TypeScript für Datenmodelle und Funktionsschnittstellen vertiefen",
+    roadmap_3: "Eine kleine HTTP-API mit Validierung und Fehlerbehandlung bauen",
+    roadmap_4: "Daten in einer relationalen Datenbank speichern und abfragen",
+    roadmap_5: "Frontend, API und Datenbank verbinden und wichtige Abläufe testen",
 
     learning_title: "Womit ich aktuell lerne",
     learning_intro:
@@ -101,12 +101,12 @@ const translations = {
     learning_item_5_focus: "JavaScript Grundlagen",
     learning_item_5_title: "javascript.info",
     learning_item_5_desc:
-      "Eine sehr gute Quelle, um JavaScript systematisch zu lernen und Themen Schritt fÃ¼r Schritt mit Beispielen zu verstehen.",
+      "Eine sehr gute Quelle, um JavaScript systematisch zu lernen und Themen Schritt für Schritt mit Beispielen zu verstehen.",
     learning_item_6_type: "Guide",
     learning_item_6_focus: "JavaScript Vertiefung",
     learning_item_6_title: "MDN JavaScript Guide",
     learning_item_6_desc:
-      "Hilft mir dabei, JavaScript-Konzepte Ã¼ber die Grundlagen hinaus sauberer zu verstehen und besser einzuordnen.",
+      "Hilft mir dabei, JavaScript-Konzepte über die Grundlagen hinaus sauberer zu verstehen und besser einzuordnen.",
 
     projects_title: "Projekte",
     projects_intro:
@@ -270,7 +270,7 @@ const translations = {
     hero_panel_3_label: "Mode",
     hero_panel_3_value: "Build. Refine. Repeat.",
     hero_panel_4_label: "Direction",
-    hero_panel_4_value: "Vue, product-like UI, stronger systems",
+    hero_panel_4_value: "Vue, TypeScript, and backend fundamentals",
     btn_projects: "View Projects",
     btn_contact: "Get in touch",
 
@@ -290,35 +290,35 @@ const translations = {
     about_title: "About",
 
     about_text:
-      "I’m currently building a strong foundation in modern frontend development. My focus is on real projects, clear structure, and interfaces that don’t just work, but feel intentionally designed.",
+      "I’m Fabian, and I’m looking for a junior full-stack developer role. In Game Lab, I’m building a JavaScript canvas game. This portfolio demonstrates responsive layouts, keyboard interaction, and language switching. I’m building on that frontend experience by learning backend development.",
     about_snapshot_1_label: "Current focus",
     about_snapshot_1_copy:
-      "Interactive frontends, better UI decisions, and a cleaner approach to growing project complexity.",
+      "In Game Lab, I work on game logic and canvas rendering. In my portfolio, I focus on responsive layouts and clear interactions.",
     about_snapshot_2_label: "How I learn",
     about_snapshot_2_copy:
-      "Not just reading, but building, improving, reflecting, and turning real projects into visible progress.",
+      "I build features in small steps, check them in the browser, and track changes in Git.",
     about_snapshot_3_label: "What I’m working toward",
     about_snapshot_3_copy:
-      "A strong frontend foundation, more product-like projects, and then modern frameworks like Vue.",
+      "I’m practising Vue and TypeScript. Next, I want to learn how to build APIs and work with databases.",
 
-    skills_title: "What I’m actively building",
+    skills_title: "Skills I use in my projects",
     skills_intro:
-      "The areas I’m currently training and improving most actively through real projects.",
-    skill_1: "HTML5 & semantic structure",
-    skill_2: "CSS (layout, Flexbox, Grid, responsive design)",
-    skill_3: "JavaScript (DOM, state, events, localStorage)",
-    skill_4: "Modular architecture & code organization",
-    skill_5: "Git & GitHub workflow",
-    skill_6: "API integration fundamentals",
+      "Examples from my portfolio and Game Lab.",
+    skill_1: "HTML: semantic sections and labelled form fields",
+    skill_2: "CSS: responsive layouts with Grid and Flexbox",
+    skill_3: "JavaScript: DOM events, language switching, and saved preferences",
+    skill_4: "Game Lab: canvas rendering, movement, and game state",
+    skill_5: "Git and GitHub: versioning changes and publishing with Pages",
+    skill_6: "Accessibility: keyboard interaction and accessible button labels",
 
     roadmap_title: "What I’m moving toward next",
     roadmap_intro:
-      "The next steps I’m using to intentionally grow my frontend foundation toward modern libraries and larger projects.",
-    roadmap_1: "Stronger frontend architecture & cleaner components",
-    roadmap_2: "More confident web design & better UI decisions",
-    roadmap_3: "API integration & backend fundamentals",
-    roadmap_4: "More complex systems for interactive projects",
-    roadmap_5: "The transition into frameworks like Vue",
+      "What I plan to learn as I move toward full-stack development.",
+    roadmap_1: "Practise structuring Vue components and shared state",
+    roadmap_2: "Deepen my TypeScript skills with data models and function interfaces",
+    roadmap_3: "Build a small HTTP API with validation and error handling",
+    roadmap_4: "Store and query data in a relational database",
+    roadmap_5: "Connect a frontend, API, and database, and test key workflows",
 
     learning_title: "What I’m currently learning with",
     learning_intro:

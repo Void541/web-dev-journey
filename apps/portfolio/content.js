@@ -5,7 +5,7 @@ const aboutSnapshots = [
     labelFallback: "Aktuell im Fokus",
     copyKey: "about_snapshot_1_copy",
     copyFallback:
-      "Interaktive Frontends, bessere UI-Entscheidungen und ein sauberer Umgang mit wachsender Projektkomplexität.",
+      "Im Game Lab entwickle ich Spiellogik und Canvas-Darstellung. Im Portfolio arbeite ich an responsivem Layout und verständlicher Bedienung.",
   },
   {
     classes: "snapshot-card-learning",
@@ -13,7 +13,7 @@ const aboutSnapshots = [
     labelFallback: "Wie ich lerne",
     copyKey: "about_snapshot_2_copy",
     copyFallback:
-      "Nicht nur lesen, sondern bauen, verbessern, reflektieren und aus echten Projekten sichtbaren Fortschritt machen.",
+      "Ich setze Funktionen in kleinen Schritten um, prüfe sie im Browser und halte Änderungen in Git fest.",
   },
   {
     classes: "snapshot-card-direction",
@@ -21,7 +21,7 @@ const aboutSnapshots = [
     labelFallback: "Worauf ich hinarbeite",
     copyKey: "about_snapshot_3_copy",
     copyFallback:
-      "Ein starkes Frontend-Fundament, produktnähere Projekte und danach moderne Frameworks wie Vue.",
+      "Ich vertiefe Vue und TypeScript in Übungen und möchte als Nächstes eigene APIs und Datenbanken kennenlernen.",
   },
 ];
 
