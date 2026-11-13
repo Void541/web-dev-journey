@@ -8,7 +8,7 @@ import { createDamageSystem } from "./src/damageNumbers.js";
 import { createSpace } from "./src/space.js";
 import { createIslands } from "./src/islands.js";
 import { createOverworld } from "./src/modes/overworld.js";
-import { createPirateCove } from "./src/modes/pirateCove.js";
+import { createSpaceStation } from "./src/modes/spaceStation.js";
 import { enemyTypes } from "./src/entities/enemyTypes.js";
 import { createWreckSystem } from "./src/systems/wrecks.js";
 import { createLootTable } from "./src/systems/lootTable.js";
@@ -32,9 +32,6 @@ import { createTalentSystem } from "./src/systems/talente.js";
 import { createNetworkSystem } from "./src/multiplayer-server/network.js";
 import { isQuestComplete, giveQuestReward } from "./src/quests/questLogic.js";
 import { QUESTS } from "./src/quests/quests.js";
-import { merchantNpc, openMerchant } from "./src/npcs/merchant.js";
-import { dockmasterNpc, openDockmaster } from "./src/npcs/dockmaster.js";
-import { navigatorNpc, openNavigator } from "./src/npcs/navigator.js";
 
 const DEV_MODE = true;
 const PLAYER_API_BASE = "http://127.0.0.1:3000";
@@ -45,11 +42,12 @@ const multiplayerNetwork = createNetworkSystem();
 const remotePlayers = multiplayerNetwork.remotePlayers;
 
 const overworld = createOverworld();
-const pirateCove = createPirateCove();
+const spaceStation = createSpaceStation();
 const sprites = createSpriteManager();
 
 // --- Load sprites ---
 sprites.load("player_sloop", "assets/ships/sloop/idle.png");
+sprites.load("hangar_interior", "assets/station/hangar-interior.png");
 sprites.load("enemy_tank", "assets/ships/enemy_tank.png");
 sprites.load("enemy_sniper", "assets/ships/enemy_sniper.png");
 sprites.load("enemy_disabler", "assets/ships/enemy_disabler.png");
@@ -62,27 +60,36 @@ const shipStats = createShipStats();
 const craftingRecipes = createCraftingRecipes();
 const craftingSystem = createCraftingSystem(craftingRecipes);
 
-let currentMode = pirateCove;
+let currentMode = spaceStation;
 let overworldSpawnTimer = 0;
-let mode = "pirateCove";
+let mode = "spaceStation";
 
 function setMode(next, options = {}) {
   mode = next;
   state.mode = next;
+  document.body.classList.toggle("in-hangar", next === "spaceStation");
 
   applyWorld(WORLDS[next]);
 
-  if (next === "pirateCove") {
-    currentMode = pirateCove;
+  if (next === "spaceStation") {
+    currentMode = spaceStation;
   } else {
     currentMode = overworld;
   }
 
   currentMode.enter?.(state, options);
+  multiplayerNetwork.sendPlayerState(state.player, state.mode);
   ensureQuestAdmiral();
 }
 
 const canvas = document.getElementById("game");
+const hangarMenu = document.getElementById("hangar-menu");
+const hangarClose = hangarMenu.querySelector(".hangar-close");
+for (const button of hangarMenu.querySelectorAll(".hangar-npc")) {
+  const { x, y } = spaceStation.services[button.dataset.hangarAction];
+  button.style.left = `${x * 100}%`;
+  button.style.top = `${y * 100}%`;
+}
 const ctx = canvas.getContext("2d");
 const input = createInput();
 const islands = createIslands();
@@ -120,6 +127,7 @@ const camera = {
 };
 
 function regenerateIslands() {
+  if (mode === "spaceStation") return;
   islands.generateDefault(world);
 }
 
@@ -139,6 +147,8 @@ function fitCanvas() {
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = `${cssW}px`;
   canvas.style.height = `${cssH}px`;
+  canvas.parentElement.style.setProperty("--game-canvas-height", `${cssH}px`);
+  canvas.parentElement.style.setProperty("--game-canvas-width", `${cssW}px`);
   canvas.width = Math.floor(cssW * dpr);
   canvas.height = Math.floor(cssH * dpr);
 
@@ -195,7 +205,7 @@ function isPointInsideRect(mx, my, rect) {
 // ---- World presets ----
 const WORLDS = {
   overworld: { w: 4000, h: 1400 },
-  pirateCove: { w: 1400, h: 800 },
+  spaceStation: { w: 1400, h: 800 },
 };
 
 function applyWorld(preset) {
@@ -639,7 +649,7 @@ window.addEventListener("auth:login-success", (event) => {
 state.crafting = {
   recipes: craftingRecipes,
   craft: (id) => {
-    if (state.mode !== "pirateCove") {
+    if (state.mode !== "spaceStation") {
       state.pushLootNotice?.(
         "Crafting is only available in the Mercenary Hangar",
       );
@@ -997,69 +1007,18 @@ function getEnemyApproachRange() {
   return Math.max(120, shortestRange - 36);
 }
 
-function findHangarInteractableAt(x, y) {
-  if (state.mode !== "pirateCove") return null;
-
-  const interactables = [
-    {
-      id: "merchant",
-      x: merchantNpc.x,
-      y: merchantNpc.y,
-      hitRadius: merchantNpc.r + 12,
-      stopRange: merchantNpc.r + 24,
-    },
-    {
-      id: "dockmaster",
-      x: dockmasterNpc.x,
-      y: dockmasterNpc.y,
-      hitRadius: dockmasterNpc.r + 12,
-      stopRange: dockmasterNpc.r + 60,
-    },
-    {
-      id: "navigator",
-      x: navigatorNpc.x,
-      y: navigatorNpc.y,
-      hitRadius: navigatorNpc.r + 12,
-      stopRange: navigatorNpc.r + 60,
-    },
-  ];
-
-  for (const npc of interactables) {
-    const dx = x - npc.x;
-    const dy = y - npc.y;
-
-    if (dx * dx + dy * dy <= npc.hitRadius * npc.hitRadius) {
-      return npc;
-    }
+hangarMenu.addEventListener("mousedown", (event) => event.stopPropagation());
+hangarMenu.addEventListener("click", (event) => {
+  const action = event.target.closest("[data-hangar-action]")?.dataset.hangarAction;
+  if (action && state.mode === "spaceStation" && !paused) {
+    spaceStation.selectService(state, action);
   }
-
-  return null;
-}
+});
 
 canvas.addEventListener("click", (ev) => {
+  if (state.mode === "spaceStation") return;
   const m = getMousePos(ev);
   const wpos = screenToWorld(m.x, m.y);
-  const interactable = findHangarInteractableAt(wpos.x, wpos.y);
-
-  if (interactable) {
-    state.moveTarget = {
-      kind: "interact",
-      targetId: interactable.id,
-      x: interactable.x,
-      y: interactable.y,
-      stopRange: interactable.stopRange,
-    };
-
-    combat.targetId = null;
-    const npcLabel =
-      interactable.id === "dockmaster"
-        ? "Ship Technician"
-        : interactable.id === "navigator"
-          ? "Contract Officer"
-          : "Salvage Broker";
-    state.pushLootNotice?.(`Autopilot engaged: ${npcLabel}`);
-    return;
-  }
 
   const e = findEnemyAt(wpos.x, wpos.y);
   combat.targetId = e ? e.id : null;
@@ -1143,15 +1102,17 @@ function update(dt) {
   wrecks.update(dt);
   wrecks.trySalvage(dt, state);
 
+  const canFly = state.mode !== "spaceStation";
   const wantsMove =
-    input.isDown("a") ||
-    input.isDown("d") ||
-    input.isDown("w") ||
-    input.isDown("s") ||
-    input.isDown("arrowleft") ||
-    input.isDown("arrowright") ||
-    input.isDown("arrowup") ||
-    input.isDown("arrowdown");
+    canFly &&
+    (input.isDown("a") ||
+      input.isDown("d") ||
+      input.isDown("w") ||
+      input.isDown("s") ||
+      input.isDown("arrowleft") ||
+      input.isDown("arrowright") ||
+      input.isDown("arrowup") ||
+      input.isDown("arrowdown"));
 
   if (wantsMove && state.moveTarget) {
     state.moveTarget = null;
@@ -1189,10 +1150,12 @@ function update(dt) {
   let ax = 0;
   let ay = 0;
 
-  if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
-  if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
-  if (input.isDown("w") || input.isDown("arrowup")) ay -= 1;
-  if (input.isDown("s") || input.isDown("arrowdown")) ay += 1;
+  if (canFly) {
+    if (input.isDown("a") || input.isDown("arrowleft")) ax -= 1;
+    if (input.isDown("d") || input.isDown("arrowright")) ax += 1;
+    if (input.isDown("w") || input.isDown("arrowup")) ay -= 1;
+    if (input.isDown("s") || input.isDown("arrowdown")) ay += 1;
+  }
 
   if (ax !== 0 && ay !== 0) {
     const inv = 1 / Math.sqrt(2);
@@ -1200,7 +1163,7 @@ function update(dt) {
     ay *= inv;
   }
 
-  if (!wantsMove && state.moveTarget) {
+  if (canFly && !wantsMove && state.moveTarget) {
     let targetX = state.moveTarget.x;
     let targetY = state.moveTarget.y;
 
@@ -1222,19 +1185,7 @@ function update(dt) {
       const dy = targetY - player.y;
       const distance = Math.hypot(dx, dy);
 
-      if (distance <= (state.moveTarget.stopRange ?? player.r + 8)) {
-        if (state.moveTarget.kind === "interact") {
-          if (state.moveTarget.targetId === "merchant") {
-            openMerchant(state);
-          } else if (state.moveTarget.targetId === "dockmaster") {
-            openDockmaster(state);
-          } else if (state.moveTarget.targetId === "navigator") {
-            openNavigator(state);
-          }
-
-          state.moveTarget = null;
-        }
-      } else {
+      if (distance > (state.moveTarget.stopRange ?? player.r + 8)) {
         const dir = norm(dx, dy);
         ax = dir.x;
         ay = dir.y;
@@ -1287,7 +1238,7 @@ function update(dt) {
   const sharedWorldEnemiesActive =
     multiplayerNetwork.isSharedWorldActive() && state.mode === "overworld";
 
-  if (!sharedWorldEnemiesActive) {
+  if (canFly && !sharedWorldEnemiesActive) {
     updateEnemies(dt, {
       enemies,
       player,
@@ -1629,6 +1580,15 @@ function isTypingIntoUi() {
 
 // ---------- Render ----------
 function render() {
+  hangarMenu.hidden = state.mode !== "spaceStation" || paused;
+  if (!hangarMenu.hidden) {
+    const panelOpen = Boolean(
+      state.ui.workshopOpen || state.ui.merchantOpen ||
+      state.ui.navigatorOpen || state.ui.skillsOpen,
+    );
+    hangarMenu.classList.toggle("has-open-panel", panelOpen);
+    hangarClose.hidden = !panelOpen;
+  }
   renderGame(ctx, state, {
     currentMode,
     remotePlayers,

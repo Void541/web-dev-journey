@@ -309,7 +309,7 @@ export function renderEnemies(ctx, enemies, state) {
   }
 }
 
-export function renderPlayer(ctx, state) {
+export function renderPlayer(ctx, state, displayScale = 1) {
   const { player } = state;
   const playerAngle = player.angle ?? 0;
 
@@ -319,8 +319,8 @@ export function renderPlayer(ctx, state) {
     "player_sloop",
     player.x,
     player.y,
-    player.r * 4.2,
-    player.r * 4.2,
+    player.r * 4.2 * displayScale,
+    player.r * 4.2 * displayScale,
     playerAngle + Math.PI / 2,
   );
 
@@ -329,7 +329,7 @@ export function renderPlayer(ctx, state) {
       ctx,
       player.x,
       player.y,
-      player.r,
+      player.r * displayScale,
       playerAngle,
       false,
       false,

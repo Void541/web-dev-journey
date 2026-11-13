@@ -54,7 +54,7 @@ export function drawMinimap(ctx, state, opts = {}) {
   ctx.strokeRect(vx, vy, vwMm, vhMm);
 
   // ---- Enemies ----
-  if (state.mode !== "pirateCove") {
+  if (state.mode !== "spaceStation") {
     for (const e of enemies) {
       if (!e) continue;
 

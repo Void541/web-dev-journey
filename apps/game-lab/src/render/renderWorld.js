@@ -17,7 +17,7 @@ import {
 import { renderEnemyRanges, renderIslandColliders } from "./renderDebug.js";
 
 function renderStatusPanels(ctx, state) {
-  if (state.admirals && state.mode !== "pirateCove") {
+  if (state.admirals && state.mode !== "spaceStation") {
     const remaining = Math.max(0, state.admirals.killsNeeded - state.admirals.killCount);
     const admiralText =
       state.admirals.active > 0
@@ -74,33 +74,41 @@ export function renderGame(ctx, state, options) {
   ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
   ctx.clearRect(0, 0, viewWidth, viewHeight);
 
-  state.space.render(ctx, state.canvas);
+  const inHangar = state.mode === "spaceStation";
 
-  ctx.save();
-  ctx.translate(-state.camera.x, -state.camera.y);
+  if (inHangar) {
+    ctx.save();
+    ctx.scale(viewWidth / state.world.w, viewHeight / state.world.h);
+    currentMode.renderWorld?.(ctx, state);
+    renderPlayer(ctx, state, 2.5);
+    renderRepairEffects(ctx, state.player, repair);
+    ctx.restore();
+  } else {
+    state.space.render(ctx, state.canvas);
 
-  state.islands.render(ctx);
-  state.wrecks.render(ctx, state);
-  currentMode.renderWorld?.(ctx, state);
+    ctx.save();
+    ctx.translate(-state.camera.x, -state.camera.y);
 
-  renderRemotePlayers(ctx, remotePlayers, state.player.r);
-  renderTrail(ctx, state.trail);
-  if (state.mode !== "pirateCove") {
+    state.islands.render(ctx);
+    state.wrecks.render(ctx, state);
+    currentMode.renderWorld?.(ctx, state);
+
+    renderRemotePlayers(ctx, remotePlayers, state.player.r);
+    renderTrail(ctx, state.trail);
     renderEnemies(ctx, state.enemies, state);
+
+    if (showEnemyRanges) {
+      renderEnemyRanges(ctx, state.enemies, state.enemyTypes);
+    }
+
+    renderPlayer(ctx, state);
+    renderProjectiles(ctx, state.projectiles, state.sprites);
+    renderMuzzleEffects(ctx, state.effects, state.sprites);
+    renderRepairEffects(ctx, state.player, repair);
+    state.damage.render(ctx);
+    renderIslandColliders(ctx, getIslandColliders());
+    ctx.restore();
   }
-
-  if (showEnemyRanges) {
-    renderEnemyRanges(ctx, state.enemies, state.enemyTypes);
-  }
-
-  renderPlayer(ctx, state);
-  renderProjectiles(ctx, state.projectiles, state.sprites);
-  renderMuzzleEffects(ctx, state.effects, state.sprites);
-  renderRepairEffects(ctx, state.player, repair);
-  state.damage.render(ctx);
-  renderIslandColliders(ctx, getIslandColliders());
-
-  ctx.restore();
 
   currentMode.renderUI?.(ctx, state);
 
@@ -108,7 +116,7 @@ export function renderGame(ctx, state, options) {
   state.hudOverlay.update(state, target);
   state.wrecks.renderHud(ctx, state.canvas, state);
 
-  if (showMinimap) {
+  if (showMinimap && !inHangar) {
     drawMinimap(ctx, state, {
       width: 240,
       height: 135,
@@ -116,7 +124,7 @@ export function renderGame(ctx, state, options) {
     });
   }
 
-  renderStatusPanels(ctx, state);
+  if (!inHangar) renderStatusPanels(ctx, state);
   renderLootNotifications(ctx, state.canvas, lootNotices);
   renderWorkshopUI(ctx, state);
   renderPilotSkillsUI(ctx, state);

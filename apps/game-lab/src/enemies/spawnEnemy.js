@@ -17,7 +17,7 @@ function clamp(v, min, max) {
 
 export function spawnEnemy(state, options = {}) {
 
-  if (state.mode === "pirateCove") return null; // Pirate Cove does not spawn standard enemies.
+  if (state.mode === "spaceStation") return null; // the space station does not spawn standard enemies.
 
   const { enemies, enemyTypes, islands, world } = state;
 

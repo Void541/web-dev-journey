@@ -403,6 +403,122 @@ body {
 #hud-stage > * {
   pointer-events: auto;
 }
+
+#hud-stage > .hangar-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--game-canvas-width, 100%);
+  height: var(--game-canvas-height, 100%);
+  pointer-events: none;
+}
+
+.hangar-npc,
+.hangar-controls button {
+  pointer-events: auto;
+  min-height: 32px;
+  padding: 4px 9px;
+  border: 1px solid #627782;
+  border-radius: 4px;
+  background: #14191e;
+  color: #f5ecd9;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.hangar-npc {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 86px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border-color: transparent;
+}
+
+.hangar-npc span {
+  position: absolute;
+  top: calc(50% + 13px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 6px;
+  border-radius: 3px;
+  background: #14191e;
+  white-space: nowrap;
+}
+
+.hangar-npc:hover,
+.hangar-npc:focus-visible,
+.hangar-controls button:hover,
+.hangar-controls button:focus-visible {
+  outline: 2px solid #90d5db;
+  outline-offset: -2px;
+}
+
+.hangar-controls {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  width: max-content;
+  max-width: calc(100% - 16px);
+}
+
+.hangar-controls .hangar-launch {
+  background: #e9cc84;
+  border-color: #e9cc84;
+  color: #201b11;
+}
+
+.has-open-panel .hangar-npc,
+.has-open-panel .hangar-launch {
+  display: none;
+}
+
+.in-hangar #target-panel,
+.in-hangar #hotbar-panel {
+  display: none;
+}
+
+.in-hangar #hud-header {
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .in-hangar #hud-header {
+    gap: 6px;
+  }
+
+  .in-hangar #hud-header .hud-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px;
+  }
+
+  .in-hangar #hud-header .hud-row {
+    gap: 4px;
+  }
+
+  .in-hangar #hud-header .hud-pill {
+    min-height: 24px;
+    padding: 2px 6px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .in-hangar #player-panel {
+    display: none;
+  }
+
+  .hangar-controls {
+    top: calc(100% + 8px);
+    bottom: auto;
+  }
+}
 /* =========================
    Quest Tracker
    ========================= */

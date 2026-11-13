@@ -724,7 +724,7 @@ io.on("connection", (socket) => {
     x: 200,
     y: 200,
     angle: 0,
-    mode: "pirateCove",
+    mode: "spaceStation",
   };
 
   socket.emit("currentPlayers", players);
@@ -738,7 +738,7 @@ io.on("connection", (socket) => {
     players[socket.id].y = data.y;
     players[socket.id].angle = data.angle ?? 0;
     players[socket.id].mode =
-      data.mode ?? players[socket.id].mode ?? "pirateCove";
+      data.mode ?? players[socket.id].mode ?? "spaceStation";
 
     console.log("playerMove received server:", players[socket.id]);
 

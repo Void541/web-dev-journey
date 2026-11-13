@@ -71,8 +71,7 @@ Required hub functions:
 - Safe meeting point for players
 
 Current implementation note:
-The current in-game hub is still named Pirate Cove.
-This should evolve into a more fitting sci-fi hub identity.
+The current in-game hub is the Mercenary Hangar space station (`spaceStation` in code).
 
 ### Hub Identity: Mercenary Hangar
 The working long-term hub identity is Mercenary Hangar.
@@ -234,14 +233,12 @@ These are the best next development targets based on the current codebase.
 ## Phase 1 Early Game Flow
 
 ### Current Working Hub
-The current start hub is Pirate Cove.
-The name can change later, but for now it already serves an important design role:
+The current start hub is the Mercenary Hangar space station. It serves as:
 - safe introduction space
 - player preparation area
 - quest handoff location
 - social anchor point before entering danger
 
-For the current version, Pirate Cove should be treated as the official early-game hub.
 
 ### Current Working Start Zone
 The current starting zone is the zone where the player first leaves the hub and begins active combat.
@@ -259,7 +256,7 @@ The early questline should turn the existing combat prototype into a more meanin
 Suggested structure:
 
 1. First Contact
-The player accepts a first mission in Pirate Cove and is sent into the nearby sector to investigate enemy activity.
+The player accepts a first mission in the Mercenary Hangar and is sent into the nearby sector to investigate enemy activity.
 
 2. Patrol Cleanup
 The player defeats a small number of basic enemies.
@@ -274,7 +271,7 @@ The enemy patrol turns out to be part of a larger operation.
 Defeating or completing the previous objective triggers the first admiral encounter.
 
 5. Return To Hub
-The player returns to Pirate Cove, turns in the mission, and gets the feeling that the world is larger than the first fight.
+The player returns to the Mercenary Hangar, turns in the mission, and gets the feeling that the world is larger than the first fight.
 
 ### First Admiral Encounter
 The current admiral concept should become the first real early-game climax.
@@ -291,14 +288,14 @@ It just needs to feel memorable, readable, and worth defeating.
 ### Immediate Gameplay Loop Goal
 The first playable loop should be:
 
-1. Start in Pirate Cove
+1. Start in the Mercenary Hangar
 2. Accept first mission
 3. Enter the nearby beginner zone
 4. Fight basic enemies
 5. Salvage the wreck field
 6. Trigger the first admiral
 7. Defeat the admiral
-8. Return to Pirate Cove for reward and next direction
+8. Return to the Mercenary Hangar for reward and next direction
 
 This loop is the current best target for turning the prototype into the first true game slice.
 

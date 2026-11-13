@@ -62,7 +62,7 @@ export function updatePlayerCombat(dt, state) {
   const { combat, player } = state;
   if (!combat) return;
 
-  if (state.mode === "pirateCove") {
+  if (state.mode === "spaceStation") {
     combat.targetId = null;
     return;
   }

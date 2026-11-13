@@ -45,7 +45,7 @@ export function createOverworld() {
       state.overworldSpawnTimer = state.cfg.OVERWORLD_SPAWN_EVERY;
     }
 
-    // Transition to Pirate Cove through the northern edge.
+    // Transition to the space station through the northern edge.
     if (state.player.y <= state.player.r + 4) {
       state.transitions = state.transitions ?? {};
       state.transitions.overworldReturn = {
@@ -53,7 +53,7 @@ export function createOverworld() {
         y: state.player.r + 20,
       };
 
-      state.setMode?.("pirateCove");
+      state.setMode?.("spaceStation");
       return;
     }
   }
